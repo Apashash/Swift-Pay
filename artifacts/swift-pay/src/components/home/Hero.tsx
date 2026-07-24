@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { SiBitcoin, SiTether, SiEthereum } from 'react-icons/si';
 import { useTranslation } from '@/lib/i18n';
+import { PaymentForm } from '@/components/home/PaymentForm';
 
 export function Hero() {
   const { t } = useTranslation();
@@ -75,7 +76,7 @@ export function Hero() {
 
           </div>
 
-          {/* Right Mockup Form */}
+          {/* Right — Interactive Payment Form */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95, rotateY: -10 }}
             animate={{ opacity: 1, scale: 1, rotateY: 0 }}
@@ -84,96 +85,8 @@ export function Hero() {
             className="relative lg:ml-auto w-full max-w-md"
           >
             <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
-
-            <div className="relative bg-card border border-border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="font-semibold text-foreground text-lg">{t('form_title')}</h3>
-                <div className="flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('form_destination')}</label>
-                  <div className="w-full bg-secondary border border-border rounded-xl p-3.5 flex items-center gap-3 cursor-default">
-                    <span className="text-xl">🇨🇮</span>
-                    <span className="text-foreground text-sm font-medium">Côte d'Ivoire</span>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('form_network')}</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {['Orange', 'MTN', 'Wave', 'Moov'].map((op, i) => (
-                      <div key={op} className={`text-center py-2 rounded-lg border text-xs font-medium transition-colors cursor-default ${i === 0 ? 'bg-primary/10 border-primary text-primary' : 'bg-secondary border-border text-muted-foreground hover:bg-muted'}`}>
-                        {op}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('form_amount')}</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value="50 000"
-                      readOnly
-                      className="w-full bg-secondary border border-border rounded-xl p-4 pr-16 text-2xl font-mono text-foreground focus:outline-none"
-                    />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
-                      FCFA
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('form_payWith')}</label>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-primary/10 border border-primary/50 rounded-xl p-3 flex items-center gap-3 cursor-default">
-                      <div className="w-8 h-8 rounded-full bg-[#26A17B]/20 flex items-center justify-center text-[#26A17B]">
-                        <SiTether size={16} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-foreground">USDT</div>
-                        <div className="text-[10px] text-muted-foreground">BEP-20</div>
-                      </div>
-                    </div>
-                    <div className="bg-secondary border border-border rounded-xl p-3 flex items-center gap-3 opacity-50 cursor-default">
-                      <div className="w-8 h-8 rounded-full bg-[#F7931A]/20 flex items-center justify-center text-[#F7931A]">
-                        <SiBitcoin size={16} />
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-foreground">BTC</div>
-                        <div className="text-[10px] text-muted-foreground">Lightning</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t('form_youPay')}</span>
-                    <span className="text-foreground font-mono">77.50 USDT</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">{t('form_fee')}</span>
-                    <span className="text-foreground font-mono">0.78 USDT</span>
-                  </div>
-                </div>
-
-                <Button className="w-full h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg shadow-[0_0_20px_rgba(0,230,118,0.2)]">
-                  {t('form_generate')} <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-
-                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                  {t('form_secure')}
-                </div>
-              </div>
+            <div className="relative">
+              <PaymentForm />
             </div>
           </motion.div>
 
