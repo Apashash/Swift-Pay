@@ -13,21 +13,26 @@ import {
 import { SiBitcoin, SiTether } from 'react-icons/si';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import imgOrange from '@/assets/operators/orange.png';
+import imgMtn    from '@/assets/operators/mtn.png';
+import imgWave   from '@/assets/operators/wave.webp';
+import imgMoov   from '@/assets/operators/moov.png';
+import imgTmoney from '@/assets/operators/tmoney.png';
 
 // ── Country / operator data ──────────────────────────────────────────────────
 
 type Operator = { id: string; name: string; logo: string; bg: string };
 
 const OPERATORS: Record<string, Operator> = {
-  Orange:    { id: 'Orange',    name: 'Orange Money', logo: '/operators/orange.png',  bg: '#1c1c1e' },
-  MTN:       { id: 'MTN',       name: 'MTN',          logo: '/operators/mtn.png',     bg: '#ffcc00' },
-  Wave:      { id: 'Wave',      name: 'Wave',         logo: '/operators/wave.webp',   bg: '#00b2ff' },
-  Moov:      { id: 'Moov',      name: 'Moov Money',   logo: '/operators/moov.png',    bg: '#f06000' },
-  TMoney:    { id: 'TMoney',    name: 'T-Money',      logo: '/operators/tmoney.png',  bg: '#ffd700' },
-  Free:      { id: 'Free',      name: 'Free Money',   logo: '',                       bg: '#e20025' },
-  Expresso:  { id: 'Expresso',  name: 'Expresso',     logo: '',                       bg: '#005baa' },
-  Cellcom:   { id: 'Cellcom',   name: 'Cellcom',      logo: '',                       bg: '#004a97' },
-  Flooz:     { id: 'Flooz',     name: 'Flooz',        logo: '',                       bg: '#009a44' },
+  Orange:    { id: 'Orange',    name: 'Orange Money', logo: imgOrange, bg: '#1c1c1e' },
+  MTN:       { id: 'MTN',       name: 'MTN',          logo: imgMtn,    bg: '#ffcc00' },
+  Wave:      { id: 'Wave',      name: 'Wave',         logo: imgWave,   bg: '#00b2ff' },
+  Moov:      { id: 'Moov',      name: 'Moov Money',   logo: imgMoov,   bg: '#f06000' },
+  TMoney:    { id: 'TMoney',    name: 'T-Money',      logo: imgTmoney, bg: '#ffd700' },
+  Free:      { id: 'Free',      name: 'Free Money',   logo: '',        bg: '#e20025' },
+  Expresso:  { id: 'Expresso',  name: 'Expresso',     logo: '',        bg: '#005baa' },
+  Cellcom:   { id: 'Cellcom',   name: 'Cellcom',      logo: '',        bg: '#004a97' },
+  Flooz:     { id: 'Flooz',     name: 'Flooz',        logo: '',        bg: '#009a44' },
 };
 
 const COUNTRIES = [
