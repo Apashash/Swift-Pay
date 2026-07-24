@@ -96,15 +96,12 @@ export function Hero() {
             className="relative lg:ml-auto w-full max-w-md"
           >
             <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
-            <div className="relative">
-              <PaymentForm />
-            </div>
-            {/* Vérifier transaction — sous le formulaire */}
+            {/* Vérifier transaction — au-dessus du formulaire */}
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="mt-3 flex justify-center"
+              transition={{ duration: 0.5, delay: 0.35 }}
+              className="mb-3 flex justify-center"
             >
               <button
                 onClick={() => navigate('/verifier')}
@@ -116,6 +113,9 @@ export function Hero() {
                 Vérifier ma transaction
               </button>
             </motion.div>
+            <div className="relative">
+              <PaymentForm />
+            </div>
           </motion.div>
 
         </div>
