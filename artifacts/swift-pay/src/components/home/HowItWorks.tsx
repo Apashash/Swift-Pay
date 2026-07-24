@@ -16,10 +16,10 @@ export function HowItWorks() {
   ];
 
   return (
-    <section id="how-it-works" className="py-24 bg-black/50 border-y border-white/5">
+    <section id="how-it-works" className="py-24 bg-muted/30 border-y border-border/50">
       <div className="container mx-auto px-4">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+          <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">
             {t('hiw_title')}
           </h2>
           <p className="text-muted-foreground text-lg">
@@ -42,14 +42,14 @@ export function HowItWorks() {
                 {!isLast && (
                   <div className="absolute left-[27px] top-[50px] bottom-[-10px] w-px bg-gradient-to-b from-primary/50 to-transparent" />
                 )}
-                <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-full bg-[#111111] border border-white/10 flex items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.5)]">
-                  <step.icon className={`w-6 h-6 ${index === 4 || index === 5 ? 'text-primary' : 'text-white'}`} />
-                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-black text-xs font-bold flex items-center justify-center">
+                <div className="relative z-10 flex-shrink-0 w-14 h-14 rounded-full bg-card border border-border flex items-center justify-center shadow-md">
+                  <step.icon className={`w-6 h-6 ${index === 4 || index === 5 ? 'text-primary' : 'text-foreground'}`} />
+                  <div className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                     {index + 1}
                   </div>
                 </div>
                 <div className="pt-2">
-                  <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
+                  <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
                   <p className="text-muted-foreground">{step.desc}</p>
                 </div>
               </motion.div>

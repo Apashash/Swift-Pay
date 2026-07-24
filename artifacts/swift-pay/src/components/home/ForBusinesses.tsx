@@ -7,7 +7,7 @@ export function ForBusinesses() {
   const { t } = useTranslation();
 
   return (
-    <section id="business" className="py-24 bg-black relative">
+    <section id="business" className="py-24 bg-background relative">
       <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
 
       <div className="container mx-auto px-4">
@@ -16,17 +16,17 @@ export function ForBusinesses() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="bg-[#0a0a0a] border border-white/10 rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,1)] max-w-6xl mx-auto"
+          className="bg-card border border-border rounded-3xl overflow-hidden shadow-2xl max-w-6xl mx-auto"
         >
           <div className="grid lg:grid-cols-2">
 
             <div className="p-10 md:p-16 flex flex-col justify-center">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-muted-foreground text-sm font-medium mb-6 w-fit">
-                <Terminal className="w-4 h-4 text-white" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary text-muted-foreground text-sm font-medium mb-6 w-fit">
+                <Terminal className="w-4 h-4 text-foreground" />
                 {t('fb_badge')}
               </div>
 
-              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">
+              <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-6 tracking-tight">
                 {t('fb_title').split('\n').map((line, i) => (
                   <span key={i} className="block">{line}</span>
                 ))}
@@ -37,30 +37,30 @@ export function ForBusinesses() {
               </p>
 
               <ul className="space-y-3 mb-10">
-                <li className="flex items-center gap-3 text-white">
+                <li className="flex items-center gap-3 text-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" /> {t('fb_feat1')}
                 </li>
-                <li className="flex items-center gap-3 text-white">
+                <li className="flex items-center gap-3 text-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" /> {t('fb_feat2')}
                 </li>
-                <li className="flex items-center gap-3 text-white">
+                <li className="flex items-center gap-3 text-foreground">
                   <div className="w-1.5 h-1.5 rounded-full bg-primary" /> {t('fb_feat3')}
                 </li>
               </ul>
 
               <div className="flex items-center gap-4">
-                <Button className="bg-white text-black hover:bg-gray-200 font-semibold px-6">
+                <Button className="bg-foreground text-background hover:bg-foreground/90 font-semibold px-6">
                   {t('fb_cta1')}
                 </Button>
-                <Button variant="ghost" className="text-white hover:bg-white/5">
+                <Button variant="ghost" className="text-foreground hover:bg-secondary">
                   {t('fb_cta2')} <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </div>
             </div>
 
-            <div className="bg-[#111111] p-8 lg:p-12 border-l border-white/5 flex items-center">
-              <div className="w-full bg-[#050505] border border-white/10 rounded-xl overflow-hidden font-mono text-sm shadow-2xl">
-                <div className="flex items-center gap-2 px-4 py-3 border-b border-white/10 bg-[#0a0a0a]">
+            <div className="bg-muted/50 p-8 lg:p-12 border-l border-border/50 flex items-center">
+              <div className="w-full bg-background border border-border rounded-xl overflow-hidden font-mono text-sm shadow-2xl">
+                <div className="flex items-center gap-2 px-4 py-3 border-b border-border bg-muted/50">
                   <div className="w-3 h-3 rounded-full bg-red-500/80" />
                   <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
                   <div className="w-3 h-3 rounded-full bg-green-500/80" />

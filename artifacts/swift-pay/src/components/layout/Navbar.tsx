@@ -28,7 +28,7 @@ export function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-md">
+      <header className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-1.5 group">
             <img
@@ -36,22 +36,22 @@ export function Navbar() {
               alt="SwiftPay Logo"
               className="w-10 h-10 object-contain transition-all drop-shadow-[0_0_8px_rgba(0,230,118,0.4)] group-hover:drop-shadow-[0_0_14px_rgba(0,230,118,0.6)]"
             />
-            <span className="text-xl font-bold tracking-tight text-white">
+            <span className="text-xl font-bold tracking-tight text-foreground">
               Swift<span className="text-primary">Pay</span>
             </span>
           </Link>
 
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-muted-foreground">
-            <a href="#how-it-works" className="hover:text-white transition-colors">{t('nav_howItWorks')}</a>
-            <a href="#networks" className="hover:text-white transition-colors">{t('nav_networks')}</a>
-            <a href="#business" className="hover:text-white transition-colors">{t('nav_business')}</a>
+            <a href="#how-it-works" className="hover:text-foreground transition-colors">{t('nav_howItWorks')}</a>
+            <a href="#networks" className="hover:text-foreground transition-colors">{t('nav_networks')}</a>
+            <a href="#business" className="hover:text-foreground transition-colors">{t('nav_business')}</a>
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="hidden sm:inline-flex text-muted-foreground hover:text-white hover:bg-white/5">
+            <Button variant="ghost" className="hidden sm:inline-flex text-muted-foreground hover:text-foreground hover:bg-secondary">
               {t('nav_signIn')}
             </Button>
-            <Button className="hidden sm:inline-flex bg-primary text-black hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.4)] transition-all hover:shadow-[0_0_30px_rgba(0,230,118,0.6)]">
+            <Button className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.4)] transition-all hover:shadow-[0_0_30px_rgba(0,230,118,0.6)]">
               {t('nav_getStarted')}
             </Button>
 
@@ -60,7 +60,7 @@ export function Navbar() {
               <button
                 onClick={() => { setLangOpen(!langOpen); setOpen(false); }}
                 data-testid="button-lang-toggle"
-                className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-colors"
+                className="w-10 h-10 flex items-center justify-center rounded-xl border border-border bg-secondary hover:bg-muted text-foreground transition-colors"
                 title={lang === 'fr' ? 'Changer de langue' : 'Change language'}
               >
                 <Globe className="w-4 h-4" />
@@ -74,7 +74,7 @@ export function Navbar() {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-14 w-40 bg-[#111111] border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+                    className="absolute right-0 top-14 w-40 bg-card border border-border rounded-xl shadow-2xl overflow-hidden z-50"
                   >
                     {languages.map((l) => (
                       <button
@@ -84,7 +84,7 @@ export function Navbar() {
                         className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors ${
                           lang === l.code
                             ? 'bg-primary/10 text-primary font-semibold'
-                            : 'text-white hover:bg-white/5'
+                            : 'text-foreground hover:bg-secondary'
                         }`}
                       >
                         <span className="text-base">{l.flag}</span>
@@ -101,7 +101,7 @@ export function Navbar() {
             <button
               onClick={() => { setOpen(!open); setLangOpen(false); }}
               data-testid="button-menu-toggle"
-              className="w-10 h-10 flex items-center justify-center rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white transition-colors"
+              className="w-10 h-10 flex items-center justify-center rounded-xl border border-border bg-secondary hover:bg-muted text-foreground transition-colors"
             >
               {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -134,24 +134,24 @@ export function Navbar() {
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: '100%', opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 h-full w-80 z-50 bg-[#0e0e0e] border-l border-white/10 flex flex-col shadow-2xl"
+              className="fixed top-0 right-0 h-full w-80 z-50 bg-card border-l border-border flex flex-col shadow-2xl"
             >
-              <div className="flex items-center justify-between px-6 h-20 border-b border-white/5">
+              <div className="flex items-center justify-between px-6 h-20 border-b border-border/50">
                 <div className="flex items-center gap-1">
                   <img src={swiftPayLogo} alt="SwiftPay" className="w-8 h-8 object-contain" />
-                  <span className="font-bold text-white">Swift<span className="text-primary">Pay</span></span>
+                  <span className="font-bold text-foreground">Swift<span className="text-primary">Pay</span></span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={toggleTheme}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
                     title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
                   >
                     {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                   </button>
                   <button
                     onClick={() => setOpen(false)}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -168,13 +168,13 @@ export function Navbar() {
                     transition={{ delay: i * 0.06 }}
                     onClick={() => setOpen(false)}
                     data-testid={`link-menu-${item.labelKey}`}
-                    className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-white/5 group transition-colors"
+                    className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-secondary group transition-colors"
                   >
                     <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
                       <item.icon className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-white">{t(item.labelKey)}</div>
+                      <div className="text-sm font-semibold text-foreground">{t(item.labelKey)}</div>
                       <div className="text-xs text-muted-foreground">{t(item.descKey)}</div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -182,8 +182,8 @@ export function Navbar() {
                 ))}
               </nav>
 
-              <div className="px-4 pb-6 space-y-3 border-t border-white/5 pt-4">
-                <Button className="w-full bg-primary text-black hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.3)]">
+              <div className="px-4 pb-6 space-y-3 border-t border-border/50 pt-4">
+                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.3)]">
                   {t('nav_getStarted')}
                 </Button>
                 <p className="text-center text-xs text-muted-foreground">{t('nav_tagline')}</p>

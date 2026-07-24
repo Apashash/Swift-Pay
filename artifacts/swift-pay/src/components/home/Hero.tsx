@@ -15,7 +15,7 @@ export function Hero() {
       <motion.div
         animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-[20%] left-[10%] opacity-10 text-white text-6xl pointer-events-none hidden lg:block"
+        className="absolute top-[20%] left-[10%] opacity-10 text-foreground text-6xl pointer-events-none hidden lg:block"
       >
         <SiBitcoin />
       </motion.div>
@@ -29,7 +29,7 @@ export function Hero() {
       <motion.div
         animate={{ y: [0, -25, 0], rotate: [0, 20, 0] }}
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        className="absolute top-[15%] right-[35%] opacity-10 text-white text-7xl pointer-events-none hidden lg:block"
+        className="absolute top-[15%] right-[35%] opacity-10 text-foreground text-7xl pointer-events-none hidden lg:block"
       >
         <SiEthereum />
       </motion.div>
@@ -45,7 +45,7 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter leading-[1.1] mb-6"
             >
-              <span className="text-white block">{t('hero_line1')}</span>
+              <span className="text-foreground block">{t('hero_line1')}</span>
               <span className="text-primary block drop-shadow-[0_0_25px_rgba(0,230,118,0.3)]">{t('hero_line2')}</span>
             </motion.h1>
 
@@ -64,11 +64,11 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12"
             >
-              <Button size="lg" className="bg-primary text-black hover:bg-primary/90 font-semibold h-14 px-8 text-lg rounded-xl shadow-[0_0_30px_rgba(0,230,118,0.3)] transition-all hover:shadow-[0_0_50px_rgba(0,230,118,0.5)]">
+              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-14 px-8 text-lg rounded-xl shadow-[0_0_30px_rgba(0,230,118,0.3)] transition-all hover:shadow-[0_0_50px_rgba(0,230,118,0.5)]">
                 {t('hero_cta')}
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
-              <Button size="lg" variant="ghost" className="h-14 px-8 text-lg rounded-xl hover:bg-white/5 text-white">
+              <Button size="lg" variant="ghost" className="h-14 px-8 text-lg rounded-xl hover:bg-secondary text-foreground">
                 {t('hero_learn')}
               </Button>
             </motion.div>
@@ -77,19 +77,19 @@ export function Hero() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-8 border-t border-white/5"
+              className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-8 border-t border-border/50"
             >
               <div className="flex items-center gap-2">
                 <Clock className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium text-white">{t('hero_stat1')}</span>
+                <span className="text-sm font-medium text-foreground">{t('hero_stat1')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Zap className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium text-white">{t('hero_stat2')}</span>
+                <span className="text-sm font-medium text-foreground">{t('hero_stat2')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium text-white">{t('hero_stat3')}</span>
+                <span className="text-sm font-medium text-foreground">{t('hero_stat3')}</span>
               </div>
             </motion.div>
           </div>
@@ -104,22 +104,22 @@ export function Hero() {
           >
             <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
 
-            <div className="relative bg-[#111111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm p-6 sm:p-8">
+            <div className="relative bg-card border border-border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm p-6 sm:p-8">
               <div className="flex items-center justify-between mb-8">
-                <h3 className="font-semibold text-white text-lg">{t('form_title')}</h3>
+                <h3 className="font-semibold text-foreground text-lg">{t('form_title')}</h3>
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 rounded-full bg-white/20" />
-                  <div className="w-2 h-2 rounded-full bg-white/20" />
-                  <div className="w-2 h-2 rounded-full bg-white/20" />
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
+                  <div className="w-2 h-2 rounded-full bg-muted-foreground/30" />
                 </div>
               </div>
 
               <div className="space-y-6">
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('form_destination')}</label>
-                  <div className="w-full bg-black border border-white/10 rounded-xl p-3.5 flex items-center gap-3 cursor-default">
+                  <div className="w-full bg-secondary border border-border rounded-xl p-3.5 flex items-center gap-3 cursor-default">
                     <span className="text-xl">🇨🇮</span>
-                    <span className="text-white text-sm font-medium">Côte d'Ivoire</span>
+                    <span className="text-foreground text-sm font-medium">Côte d'Ivoire</span>
                   </div>
                 </div>
 
@@ -127,7 +127,7 @@ export function Hero() {
                   <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('form_network')}</label>
                   <div className="grid grid-cols-4 gap-2">
                     {['Orange', 'MTN', 'Wave', 'Moov'].map((op, i) => (
-                      <div key={op} className={`text-center py-2 rounded-lg border text-xs font-medium transition-colors cursor-default ${i === 0 ? 'bg-primary/10 border-primary text-primary' : 'bg-black border-white/10 text-muted-foreground hover:bg-white/5'}`}>
+                      <div key={op} className={`text-center py-2 rounded-lg border text-xs font-medium transition-colors cursor-default ${i === 0 ? 'bg-primary/10 border-primary text-primary' : 'bg-secondary border-border text-muted-foreground hover:bg-muted'}`}>
                         {op}
                       </div>
                     ))}
@@ -141,7 +141,7 @@ export function Hero() {
                       type="text"
                       value="50 000"
                       readOnly
-                      className="w-full bg-black border border-white/10 rounded-xl p-4 pr-16 text-2xl font-mono text-white focus:outline-none"
+                      className="w-full bg-secondary border border-border rounded-xl p-4 pr-16 text-2xl font-mono text-foreground focus:outline-none"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
                       FCFA
@@ -157,34 +157,34 @@ export function Hero() {
                         <SiTether size={16} />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-white">USDT</div>
+                        <div className="text-sm font-semibold text-foreground">USDT</div>
                         <div className="text-[10px] text-muted-foreground">BEP-20</div>
                       </div>
                     </div>
-                    <div className="bg-black border border-white/10 rounded-xl p-3 flex items-center gap-3 opacity-50 cursor-default">
+                    <div className="bg-secondary border border-border rounded-xl p-3 flex items-center gap-3 opacity-50 cursor-default">
                       <div className="w-8 h-8 rounded-full bg-[#F7931A]/20 flex items-center justify-center text-[#F7931A]">
                         <SiBitcoin size={16} />
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-white">BTC</div>
+                        <div className="text-sm font-semibold text-foreground">BTC</div>
                         <div className="text-[10px] text-muted-foreground">Lightning</div>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-black/50 rounded-xl p-4 space-y-2">
+                <div className="bg-muted/50 rounded-xl p-4 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{t('form_youPay')}</span>
-                    <span className="text-white font-mono">77.50 USDT</span>
+                    <span className="text-foreground font-mono">77.50 USDT</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{t('form_fee')}</span>
-                    <span className="text-white font-mono">0.78 USDT</span>
+                    <span className="text-foreground font-mono">0.78 USDT</span>
                   </div>
                 </div>
 
-                <Button className="w-full h-14 rounded-xl bg-primary text-black hover:bg-primary/90 font-bold text-lg shadow-[0_0_20px_rgba(0,230,118,0.2)]">
+                <Button className="w-full h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-lg shadow-[0_0_20px_rgba(0,230,118,0.2)]">
                   {t('form_generate')} <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
 

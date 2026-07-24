@@ -6,7 +6,7 @@ export function Footer() {
   const { t } = useTranslation();
 
   return (
-    <footer className="border-t border-white/5 bg-black py-16 relative overflow-hidden">
+    <footer className="border-t border-border/50 bg-background py-16 relative overflow-hidden">
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/5 blur-[120px] pointer-events-none rounded-full" />
 
       <div className="container mx-auto px-4 relative z-10">
@@ -15,7 +15,7 @@ export function Footer() {
           <div className="md:col-span-1 space-y-4">
             <Link href="/" className="flex items-center gap-1.5">
               <img src={swiftPayLogo} alt="SwiftPay Logo" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold tracking-tight text-white">
+              <span className="text-xl font-bold tracking-tight text-foreground">
                 Swift<span className="text-primary">Pay</span>
               </span>
             </Link>
@@ -25,7 +25,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4">{t('footer_product')}</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t('footer_product')}</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li><a href="#how-it-works" className="hover:text-primary transition-colors">{t('footer_hiw')}</a></li>
               <li><a href="#networks" className="hover:text-primary transition-colors">{t('footer_networks')}</a></li>
@@ -35,7 +35,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4">{t('footer_company')}</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t('footer_company')}</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li><Link href="/" className="hover:text-primary transition-colors">{t('footer_about')}</Link></li>
               <li><Link href="/" className="hover:text-primary transition-colors">{t('footer_careers')}</Link></li>
@@ -45,7 +45,7 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="font-semibold text-white mb-4">{t('footer_legal')}</h4>
+            <h4 className="font-semibold text-foreground mb-4">{t('footer_legal')}</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li><Link href="/" className="hover:text-primary transition-colors">{t('footer_terms')}</Link></li>
               <li><Link href="/" className="hover:text-primary transition-colors">{t('footer_privacy')}</Link></li>
@@ -55,7 +55,7 @@ export function Footer() {
 
         </div>
 
-        <div className="mt-16 pt-8 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mt-16 pt-8 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-muted-foreground text-sm">
             {t('footer_rights')}
           </p>
