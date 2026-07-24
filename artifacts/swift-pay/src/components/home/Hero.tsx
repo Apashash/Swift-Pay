@@ -103,29 +103,15 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.35 }}
               className="mb-3 flex justify-center"
             >
-              {/* Spinning rainbow ring wrapper */}
-              <div className="relative inline-flex items-center justify-center">
-                {/* Animated conic gradient ring */}
-                <div
-                  className="absolute inset-[-2px] rounded-full animate-spin"
-                  style={{
-                    background: 'conic-gradient(from 0deg, #f97316, #facc15, #00e676, #3b82f6, #a855f7, #ec4899, #f97316)',
-                    animationDuration: '3s',
-                  }}
-                />
-                {/* Mask to show only the border */}
-                <div className="absolute inset-[2px] rounded-full bg-background" />
-                {/* Button */}
-                <button
-                  onClick={() => navigate('/verifier')}
-                  className="relative flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-orange-500 hover:text-orange-400 transition-colors group bg-background z-10"
-                >
-                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
-                    <Search className="w-3 h-3 text-orange-500" />
-                  </span>
-                  Vérifier ma transaction
-                </button>
-              </div>
+              <button
+                onClick={() => navigate('/verifier')}
+                className="flex items-center gap-2 text-sm font-semibold text-orange-500 hover:text-orange-400 transition-colors group"
+              >
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-orange-500/10 group-hover:bg-orange-500/20 transition-colors">
+                  <Search className="w-3 h-3 text-orange-500" />
+                </span>
+                Vérifier ma transaction
+              </button>
             </motion.div>
             <div className="relative">
               <PaymentForm />
