@@ -1,21 +1,27 @@
 import { motion } from 'framer-motion';
 import { SiBitcoin, SiEthereum, SiTether } from 'react-icons/si';
 import { useTranslation } from '@/lib/i18n';
+import imgOrange from '@/assets/operators/orange.png';
+import imgMtn    from '@/assets/operators/mtn.png';
+import imgWave   from '@/assets/operators/wave.webp';
+import imgMoov   from '@/assets/operators/moov.png';
 
 const operators = [
-  { name: 'Orange Money', color: '#FF7900' },
-  { name: 'MTN MoMo',    color: '#FFCC00' },
-  { name: 'Wave',        color: '#00B1FF' },
-  { name: 'Moov Money',  color: '#0055A5' },
+  { name: 'Orange Money', logo: imgOrange, bg: '#FF7900' },
+  { name: 'MTN MoMo',    logo: imgMtn,    bg: '#FFCC00' },
+  { name: 'Wave',        logo: imgWave,   bg: '#00B1FF' },
+  { name: 'Moov Money',  logo: imgMoov,   bg: '#0055A5' },
 ];
 
 const countries = [
   { flag: '🇨🇮', name: "Côte d'Ivoire" },
-  { flag: '🇸🇳', name: 'Senegal' },
-  { flag: '🇧🇯', name: 'Benin' },
+  { flag: '🇨🇲', name: 'Cameroun' },
+  { flag: '🇸🇳', name: 'Sénégal' },
+  { flag: '🇧🇯', name: 'Bénin' },
   { flag: '🇹🇬', name: 'Togo' },
   { flag: '🇧🇫', name: 'Burkina Faso' },
   { flag: '🇲🇱', name: 'Mali' },
+  { flag: '🇬🇳', name: 'Guinée' },
 ];
 
 export function SupportedNetworks() {
@@ -75,8 +81,11 @@ export function SupportedNetworks() {
                 transition={{ duration: 0.4, delay: i * 0.1 }}
                 className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:bg-secondary transition-colors aspect-square"
               >
-                <div className="w-16 h-16 rounded-2xl bg-secondary border border-border/50 flex items-center justify-center text-3xl font-bold" style={{ color: op.color }}>
-                  {op.name.charAt(0)}
+                <div
+                  className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center"
+                  style={{ background: op.bg }}
+                >
+                  <img src={op.logo} alt={op.name} className="w-full h-full object-contain p-1" />
                 </div>
                 <span className="text-foreground font-medium">{op.name}</span>
               </motion.div>
