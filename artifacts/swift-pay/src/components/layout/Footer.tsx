@@ -13,7 +13,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8">
 
           <div className="md:col-span-1 space-y-4">
-            <Link href="/" className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-1.5">
               <img src={swiftPayLogo} alt="SwiftPay Logo" className="w-8 h-8 object-contain" />
               <span className="text-xl font-bold tracking-tight text-white">
                 Swift<span className="text-primary">Pay</span>

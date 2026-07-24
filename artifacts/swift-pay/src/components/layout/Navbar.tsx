@@ -30,7 +30,7 @@ export function Navbar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-3 group">
+          <Link href="/" className="flex items-center gap-1.5 group">
             <img
               src={swiftPayLogo}
               alt="SwiftPay Logo"
@@ -137,7 +137,7 @@ export function Navbar() {
               className="fixed top-0 right-0 h-full w-80 z-50 bg-[#0e0e0e] border-l border-white/10 flex flex-col shadow-2xl"
             >
               <div className="flex items-center justify-between px-6 h-20 border-b border-white/5">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <img src={swiftPayLogo} alt="SwiftPay" className="w-8 h-8 object-contain" />
                   <span className="font-bold text-white">Swift<span className="text-primary">Pay</span></span>
                 </div>
