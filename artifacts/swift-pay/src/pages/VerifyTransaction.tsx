@@ -169,26 +169,16 @@ export default function VerifyTransaction() {
             Numéro du bénéficiaire ou référence
           </label>
 
-          {/* Input row */}
-          <div className="flex gap-2 mb-3">
+          {/* Input */}
+          <div className="mb-3">
             <input
               type="text"
               value={query}
               onChange={e => setQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleCheck()}
               placeholder="07 00 00 00 00  ou  SP-OK-20250724-001"
-              className="flex-1 bg-secondary border border-border rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-3.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
             />
-            <Button
-              onClick={handleCheck}
-              disabled={!query.trim() || loading}
-              className="rounded-xl px-4 h-auto bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_20px_rgba(0,230,118,0.25)] hover:shadow-[0_0_30px_rgba(0,230,118,0.5)] disabled:opacity-40 disabled:shadow-none transition-all"
-            >
-              {loading
-                ? <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                : <Search className="w-4 h-4" />
-              }
-            </Button>
           </div>
 
           <p className="text-[11px] text-muted-foreground">
