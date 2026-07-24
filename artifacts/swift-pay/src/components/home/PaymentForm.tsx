@@ -56,7 +56,7 @@ export function PaymentForm() {
   // ── State ──
   const [countryCode, setCountryCode]   = useState('CI');
   const [operator, setOperator]         = useState('Orange');
-  const [rawAmount, setRawAmount]       = useState('50000');
+  const [rawAmount, setRawAmount]       = useState('');
   const [crypto, setCrypto]             = useState<Crypto>('USDT');
   const [phone, setPhone]               = useState('');
   const [step, setStep]                 = useState<Step>('form');
