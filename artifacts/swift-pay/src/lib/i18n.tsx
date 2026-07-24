@@ -32,7 +32,7 @@ export const translations = {
     hero_stat2: 'Inscription rapide',
     hero_stat3: 'Disponible 24h/24',
     // Payment form
-    form_title: "Envoyer de l'argent",
+    form_title: "Dépenser les crypto",
     form_destination: 'Destination',
     form_network: 'Réseau mobile',
     form_amount: 'Montant à recevoir',
@@ -156,7 +156,7 @@ export const translations = {
     hero_stat2: 'Fast Sign-up',
     hero_stat3: '24/7 Available',
     // Payment form
-    form_title: 'Send Money',
+    form_title: 'Spend Crypto',
     form_destination: 'Destination',
     form_network: 'Mobile Network',
     form_amount: 'Amount to Receive',
