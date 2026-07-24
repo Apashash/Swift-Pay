@@ -417,6 +417,20 @@ export function PaymentForm() {
               </div>
             </div>
 
+            {/* Phone number */}
+            <div className="space-y-2">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Numéro du bénéficiaire
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="ex: +225 07 00 00 00 00"
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground/50"
+              />
+            </div>
+
             {/* Summary row */}
             <div className="bg-muted/50 rounded-xl p-4 space-y-2">
               <div className="flex justify-between text-sm">
@@ -436,7 +450,7 @@ export function PaymentForm() {
             {/* CTA */}
             <Button
               onClick={handleGenerate}
-              disabled={fcfaAmount <= 0}
+              disabled={fcfaAmount <= 0 || phone.trim().length < 8}
               className="w-full h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-base shadow-[0_0_20px_rgba(0,230,118,0.2)] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {t('form_generate')} <ArrowRight className="ml-2 w-5 h-5" />
@@ -461,6 +475,7 @@ export function PaymentForm() {
             <div className="bg-secondary/60 border border-border rounded-xl divide-y divide-border">
               <RecapRow label="Pays" value={`${country.flag} ${country.name}`} />
               <RecapRow label="Réseau" value={operator} />
+              <RecapRow label="Bénéficiaire" value={phone} />
               <RecapRow
                 label="Montant reçu"
                 value={`${formatFcfa(rawAmount)} ${country.currency}`}
@@ -476,30 +491,10 @@ export function PaymentForm() {
               />
             </div>
 
-            {/* Phone number */}
-            <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Numéro du destinataire
-              </label>
-              <div className="relative">
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  placeholder="ex: +225 07 00 00 00 00"
-                  className="w-full bg-secondary border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground/50"
-                />
-              </div>
-              <p className="text-[11px] text-muted-foreground">
-                Le destinataire recevra {formatFcfa(rawAmount)} {country.currency} sur son compte {operator}.
-              </p>
-            </div>
-
             {/* Actions */}
             <Button
               onClick={handleConfirm}
-              disabled={phone.trim().length < 8}
-              className="w-full h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-base shadow-[0_0_20px_rgba(0,230,118,0.2)] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+              className="w-full h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-base shadow-[0_0_20px_rgba(0,230,118,0.2)] transition-all"
             >
               Valider et générer l'adresse <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
