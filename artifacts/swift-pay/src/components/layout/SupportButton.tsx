@@ -10,7 +10,7 @@ export function SupportButton() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-20 right-6 z-50 flex flex-col items-end gap-3">
 
       {/* Options — WhatsApp + Telegram */}
       <AnimatePresence>
@@ -61,7 +61,7 @@ export function SupportButton() {
       <motion.button
         onClick={() => setOpen(v => !v)}
         whileTap={{ scale: 0.92 }}
-        className="w-20 h-20 flex items-center justify-center focus:outline-none"
+        className="w-14 h-14 flex items-center justify-center focus:outline-none"
         aria-label="Support"
       >
         <AnimatePresence mode="wait">
@@ -86,7 +86,7 @@ export function SupportButton() {
               <img
                 src={supportIcon}
                 alt="Support"
-                className="w-20 h-20 rounded-full object-cover shadow-[0_0_20px_rgba(0,200,100,0.4)]"
+                className="w-14 h-14 rounded-full object-cover shadow-[0_0_20px_rgba(0,200,100,0.4)]"
               />
             </motion.div>
           )}
