@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion';
 import { SiBitcoin, SiEthereum, SiTether } from 'react-icons/si';
+import { useTranslation } from '@/lib/i18n';
 
 const operators = [
   { name: 'Orange Money', color: '#FF7900' },
-  { name: 'MTN MoMo', color: '#FFCC00' },
-  { name: 'Wave', color: '#00B1FF' },
-  { name: 'Moov Money', color: '#0055A5' }
+  { name: 'MTN MoMo',    color: '#FFCC00' },
+  { name: 'Wave',        color: '#00B1FF' },
+  { name: 'Moov Money',  color: '#0055A5' },
 ];
 
 const countries = [
@@ -18,23 +19,26 @@ const countries = [
 ];
 
 export function SupportedNetworks() {
+  const { t } = useTranslation();
+
   return (
     <section id="networks" className="py-24 bg-black/50 border-t border-white/5">
       <div className="container mx-auto px-4">
-        
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          
+
           <div>
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 tracking-tight">
-              A massive network,<br/> instantly available.
+              {t('sn_title').split('\n').map((line, i) => (
+                <span key={i} className="block">{line}</span>
+              ))}
             </h2>
             <p className="text-muted-foreground text-lg mb-10">
-              We've integrated with the major telcos across the UEMOA region so you don't have to worry about routing.
+              {t('sn_desc')}
             </p>
-            
+
             <div className="space-y-8">
               <div>
-                <h4 className="text-sm font-medium text-white uppercase tracking-wider mb-4">Accepted Crypto</h4>
+                <h4 className="text-sm font-medium text-white uppercase tracking-wider mb-4">{t('sn_crypto')}</h4>
                 <div className="flex flex-wrap gap-4">
                   <div className="flex items-center gap-2 bg-[#111111] border border-white/10 rounded-full px-4 py-2">
                     <SiTether className="text-[#26A17B]" /> <span className="text-white text-sm font-medium">USDT (BEP-20, TRC-20)</span>
@@ -47,9 +51,9 @@ export function SupportedNetworks() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
-                <h4 className="text-sm font-medium text-white uppercase tracking-wider mb-4">Supported Countries</h4>
+                <h4 className="text-sm font-medium text-white uppercase tracking-wider mb-4">{t('sn_countries')}</h4>
                 <div className="flex flex-wrap gap-3">
                   {countries.map(c => (
                     <div key={c.name} className="flex items-center gap-2 bg-[#111111] border border-white/10 rounded-full px-3 py-1.5 opacity-70 hover:opacity-100 transition-opacity cursor-default">
@@ -60,7 +64,7 @@ export function SupportedNetworks() {
               </div>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4">
             {operators.map((op, i) => (
               <motion.div
