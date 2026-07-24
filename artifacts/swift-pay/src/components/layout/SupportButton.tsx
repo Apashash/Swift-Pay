@@ -60,7 +60,7 @@ export function SupportButton() {
       <motion.button
         onClick={() => setOpen(v => !v)}
         whileTap={{ scale: 0.92 }}
-        className="w-14 h-14 flex items-center justify-center focus:outline-none"
+        className="w-20 h-20 flex items-center justify-center focus:outline-none"
         aria-label="Support"
       >
         <AnimatePresence mode="wait">
@@ -72,7 +72,7 @@ export function SupportButton() {
               exit={{ opacity: 0, rotate: 90, scale: 0.7 }}
               transition={{ duration: 0.2 }}
             >
-              <X className="w-8 h-8 text-primary drop-shadow-[0_0_8px_rgba(0,230,118,0.7)]" />
+              <X className="w-10 h-10 text-primary drop-shadow-[0_0_8px_rgba(0,230,118,0.7)]" />
             </motion.div>
           ) : (
             <motion.div
@@ -83,7 +83,7 @@ export function SupportButton() {
               transition={{ duration: 0.2 }}
             >
               {/* Support agent SVG icon — green, no background */}
-              <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="72" height="72" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="26" cy="20" r="8" stroke="#00e676" strokeWidth="2.2" fill="none"/>
                 <path d="M26 12C21.58 12 18 15.58 18 20s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" fill="#00e676" fillOpacity="0.12"/>
                 <path d="M14 36c0-4 5.37-7 12-7s12 3 12 7" stroke="#00e676" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
