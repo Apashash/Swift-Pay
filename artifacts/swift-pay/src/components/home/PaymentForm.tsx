@@ -7,6 +7,8 @@ import {
   ChevronDown,
   ArrowLeft,
   Check,
+  Search,
+  X,
 } from 'lucide-react';
 import { SiBitcoin, SiTether } from 'react-icons/si';
 import { useTranslation } from '@/lib/i18n';
@@ -61,9 +63,19 @@ export function PaymentForm() {
   const [phone, setPhone]               = useState('');
   const [step, setStep]                 = useState<Step>('form');
   const [showCountryMenu, setShowCountryMenu] = useState(false);
+  const [countrySearch, setCountrySearch] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const country = COUNTRIES.find(c => c.code === countryCode) ?? COUNTRIES[0];
+
+  const filteredCountries = useMemo(() => {
+    const q = countrySearch.trim().toLowerCase();
+    if (!q) return COUNTRIES;
+    return COUNTRIES.filter(
+      c => c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+    );
+  }, [countrySearch]);
 
   // Reset operator when country changes
   const handleCountryChange = (code: string) => {
@@ -71,6 +83,13 @@ export function PaymentForm() {
     setCountryCode(code);
     setOperator(c.operators[0]);
     setShowCountryMenu(false);
+    setCountrySearch('');
+  };
+
+  const handleOpenCountryMenu = () => {
+    setShowCountryMenu(v => !v);
+    setCountrySearch('');
+    setTimeout(() => searchRef.current?.focus(), 80);
   };
 
   // Close country menu on outside click
@@ -78,6 +97,7 @@ export function PaymentForm() {
     const handler = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setShowCountryMenu(false);
+        setCountrySearch('');
       }
     };
     document.addEventListener('mousedown', handler);
@@ -176,40 +196,88 @@ export function PaymentForm() {
                 {t('form_destination')}
               </label>
               <div className="relative" ref={menuRef}>
+                {/* Trigger */}
                 <button
-                  onClick={() => setShowCountryMenu(v => !v)}
-                  className="w-full bg-secondary border border-border rounded-xl p-3.5 flex items-center gap-3 hover:bg-muted transition-colors"
+                  onClick={handleOpenCountryMenu}
+                  className={cn(
+                    'w-full bg-secondary border rounded-xl p-3.5 flex items-center gap-3 transition-all duration-200',
+                    showCountryMenu
+                      ? 'border-primary/60 ring-2 ring-primary/20 bg-secondary'
+                      : 'border-border hover:border-primary/30 hover:bg-muted'
+                  )}
                 >
-                  <span className="text-xl">{country.flag}</span>
+                  <span className="text-xl leading-none">{country.flag}</span>
                   <span className="text-foreground text-sm font-medium flex-1 text-left">{country.name}</span>
-                  <ChevronDown className={cn('w-4 h-4 text-muted-foreground transition-transform duration-200', showCountryMenu && 'rotate-180')} />
+                  <span className="text-[10px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                    {country.code}
+                  </span>
+                  <ChevronDown className={cn(
+                    'w-4 h-4 text-muted-foreground transition-transform duration-200',
+                    showCountryMenu && 'rotate-180 text-primary'
+                  )} />
                 </button>
 
+                {/* Dropdown */}
                 <AnimatePresence>
                   {showCountryMenu && (
                     <motion.div
-                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                      initial={{ opacity: 0, y: -6, scale: 0.98 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute z-50 w-full mt-1 bg-card border border-border rounded-xl shadow-xl overflow-hidden"
+                      exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                      transition={{ duration: 0.15, ease: 'easeOut' }}
+                      className="absolute z-50 w-full mt-2 bg-card border border-border rounded-2xl shadow-2xl overflow-hidden"
+                      style={{ boxShadow: '0 8px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,230,118,0.08)' }}
                     >
-                      {COUNTRIES.map(c => (
-                        <button
-                          key={c.code}
-                          onClick={() => handleCountryChange(c.code)}
-                          className={cn(
-                            'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors',
-                            c.code === countryCode
-                              ? 'bg-primary/10 text-primary font-medium'
-                              : 'text-foreground hover:bg-secondary'
+                      {/* Search bar */}
+                      <div className="p-3 border-b border-border">
+                        <div className="flex items-center gap-2 bg-secondary rounded-xl px-3 py-2 ring-1 ring-transparent focus-within:ring-primary/40 transition-all">
+                          <Search className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                          <input
+                            ref={searchRef}
+                            type="text"
+                            value={countrySearch}
+                            onChange={e => setCountrySearch(e.target.value)}
+                            placeholder="Rechercher par nom ou code…"
+                            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none"
+                          />
+                          {countrySearch && (
+                            <button onClick={() => setCountrySearch('')} className="text-muted-foreground hover:text-foreground transition-colors">
+                              <X className="w-3.5 h-3.5" />
+                            </button>
                           )}
-                        >
-                          <span className="text-base">{c.flag}</span>
-                          <span className="flex-1 text-left">{c.name}</span>
-                          {c.code === countryCode && <Check className="w-4 h-4" />}
-                        </button>
-                      ))}
+                        </div>
+                      </div>
+
+                      {/* Country list */}
+                      <div className="max-h-56 overflow-y-auto">
+                        {filteredCountries.length === 0 ? (
+                          <div className="px-4 py-6 text-center text-sm text-muted-foreground">
+                            Aucun pays trouvé
+                          </div>
+                        ) : (
+                          filteredCountries.map((c, i) => (
+                            <button
+                              key={c.code}
+                              onClick={() => handleCountryChange(c.code)}
+                              className={cn(
+                                'w-full flex items-center gap-3 px-4 py-3 text-sm transition-colors border-b border-border/40 last:border-0',
+                                c.code === countryCode
+                                  ? 'bg-primary/10 text-primary'
+                                  : 'text-foreground hover:bg-secondary'
+                              )}
+                            >
+                              <span className="text-lg leading-none">{c.flag}</span>
+                              <span className="flex-1 text-left font-medium">{c.name}</span>
+                              <span className="text-[10px] font-mono text-muted-foreground bg-muted/80 px-1.5 py-0.5 rounded">
+                                {c.code}
+                              </span>
+                              {c.code === countryCode && (
+                                <Check className="w-4 h-4 text-primary flex-shrink-0" />
+                              )}
+                            </button>
+                          ))
+                        )}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
