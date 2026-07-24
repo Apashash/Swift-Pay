@@ -3,7 +3,7 @@ import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogIn, UserPlus, ArrowLeftRight, HeadphonesIcon, ChevronRight, Building2, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import swiftPayLogo from "@assets/0e799f8d-f01e-4a08-aadb-5bf05adc5222_1784919743862.jpeg";
+import swiftPayLogo from "@assets/swift-logo.png";
 import { useTranslation, type Lang } from '@/lib/i18n';
 
 export function Navbar() {
@@ -32,7 +32,7 @@ export function Navbar() {
             <img
               src={swiftPayLogo}
               alt="SwiftPay Logo"
-              className="w-10 h-10 rounded shadow-[0_0_15px_rgba(0,230,118,0.3)] transition-all group-hover:shadow-[0_0_25px_rgba(0,230,118,0.5)]"
+              className="w-10 h-10 object-contain transition-all drop-shadow-[0_0_8px_rgba(0,230,118,0.4)] group-hover:drop-shadow-[0_0_14px_rgba(0,230,118,0.6)]"
             />
             <span className="text-xl font-bold tracking-tight text-white">
               Swift<span className="text-primary">Pay</span>
@@ -136,7 +136,7 @@ export function Navbar() {
             >
               <div className="flex items-center justify-between px-6 h-20 border-b border-white/5">
                 <div className="flex items-center gap-2">
-                  <img src={swiftPayLogo} alt="SwiftPay" className="w-8 h-8 rounded" />
+                  <img src={swiftPayLogo} alt="SwiftPay" className="w-8 h-8 object-contain" />
                   <span className="font-bold text-white">Swift<span className="text-primary">Pay</span></span>
                 </div>
                 <button

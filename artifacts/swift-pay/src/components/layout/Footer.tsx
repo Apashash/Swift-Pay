@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import swiftPayLogo from "@assets/0e799f8d-f01e-4a08-aadb-5bf05adc5222_1784919743862.jpeg";
+import swiftPayLogo from "@assets/swift-logo.png";
 import { useTranslation } from '@/lib/i18n';
 
 export function Footer() {
@@ -14,7 +14,7 @@ export function Footer() {
 
           <div className="md:col-span-1 space-y-4">
             <Link href="/" className="flex items-center gap-3">
-              <img src={swiftPayLogo} alt="SwiftPay Logo" className="w-8 h-8 rounded" />
+              <img src={swiftPayLogo} alt="SwiftPay Logo" className="w-8 h-8 object-contain" />
               <span className="text-xl font-bold tracking-tight text-white">
                 Swift<span className="text-primary">Pay</span>
               </span>
