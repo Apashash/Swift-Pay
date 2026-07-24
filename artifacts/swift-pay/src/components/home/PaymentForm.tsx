@@ -304,10 +304,7 @@ export function PaymentForm() {
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {t('form_network')}
               </label>
-              <div className={cn(
-                'grid gap-2',
-                country.operators.length <= 2 ? 'grid-cols-2' : 'grid-cols-4'
-              )}>
+              <div className="grid grid-cols-2 gap-2">
                 {country.operators.map(opId => {
                   const op = OPERATORS[opId] ?? { id: opId, name: opId, logo: '', bg: '#333' };
                   const selected = operator === opId;
@@ -316,42 +313,42 @@ export function PaymentForm() {
                       key={opId}
                       onClick={() => setOperator(opId)}
                       className={cn(
-                        'relative flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 px-1 transition-all duration-200 overflow-hidden',
+                        'relative flex items-center gap-3 rounded-xl border px-3 py-2.5 transition-all duration-200',
                         selected
-                          ? 'border-primary shadow-[0_0_12px_rgba(0,230,118,0.25)] scale-[1.03]'
-                          : 'border-border hover:border-primary/30 hover:scale-[1.02]'
+                          ? 'border-primary shadow-[0_0_12px_rgba(0,230,118,0.25)]'
+                          : 'border-border hover:border-primary/30'
                       )}
                       style={{ background: selected ? `${op.bg}22` : 'var(--color-secondary)' }}
                     >
                       {/* Logo or coloured initial */}
                       {op.logo ? (
                         <div
-                          className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center"
+                          className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0"
                           style={{ background: op.bg }}
                         >
                           <img
                             src={op.logo}
                             alt={op.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain p-0.5"
                           />
                         </div>
                       ) : (
                         <div
-                          className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs"
+                          className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs flex-shrink-0"
                           style={{ background: op.bg }}
                         >
                           {op.name.slice(0, 3).toUpperCase()}
                         </div>
                       )}
                       <span className={cn(
-                        'text-[10px] font-semibold leading-tight text-center',
-                        selected ? 'text-primary' : 'text-muted-foreground'
+                        'text-xs font-semibold leading-tight text-left',
+                        selected ? 'text-primary' : 'text-foreground'
                       )}>
-                        {op.id}
+                        {op.name}
                       </span>
-                      {/* Selected ring */}
+                      {/* Selected dot */}
                       {selected && (
-                        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary shadow-[0_0_4px_rgba(0,230,118,0.8)]" />
+                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary shadow-[0_0_4px_rgba(0,230,118,0.8)]" />
                       )}
                     </button>
                   );
