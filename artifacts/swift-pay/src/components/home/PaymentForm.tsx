@@ -334,7 +334,7 @@ export function PaymentForm() {
                           <img
                             src={op.logo}
                             alt={op.name}
-                            className="w-full h-full object-contain p-0.5"
+                            className="w-full h-full object-cover"
                           />
                         </div>
                       ) : (

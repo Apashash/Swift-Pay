@@ -5,12 +5,18 @@ import imgOrange from '@/assets/operators/orange.png';
 import imgMtn    from '@/assets/operators/mtn.png';
 import imgWave   from '@/assets/operators/wave.webp';
 import imgMoov   from '@/assets/operators/moov.png';
+import imgTmoney from '@/assets/operators/tmoney.png';
 
 const operators = [
   { name: 'Orange Money', logo: imgOrange, bg: '#FF7900' },
   { name: 'MTN MoMo',    logo: imgMtn,    bg: '#FFCC00' },
   { name: 'Wave',        logo: imgWave,   bg: '#00B1FF' },
-  { name: 'Moov Money',  logo: imgMoov,   bg: '#0055A5' },
+  { name: 'Moov Money',  logo: imgMoov,   bg: '#f06000' },
+  { name: 'T-Money',     logo: imgTmoney, bg: '#ffd700' },
+  { name: 'Free Money',  logo: null,      bg: '#e20025' },
+  { name: 'Expresso',    logo: null,      bg: '#005baa' },
+  { name: 'Flooz',       logo: null,      bg: '#009a44' },
+  { name: 'Cellcom',     logo: null,      bg: '#004a97' },
 ];
 
 const countries = [
@@ -71,23 +77,29 @@ export function SupportedNetworks() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             {operators.map((op, i) => (
               <motion.div
                 key={op.name}
                 initial={{ opacity: 0, scale: 0.9 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.1 }}
-                className="bg-card border border-border rounded-2xl p-8 flex flex-col items-center justify-center gap-4 hover:bg-secondary transition-colors aspect-square"
+                transition={{ duration: 0.4, delay: i * 0.07 }}
+                className="bg-card border border-border rounded-2xl p-4 flex flex-col items-center justify-center gap-3 hover:bg-secondary transition-colors aspect-square"
               >
                 <div
-                  className="w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center"
+                  className="w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0"
                   style={{ background: op.bg }}
                 >
-                  <img src={op.logo} alt={op.name} className="w-full h-full object-contain p-1" />
+                  {op.logo ? (
+                    <img src={op.logo} alt={op.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-white font-bold text-xs text-center px-1 leading-tight">
+                      {op.name.split(' ')[0].slice(0, 4).toUpperCase()}
+                    </span>
+                  )}
                 </div>
-                <span className="text-foreground font-medium">{op.name}</span>
+                <span className="text-foreground font-medium text-xs text-center leading-tight">{op.name}</span>
               </motion.div>
             ))}
           </div>
