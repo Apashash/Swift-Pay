@@ -16,6 +16,20 @@ import { cn } from '@/lib/utils';
 
 // ── Country / operator data ──────────────────────────────────────────────────
 
+type Operator = { id: string; name: string; logo: string; bg: string };
+
+const OPERATORS: Record<string, Operator> = {
+  Orange:    { id: 'Orange',    name: 'Orange Money', logo: '/operators/orange.png',  bg: '#1c1c1e' },
+  MTN:       { id: 'MTN',       name: 'MTN',          logo: '/operators/mtn.png',     bg: '#ffcc00' },
+  Wave:      { id: 'Wave',      name: 'Wave',         logo: '/operators/wave.webp',   bg: '#00b2ff' },
+  Moov:      { id: 'Moov',      name: 'Moov Money',   logo: '/operators/moov.png',    bg: '#f06000' },
+  TMoney:    { id: 'TMoney',    name: 'T-Money',      logo: '/operators/tmoney.png',  bg: '#ffd700' },
+  Free:      { id: 'Free',      name: 'Free Money',   logo: '',                       bg: '#e20025' },
+  Expresso:  { id: 'Expresso',  name: 'Expresso',     logo: '',                       bg: '#005baa' },
+  Cellcom:   { id: 'Cellcom',   name: 'Cellcom',      logo: '',                       bg: '#004a97' },
+  Flooz:     { id: 'Flooz',     name: 'Flooz',        logo: '',                       bg: '#009a44' },
+};
+
 const COUNTRIES = [
   { code: 'CI', flag: '🇨🇮', name: "Côte d'Ivoire", currency: 'FCFA', operators: ['Orange', 'MTN', 'Wave', 'Moov'] },
   { code: 'SN', flag: '🇸🇳', name: 'Sénégal',       currency: 'FCFA', operators: ['Orange', 'Free', 'Wave', 'Expresso'] },
@@ -23,7 +37,7 @@ const COUNTRIES = [
   { code: 'BF', flag: '🇧🇫', name: 'Burkina Faso',   currency: 'FCFA', operators: ['Orange', 'Moov'] },
   { code: 'GN', flag: '🇬🇳', name: 'Guinée',         currency: 'GNF',  operators: ['Orange', 'MTN', 'Cellcom'] },
   { code: 'BJ', flag: '🇧🇯', name: 'Bénin',          currency: 'FCFA', operators: ['MTN', 'Moov'] },
-  { code: 'TG', flag: '🇹🇬', name: 'Togo',           currency: 'FCFA', operators: ['T-Money', 'Flooz'] },
+  { code: 'TG', flag: '🇹🇬', name: 'Togo',           currency: 'FCFA', operators: ['Orange', 'TMoney', 'Flooz'] },
 ];
 
 // ── Exchange rates ────────────────────────────────────────────────────────────
@@ -293,20 +307,54 @@ export function PaymentForm() {
                 'grid gap-2',
                 country.operators.length <= 2 ? 'grid-cols-2' : 'grid-cols-4'
               )}>
-                {country.operators.map(op => (
-                  <button
-                    key={op}
-                    onClick={() => setOperator(op)}
-                    className={cn(
-                      'text-center py-2 rounded-lg border text-xs font-medium transition-all',
-                      operator === op
-                        ? 'bg-primary/10 border-primary text-primary shadow-[0_0_8px_rgba(0,230,118,0.2)]'
-                        : 'bg-secondary border-border text-muted-foreground hover:bg-muted hover:text-foreground'
-                    )}
-                  >
-                    {op}
-                  </button>
-                ))}
+                {country.operators.map(opId => {
+                  const op = OPERATORS[opId] ?? { id: opId, name: opId, logo: '', bg: '#333' };
+                  const selected = operator === opId;
+                  return (
+                    <button
+                      key={opId}
+                      onClick={() => setOperator(opId)}
+                      className={cn(
+                        'relative flex flex-col items-center justify-center gap-1.5 rounded-xl border py-3 px-1 transition-all duration-200 overflow-hidden',
+                        selected
+                          ? 'border-primary shadow-[0_0_12px_rgba(0,230,118,0.25)] scale-[1.03]'
+                          : 'border-border hover:border-primary/30 hover:scale-[1.02]'
+                      )}
+                      style={{ background: selected ? `${op.bg}22` : 'var(--color-secondary)' }}
+                    >
+                      {/* Logo or coloured initial */}
+                      {op.logo ? (
+                        <div
+                          className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center"
+                          style={{ background: op.bg }}
+                        >
+                          <img
+                            src={op.logo}
+                            alt={op.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div
+                          className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-xs"
+                          style={{ background: op.bg }}
+                        >
+                          {op.name.slice(0, 3).toUpperCase()}
+                        </div>
+                      )}
+                      <span className={cn(
+                        'text-[10px] font-semibold leading-tight text-center',
+                        selected ? 'text-primary' : 'text-muted-foreground'
+                      )}>
+                        {op.id}
+                      </span>
+                      {/* Selected ring */}
+                      {selected && (
+                        <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary shadow-[0_0_4px_rgba(0,230,118,0.8)]" />
+                      )}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
