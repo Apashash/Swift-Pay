@@ -82,6 +82,7 @@ export function PaymentForm() {
   const [crypto, setCrypto]             = useState<Crypto>('USDT');
   const [phone, setPhone]               = useState('');
   const [step, setStep]                 = useState<Step>('form');
+  const [email, setEmail]               = useState('');
   const [showCountryMenu, setShowCountryMenu] = useState(false);
   const [countrySearch, setCountrySearch] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
@@ -488,6 +489,21 @@ export function PaymentForm() {
                 label="Total à envoyer"
                 value={`${formatAmount(cryptoTotal, crypto)} ${rate.label}`}
                 bold
+              />
+            </div>
+
+            {/* Email optionnel pour le reçu */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                E-mail pour le reçu
+                <span className="normal-case text-[10px] bg-muted px-1.5 py-0.5 rounded text-muted-foreground">Optionnel</span>
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="votre@email.com"
+                className="w-full bg-secondary border border-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
               />
             </div>
 
