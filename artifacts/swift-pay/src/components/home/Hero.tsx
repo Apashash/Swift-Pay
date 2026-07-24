@@ -38,15 +38,6 @@ export function Hero() {
           
           {/* Left Content */}
           <div className="max-w-2xl">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-muted-foreground mb-8"
-            >
-              <Zap className="w-3.5 h-3.5 text-primary" />
-              <span>Available in CI, BF, BJ, TG · Instant payments</span>
-            </motion.div>
             
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
