@@ -83,16 +83,6 @@ export function Hero() {
                 </a>
               </div>
 
-              {/* Ligne 2 : Vérifier transaction */}
-              <button
-                onClick={() => navigate('/verifier')}
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group"
-              >
-                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
-                  <Search className="w-3 h-3" />
-                </span>
-                Vérifier ma transaction
-              </button>
             </motion.div>
 
           </div>
@@ -109,6 +99,23 @@ export function Hero() {
             <div className="relative">
               <PaymentForm />
             </div>
+            {/* Vérifier transaction — sous le formulaire */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="mt-3 flex justify-center"
+            >
+              <button
+                onClick={() => navigate('/verifier')}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group"
+              >
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
+                  <Search className="w-3 h-3" />
+                </span>
+                Vérifier ma transaction
+              </button>
+            </motion.div>
           </motion.div>
 
         </div>
