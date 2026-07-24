@@ -426,7 +426,7 @@ export function PaymentForm() {
                 type="tel"
                 value={phone}
                 onChange={e => setPhone(e.target.value)}
-                placeholder="ex: +225 07 00 00 00 00"
+                placeholder="07 00 00 00 00"
                 className="w-full bg-secondary border border-border rounded-xl px-4 py-3.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all placeholder:text-muted-foreground/50"
               />
             </div>
