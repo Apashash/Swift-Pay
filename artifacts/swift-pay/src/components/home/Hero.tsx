@@ -65,24 +65,30 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12"
+              className="flex flex-col items-start gap-3 mb-6"
             >
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-14 px-8 text-lg rounded-xl shadow-[0_0_30px_rgba(0,230,118,0.3)] transition-all hover:shadow-[0_0_50px_rgba(0,230,118,0.5)]">
-                {t('hero_cta')}
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-              <Button size="lg" variant="ghost" className="h-14 px-8 text-lg rounded-xl hover:bg-secondary text-foreground">
-                {t('hero_learn')}
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
+              {/* Ligne 1 : CTA principal + lien En savoir plus */}
+              <div className="flex items-center gap-5">
+                <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-12 px-7 text-base rounded-xl shadow-[0_0_30px_rgba(0,230,118,0.3)] transition-all hover:shadow-[0_0_50px_rgba(0,230,118,0.5)]">
+                  {t('hero_cta')}
+                  <ArrowRight className="ml-2 w-4 h-4" />
+                </Button>
+                <a href="#how-it-works" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors group">
+                  {t('hero_learn')}
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                </a>
+              </div>
+
+              {/* Ligne 2 : Vérifier transaction */}
+              <button
                 onClick={() => navigate('/verifier')}
-                className="h-14 px-6 text-base rounded-xl border-border hover:border-primary/50 hover:text-primary text-muted-foreground gap-2"
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors group"
               >
-                <Search className="w-4 h-4" />
+                <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted group-hover:bg-primary/10 transition-colors">
+                  <Search className="w-3 h-3" />
+                </span>
                 Vérifier ma transaction
-              </Button>
+              </button>
             </motion.div>
 
           </div>
