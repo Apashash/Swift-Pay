@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
+import supportIcon from '@/assets/support-icon.jpeg';
 
 const WHATSAPP_URL = 'https://wa.me/';
 const TELEGRAM_URL  = 'https://t.me/';
@@ -82,20 +83,11 @@ export function SupportButton() {
               exit={{ opacity: 0, rotate: -90, scale: 0.7 }}
               transition={{ duration: 0.2 }}
             >
-              {/* Support agent SVG icon — green, no background */}
-              <svg width="72" height="72" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="26" cy="20" r="8" stroke="#00e676" strokeWidth="2.2" fill="none"/>
-                <path d="M26 12C21.58 12 18 15.58 18 20s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8z" fill="#00e676" fillOpacity="0.12"/>
-                <path d="M14 36c0-4 5.37-7 12-7s12 3 12 7" stroke="#00e676" strokeWidth="2.2" strokeLinecap="round" fill="none"/>
-                {/* Headset left ear */}
-                <path d="M17 22a9 9 0 0 1 18 0" stroke="#00e676" strokeWidth="2.2" fill="none" strokeLinecap="round"/>
-                <rect x="14" y="22" width="4" height="7" rx="2" fill="#00e676"/>
-                <rect x="34" y="22" width="4" height="7" rx="2" fill="#00e676"/>
-                {/* Mic */}
-                <path d="M18 29c0 4 16 4 16 0" stroke="#00e676" strokeWidth="1.8" fill="none" strokeLinecap="round"/>
-                <line x1="26" y1="33" x2="26" y2="36" stroke="#00e676" strokeWidth="1.8" strokeLinecap="round"/>
-                <line x1="23" y1="36" x2="29" y2="36" stroke="#00e676" strokeWidth="1.8" strokeLinecap="round"/>
-              </svg>
+              <img
+                src={supportIcon}
+                alt="Support"
+                className="w-20 h-20 rounded-full object-cover shadow-[0_0_20px_rgba(0,200,100,0.4)]"
+              />
             </motion.div>
           )}
         </AnimatePresence>
