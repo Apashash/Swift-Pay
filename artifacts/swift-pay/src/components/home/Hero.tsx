@@ -43,7 +43,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tighter leading-[1.1] mb-6"
+              className="text-4xl sm:text-5xl lg:text-5xl font-bold tracking-normal leading-[1.2] mb-6"
             >
               <span className="text-foreground block">{t('hero_line1')}</span>
               <span className="text-primary block drop-shadow-[0_0_25px_rgba(0,230,118,0.3)]">{t('hero_line2')}</span>
