@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Zap, ShieldCheck, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 import { SiBitcoin, SiTether, SiEthereum } from 'react-icons/si';
 import { useTranslation } from '@/lib/i18n';
 
@@ -73,25 +73,6 @@ export function Hero() {
               </Button>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-8 border-t border-border/50"
-            >
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium text-foreground">{t('hero_stat1')}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Zap className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium text-foreground">{t('hero_stat2')}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-                <span className="text-sm font-medium text-foreground">{t('hero_stat3')}</span>
-              </div>
-            </motion.div>
           </div>
 
           {/* Right Mockup Form */}
