@@ -38,7 +38,7 @@ export function Hero() {
       </motion.div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid lg:grid-cols-2 gap-16 items-center">
+        <div className="grid lg:grid-cols-2 gap-8 items-center">
 
           {/* Left Content */}
           <div className="max-w-2xl">
@@ -67,15 +67,19 @@ export function Hero() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col items-start gap-3 mb-6"
             >
-              {/* Ligne 1 : CTA principal + lien En savoir plus */}
-              <div className="flex items-center gap-5">
+              {/* Ligne 1 : CTA + En savoir plus */}
+              <div className="flex items-center gap-3">
                 <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-12 px-7 text-base rounded-xl shadow-[0_0_30px_rgba(0,230,118,0.3)] transition-all hover:shadow-[0_0_50px_rgba(0,230,118,0.5)]">
                   {t('hero_cta')}
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
-                <a href="#how-it-works" className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors group">
+                <a
+                  href="#how-it-works"
+                  className="inline-flex items-center gap-1.5 h-12 px-6 rounded-xl text-sm font-semibold transition-all"
+                  style={{ background: 'linear-gradient(135deg,#9ca3af,#6b7280)', color: '#fff', boxShadow: '0 2px 12px rgba(156,163,175,0.25)' }}
+                >
                   {t('hero_learn')}
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  <ArrowRight className="w-3.5 h-3.5" />
                 </a>
               </div>
 
