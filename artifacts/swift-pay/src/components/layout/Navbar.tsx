@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, LogIn, UserPlus, ArrowLeftRight, HeadphonesIcon, ChevronRight, Building2, Globe } from 'lucide-react';
+import { Menu, X, LogIn, UserPlus, ArrowLeftRight, HeadphonesIcon, ChevronRight, Building2, Globe, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import swiftPayLogo from "@assets/swift-logo.png";
 import { useTranslation, type Lang } from '@/lib/i18n';
+import { useTheme } from 'next-themes';
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const { lang, setLang, t } = useTranslation();
+  const { theme, setTheme } = useTheme();
 
   const menuItems = [
     { labelKey: 'nav_menu_login' as const, descKey: 'nav_menu_login_desc' as const, icon: LogIn },
@@ -139,12 +141,21 @@ export function Navbar() {
                   <img src={swiftPayLogo} alt="SwiftPay" className="w-8 h-8 object-contain" />
                   <span className="font-bold text-white">Swift<span className="text-primary">Pay</span></span>
                 </div>
-                <button
-                  onClick={() => setOpen(false)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                    title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
+                  >
+                    {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </button>
+                  <button
+                    onClick={() => setOpen(false)}
+                    className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
