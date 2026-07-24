@@ -32,12 +32,13 @@ const OPERATORS: Record<string, Operator> = {
 
 const COUNTRIES = [
   { code: 'CI', flag: '🇨🇮', name: "Côte d'Ivoire", currency: 'FCFA', operators: ['Orange', 'MTN', 'Wave', 'Moov'] },
-  { code: 'SN', flag: '🇸🇳', name: 'Sénégal',       currency: 'FCFA', operators: ['Orange', 'Free', 'Wave', 'Expresso'] },
-  { code: 'ML', flag: '🇲🇱', name: 'Mali',           currency: 'FCFA', operators: ['Orange', 'Moov'] },
-  { code: 'BF', flag: '🇧🇫', name: 'Burkina Faso',   currency: 'FCFA', operators: ['Orange', 'Moov'] },
-  { code: 'GN', flag: '🇬🇳', name: 'Guinée',         currency: 'GNF',  operators: ['Orange', 'MTN', 'Cellcom'] },
-  { code: 'BJ', flag: '🇧🇯', name: 'Bénin',          currency: 'FCFA', operators: ['MTN', 'Moov'] },
-  { code: 'TG', flag: '🇹🇬', name: 'Togo',           currency: 'FCFA', operators: ['Orange', 'TMoney', 'Flooz'] },
+  { code: 'CM', flag: '🇨🇲', name: 'Cameroun',       currency: 'FCFA', operators: ['Orange', 'MTN'] },
+  { code: 'SN', flag: '🇸🇳', name: 'Sénégal',        currency: 'FCFA', operators: ['Orange', 'Free', 'Wave', 'Expresso'] },
+  { code: 'ML', flag: '🇲🇱', name: 'Mali',            currency: 'FCFA', operators: ['Orange', 'Moov'] },
+  { code: 'BF', flag: '🇧🇫', name: 'Burkina Faso',    currency: 'FCFA', operators: ['Orange', 'Moov'] },
+  { code: 'GN', flag: '🇬🇳', name: 'Guinée',          currency: 'GNF',  operators: ['Orange', 'MTN', 'Cellcom'] },
+  { code: 'BJ', flag: '🇧🇯', name: 'Bénin',           currency: 'FCFA', operators: ['MTN', 'Moov'] },
+  { code: 'TG', flag: '🇹🇬', name: 'Togo',            currency: 'FCFA', operators: ['Orange', 'TMoney', 'Flooz'] },
 ];
 
 // ── Exchange rates ────────────────────────────────────────────────────────────
