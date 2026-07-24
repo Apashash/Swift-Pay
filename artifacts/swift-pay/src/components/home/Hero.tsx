@@ -1,0 +1,220 @@
+import { motion } from 'framer-motion';
+import { Button } from '@/components/ui/button';
+import { Zap, ShieldCheck, Clock, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { SiBitcoin, SiTether, SiEthereum } from 'react-icons/si';
+
+export function Hero() {
+  return (
+    <section className="relative min-h-[95vh] pt-32 pb-20 overflow-hidden flex items-center">
+      {/* Background Effects */}
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/10 blur-[150px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[60%] bg-blue-500/5 blur-[150px] rounded-full pointer-events-none" />
+      
+      {/* Floating Crypto Icons Background */}
+      <motion.div 
+        animate={{ y: [0, -20, 0], rotate: [0, 10, 0] }} 
+        transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-[20%] left-[10%] opacity-10 text-white text-6xl pointer-events-none hidden lg:block"
+      >
+        <SiBitcoin />
+      </motion.div>
+      <motion.div 
+        animate={{ y: [0, 30, 0], rotate: [0, -15, 0] }} 
+        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+        className="absolute bottom-[30%] left-[45%] opacity-10 text-primary text-5xl pointer-events-none hidden lg:block"
+      >
+        <SiTether />
+      </motion.div>
+      <motion.div 
+        animate={{ y: [0, -25, 0], rotate: [0, 20, 0] }} 
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        className="absolute top-[15%] right-[35%] opacity-10 text-white text-7xl pointer-events-none hidden lg:block"
+      >
+        <SiEthereum />
+      </motion.div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          
+          {/* Left Content */}
+          <div className="max-w-2xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-muted-foreground mb-8"
+            >
+              <Zap className="w-3.5 h-3.5 text-primary" />
+              <span>Available in CI, BF, BJ, TG · Instant payments</span>
+            </motion.div>
+            
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tighter leading-[1.1] mb-6"
+            >
+              <span className="text-white block">Pay in crypto.</span>
+              <span className="text-primary block drop-shadow-[0_0_25px_rgba(0,230,118,0.3)]">Receive in FCFA.</span>
+            </motion.h1>
+            
+            <motion.p 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-lg text-muted-foreground mb-10 max-w-xl"
+            >
+              Send crypto from anywhere. The recipient gets Mobile Money in seconds. No crypto knowledge required on the receiving end.
+            </motion.p>
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-12"
+            >
+              <Button size="lg" className="bg-primary text-black hover:bg-primary/90 font-semibold h-14 px-8 text-lg rounded-xl shadow-[0_0_30px_rgba(0,230,118,0.3)] transition-all hover:shadow-[0_0_50px_rgba(0,230,118,0.5)]">
+                Get started
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+              <Button size="lg" variant="ghost" className="h-14 px-8 text-lg rounded-xl hover:bg-white/5 text-white">
+                Learn more
+              </Button>
+            </motion.div>
+            
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-8 border-t border-white/5"
+            >
+              <div className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium text-white">&lt; 20s Confirmation</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium text-white">Fast Sign-up</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-primary" />
+                <span className="text-sm font-medium text-white">24/7 Available</span>
+              </div>
+            </motion.div>
+          </div>
+          
+          {/* Right Mockup Form */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, rotateY: -10 }}
+            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            transition={{ duration: 0.7, delay: 0.2 }}
+            style={{ perspective: 1000 }}
+            className="relative lg:ml-auto w-full max-w-md"
+          >
+            {/* Form Glow */}
+            <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
+            
+            <div className="relative bg-[#111111] border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm p-6 sm:p-8">
+              
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="font-semibold text-white text-lg">Send Money</h3>
+                <div className="flex gap-1">
+                  <div className="w-2 h-2 rounded-full bg-white/20" />
+                  <div className="w-2 h-2 rounded-full bg-white/20" />
+                  <div className="w-2 h-2 rounded-full bg-white/20" />
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                
+                {/* Country */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Destination</label>
+                  <div className="w-full bg-black border border-white/10 rounded-xl p-3.5 flex items-center gap-3 cursor-default">
+                    <span className="text-xl">🇨🇮</span>
+                    <span className="text-white text-sm font-medium">Côte d'Ivoire</span>
+                  </div>
+                </div>
+
+                {/* Operator */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Mobile Network</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['Orange', 'MTN', 'Wave', 'Moov'].map((op, i) => (
+                      <div key={op} className={`text-center py-2 rounded-lg border text-xs font-medium transition-colors cursor-default ${i === 0 ? 'bg-primary/10 border-primary text-primary' : 'bg-black border-white/10 text-muted-foreground hover:bg-white/5'}`}>
+                        {op}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Amount */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount to Receive</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      value="50 000" 
+                      readOnly
+                      className="w-full bg-black border border-white/10 rounded-xl p-4 pr-16 text-2xl font-mono text-white focus:outline-none" 
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground font-medium">
+                      FCFA
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pay in */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Pay With Crypto</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-primary/10 border border-primary/50 rounded-xl p-3 flex items-center gap-3 cursor-default">
+                      <div className="w-8 h-8 rounded-full bg-[#26A17B]/20 flex items-center justify-center text-[#26A17B]">
+                        <SiTether size={16} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-white">USDT</div>
+                        <div className="text-[10px] text-muted-foreground">BEP-20</div>
+                      </div>
+                    </div>
+                    <div className="bg-black border border-white/10 rounded-xl p-3 flex items-center gap-3 opacity-50 cursor-default">
+                      <div className="w-8 h-8 rounded-full bg-[#F7931A]/20 flex items-center justify-center text-[#F7931A]">
+                        <SiBitcoin size={16} />
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-white">BTC</div>
+                        <div className="text-[10px] text-muted-foreground">Lightning</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quote */}
+                <div className="bg-black/50 rounded-xl p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">You pay</span>
+                    <span className="text-white font-mono">77.50 USDT</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Fee</span>
+                    <span className="text-white font-mono">0.78 USDT</span>
+                  </div>
+                </div>
+
+                <Button className="w-full h-14 rounded-xl bg-primary text-black hover:bg-primary/90 font-bold text-lg shadow-[0_0_20px_rgba(0,230,118,0.2)]">
+                  Generate Payment <ArrowRight className="ml-2 w-5 h-5" />
+                </Button>
+                
+                <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                  Secure, end-to-end encrypted process
+                </div>
+              </div>
+            </div>
+          </motion.div>
+          
+        </div>
+      </div>
+    </section>
+  );
+}

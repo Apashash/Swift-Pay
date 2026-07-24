@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "SwiftPay"
+version = "1.0.0"
+id = "artifacts/swift-pay"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22199
+
+[services.development]
+run = "pnpm --filter @workspace/swift-pay run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/swift-pay", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/swift-pay/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22199"
+BASE_PATH = "/"

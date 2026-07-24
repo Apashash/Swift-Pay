@@ -1,0 +1,111 @@
+Comment fonctionne Swift Pay ?
+
+1. L’expéditeur ouvre Swift Pay
+
+Il choisit :
+	•	le pays du bénéficiaire ;
+	•	l’opérateur Mobile Money (Orange Money, MTN MoMo, Moov, etc.) ;
+	•	le numéro du bénéficiaire ;
+	•	le montant que le bénéficiaire doit recevoir (par exemple 25 000 FCFA).
+
+2. Swift Pay calcule automatiquement
+
+La plateforme affiche :
+	•	la crypto à envoyer (USDT, BTC, ETH, etc.) ;
+	•	le montant exact en crypto ;
+	•	les frais ;
+	•	le taux de change ;
+	•	le temps estimé.
+
+3. L’expéditeur paie
+
+Swift Pay génère :
+	•	une adresse crypto ;
+	•	ou un QR Code.
+
+L’utilisateur envoie simplement ses cryptos.
+
+4. Vérification de la blockchain
+
+Swift Pay détecte automatiquement la transaction, attend les confirmations nécessaires, puis valide le paiement.
+
+5. Conversion
+
+Les cryptomonnaies sont converties automatiquement en FCFA au taux en vigueur.
+
+6. Paiement Mobile Money
+
+Swift Pay envoie instantanément les FCFA sur le numéro Mobile Money du bénéficiaire.
+
+7. Confirmation
+
+Les deux parties reçoivent une confirmation de la transaction.
+
+⸻
+
+Exemple concret
+
+Ali, en France, possède 50 USDT.
+
+Sa mère est à Abidjan.
+
+Il ouvre Swift Pay.
+
+Il sélectionne :
+	•	Côte d’Ivoire ;
+	•	Orange Money ;
+	•	le numéro de sa mère ;
+	•	30 000 FCFA.
+
+Swift Pay affiche :
+	•	Vous envoyez : 46,25 USDT
+	•	Votre mère reçoit : 30 000 FCFA
+	•	Frais : 1 %
+	•	Temps : ≈ 20 secondes
+
+Ali paie en USDT.
+
+Quelques secondes plus tard, sa mère reçoit directement 30 000 FCFA sur son compte Orange Money.
+
+Elle n’a jamais eu besoin d’un portefeuille crypto.
+
+⸻
+
+Les deux modes d’utilisation
+
+Sans compte
+
+Pour les paiements rapides jusqu’à 50 000 FCFA.
+
+Aucune inscription.
+
+Aucun KYC.
+
+Il suffit d’entrer les informations du bénéficiaire et de payer.
+
+Avec compte
+
+Obligatoire au-delà de 50 000 FCFA.
+
+Le compte permet de :
+	•	consulter l’historique des transactions ;
+	•	enregistrer des bénéficiaires favoris ;
+	•	accéder à des plafonds plus élevés ;
+	•	utiliser les API pour les entreprises ;
+	•	bénéficier d’une vérification KYC et de limites adaptées.
+
+⸻
+
+Pour les entreprises
+
+Swift Pay peut aussi être intégré via API.
+
+Par exemple, une boutique en ligne accepte un paiement en USDT.
+
+Au lieu de recevoir des cryptos, le commerçant choisit de recevoir directement des FCFA sur son compte Mobile Money ou bancaire.
+
+Cela permet aux entreprises d’accepter les paiements en cryptomonnaies sans avoir à gérer elles-mêmes les portefeuilles, les conversions ou la volatilité.
+
+En une phrase
+
+Swift Pay est une passerelle de paiement qui transforme instantanément des cryptomonnaies en paiements Mobile Money en FCFA, permettant aux particuliers et aux entreprises d’envoyer ou de recevoir de l’argent simplement, rapidement et en toute sécurité, sans que le bénéficiaire ait besoin de posséder des cryptomonnaies.
