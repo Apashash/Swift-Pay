@@ -5,13 +5,13 @@ import { Menu, X, LogIn, UserPlus, ArrowLeftRight, HeadphonesIcon, ChevronRight,
 import { Button } from '@/components/ui/button';
 import swiftPayLogo from "@assets/swift-logo.png";
 import { useTranslation, type Lang } from '@/lib/i18n';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/lib/theme';
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const { lang, setLang, t } = useTranslation();
-  const { theme, setTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
 
   const menuItems = [
     { labelKey: 'nav_menu_login' as const, descKey: 'nav_menu_login_desc' as const, icon: LogIn },
@@ -143,7 +143,7 @@ export function Navbar() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                    onClick={toggleTheme}
                     className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-muted-foreground hover:text-white transition-colors"
                     title={theme === 'dark' ? 'Mode clair' : 'Mode sombre'}
                   >
