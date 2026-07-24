@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogIn, UserPlus, ArrowLeftRight, HeadphonesIcon, ChevronRight, Building2, Globe, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ export function Navbar() {
   const [langOpen, setLangOpen] = useState(false);
   const { lang, setLang, t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const [, navigate] = useLocation();
 
   const menuItems = [
     { labelKey: 'nav_menu_login' as const, descKey: 'nav_menu_login_desc' as const, icon: LogIn },
@@ -162,11 +163,17 @@ export function Navbar() {
                 {menuItems.map((item, i) => (
                   <motion.a
                     key={item.labelKey}
-                    href="#"
+                    href={item.labelKey === 'nav_menu_transactions' ? '/verifier' : '#'}
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.06 }}
-                    onClick={() => setOpen(false)}
+                    onClick={(event) => {
+                      setOpen(false);
+                      if (item.labelKey === 'nav_menu_transactions') {
+                        event.preventDefault();
+                        navigate('/verifier');
+                      }
+                    }}
                     data-testid={`link-menu-${item.labelKey}`}
                     className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-secondary group transition-colors"
                   >
