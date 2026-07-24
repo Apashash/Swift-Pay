@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Search } from 'lucide-react';
 import { SiBitcoin, SiTether, SiEthereum } from 'react-icons/si';
 import { useTranslation } from '@/lib/i18n';
 import { PaymentForm } from '@/components/home/PaymentForm';
+import { useLocation } from 'wouter';
 
 export function Hero() {
   const { t } = useTranslation();
+  const [, navigate] = useLocation();
 
   return (
     <section className="relative min-h-[95vh] pt-32 pb-20 overflow-hidden flex items-center">
@@ -71,6 +73,15 @@ export function Hero() {
               </Button>
               <Button size="lg" variant="ghost" className="h-14 px-8 text-lg rounded-xl hover:bg-secondary text-foreground">
                 {t('hero_learn')}
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => navigate('/verifier')}
+                className="h-14 px-6 text-base rounded-xl border-border hover:border-primary/50 hover:text-primary text-muted-foreground gap-2"
+              >
+                <Search className="w-4 h-4" />
+                Vérifier ma transaction
               </Button>
             </motion.div>
 
