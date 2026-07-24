@@ -101,7 +101,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35 }}
-              className="mb-3 flex justify-center"
+              className="mb-3 flex justify-end"
             >
               <button
                 onClick={() => navigate('/verifier')}
