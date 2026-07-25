@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -25,10 +26,18 @@ function BottomNav({ hidden }: { hidden?: boolean }) {
 
   if (hidden) return null;
 
-  return (
+  return createPortal(
     <nav
-      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 lg:hidden"
-      style={{ filter: isDark ? 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))' : 'drop-shadow(0 8px 24px rgba(0,0,0,0.15))' }}
+      className="fixed z-50 lg:hidden"
+      style={{
+        bottom: 'calc(24px + env(safe-area-inset-bottom))',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        filter: isDark ? 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))' : 'drop-shadow(0 8px 24px rgba(0,0,0,0.15))',
+        touchAction: 'none',
+        overscrollBehavior: 'none',
+      }}
+      aria-label="Navigation principale"
     >
       <div
         className="flex items-center px-5 rounded-full"
@@ -44,7 +53,7 @@ function BottomNav({ hidden }: { hidden?: boolean }) {
             <Link key={item.href} href={item.href}>
               <a
                 className="relative flex items-center justify-center"
-                style={{ width: 52, height: 64 }}
+                style={{ width: 52, height: 64, touchAction: 'manipulation' }}
                 aria-label={item.label}
               >
                 {active ? (
@@ -74,7 +83,8 @@ function BottomNav({ hidden }: { hidden?: boolean }) {
           );
         })}
       </div>
-    </nav>
+    </nav>,
+    document.body,
   );
 }
 
