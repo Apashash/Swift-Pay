@@ -137,6 +137,35 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="p-4 lg:p-8 space-y-5 max-w-6xl mx-auto">
 
+        {/* Quick actions */}
+        <div className="bg-card border border-border rounded-2xl overflow-hidden">
+          <div className="px-5 py-4 border-b border-border">
+            <h2 className="text-sm font-semibold text-foreground">Actions rapides</h2>
+          </div>
+          <div className="p-3 flex gap-2 flex-wrap">
+            {quickActions.map((action) => (
+              <Link key={action.href} href={action.href}>
+                <a className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all group ${
+                  action.primary
+                    ? 'bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20'
+                    : 'hover:bg-secondary text-foreground'
+                }`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                    action.primary ? 'bg-primary text-primary-foreground' : 'bg-secondary'
+                  }`}>
+                    <action.icon className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold leading-tight">{action.label}</div>
+                    <div className="text-xs text-muted-foreground">{action.desc}</div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                </a>
+              </Link>
+            ))}
+          </div>
+        </div>
+
         {/* Period filter dropdown */}
         <PeriodDropdown period={period} onChange={setPeriod} />
 
@@ -223,41 +252,13 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* Quick actions + rate */}
+          {/* Rate card */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.28 }}
             className="space-y-4"
           >
-            <div className="bg-card border border-border rounded-2xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-border">
-                <h2 className="text-sm font-semibold text-foreground">Actions rapides</h2>
-              </div>
-              <div className="p-3 space-y-2">
-                {quickActions.map((action) => (
-                  <Link key={action.href} href={action.href}>
-                    <a className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all group ${
-                      action.primary
-                        ? 'bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20'
-                        : 'hover:bg-secondary text-foreground'
-                    }`}>
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                        action.primary ? 'bg-primary text-primary-foreground' : 'bg-secondary'
-                      }`}>
-                        <action.icon className="w-4 h-4" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold leading-tight">{action.label}</div>
-                        <div className="text-xs text-muted-foreground">{action.desc}</div>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </a>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
             {/* Rate card */}
             <div className="bg-card border border-border rounded-2xl p-5">
               <div className="flex items-center justify-between mb-3">
