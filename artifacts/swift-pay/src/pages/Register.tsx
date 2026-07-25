@@ -52,7 +52,6 @@ export default function Register() {
   const [form, setForm] = useState({
     fullName: '',
     email: '',
-    phone: '',
     country: '',
     countryCode: '',
     password: '',
@@ -80,7 +79,7 @@ export default function Register() {
     e.preventDefault();
     setError('');
 
-    if (!form.fullName || !form.email || !form.phone || !form.country || !form.password || !form.confirmPassword) {
+    if (!form.fullName || !form.email || !form.country || !form.password || !form.confirmPassword) {
       setError('Veuillez remplir tous les champs.');
       return;
     }
@@ -102,7 +101,7 @@ export default function Register() {
       const data: RegisterData = {
         fullName: form.fullName,
         email: form.email,
-        phone: form.phone,
+        phone: '',
         country: form.country,
         countryCode: form.countryCode,
         password: form.password,
@@ -259,28 +258,6 @@ export default function Register() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
-
-            {/* Phone */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">Numéro de téléphone</Label>
-              <div className="flex gap-2">
-                {selectedCountry && (
-                  <div className="h-12 px-3 flex items-center gap-1.5 rounded-lg border border-input bg-secondary text-sm font-medium whitespace-nowrap flex-shrink-0">
-                    <span>{selectedCountry.flag}</span>
-                    <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
-                  </div>
-                )}
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder={selectedCountry ? '07 12 34 56' : '+225 07 12 34 56'}
-                  value={form.phone}
-                  onChange={(e) => set('phone', e.target.value)}
-                  className="h-12 flex-1"
-                  autoComplete="tel"
-                />
-              </div>
             </div>
 
             {/* Password */}

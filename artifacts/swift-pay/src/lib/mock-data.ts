@@ -100,19 +100,11 @@ export const MOCK_TRANSACTIONS: Transaction[] = [
 
 export const COUNTRIES = [
   { code: 'CI', name: "Côte d'Ivoire", flag: '🇨🇮', dialCode: '+225' },
+  { code: 'CM', name: 'Cameroun', flag: '🇨🇲', dialCode: '+237' },
   { code: 'SN', name: 'Sénégal', flag: '🇸🇳', dialCode: '+221' },
   { code: 'ML', name: 'Mali', flag: '🇲🇱', dialCode: '+223' },
   { code: 'BF', name: 'Burkina Faso', flag: '🇧🇫', dialCode: '+226' },
   { code: 'GN', name: 'Guinée', flag: '🇬🇳', dialCode: '+224' },
-  { code: 'TG', name: 'Togo', flag: '🇹🇬', dialCode: '+228' },
   { code: 'BJ', name: 'Bénin', flag: '🇧🇯', dialCode: '+229' },
-  { code: 'NE', name: 'Niger', flag: '🇳🇪', dialCode: '+227' },
-  { code: 'FR', name: 'France', flag: '🇫🇷', dialCode: '+33' },
-  { code: 'BE', name: 'Belgique', flag: '🇧🇪', dialCode: '+32' },
-  { code: 'GB', name: 'Royaume-Uni', flag: '🇬🇧', dialCode: '+44' },
-  { code: 'US', name: 'États-Unis', flag: '🇺🇸', dialCode: '+1' },
-  { code: 'CA', name: 'Canada', flag: '🇨🇦', dialCode: '+1' },
-  { code: 'DE', name: 'Allemagne', flag: '🇩🇪', dialCode: '+49' },
-  { code: 'IT', name: 'Italie', flag: '🇮🇹', dialCode: '+39' },
-  { code: 'ES', name: 'Espagne', flag: '🇪🇸', dialCode: '+34' },
+  { code: 'TG', name: 'Togo', flag: '🇹🇬', dialCode: '+228' },
 ];
