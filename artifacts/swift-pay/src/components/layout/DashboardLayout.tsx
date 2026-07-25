@@ -12,7 +12,7 @@ import swiftPayLogo from '@assets/swift-logo.png';
 
 const NAV = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
-  { href: '/envoyer', icon: Send, label: 'Envoyer' },
+  { href: '/envoyer', icon: Send, label: 'Dépense les crypto' },
   { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { href: '/profil', icon: User, label: 'Profil' },
 ];
