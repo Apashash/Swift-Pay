@@ -17,6 +17,64 @@ const NAV = [
   { href: '/profil', icon: User, label: 'Profil' },
 ];
 
+function BottomNav() {
+  const [location] = useLocation();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  return (
+    <nav
+      className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 lg:hidden"
+      style={{ filter: isDark ? 'drop-shadow(0 8px 24px rgba(0,0,0,0.5))' : 'drop-shadow(0 8px 24px rgba(0,0,0,0.15))' }}
+    >
+      <div
+        className="flex items-center px-5 rounded-full"
+        style={{
+          height: 64,
+          gap: 8,
+          backgroundColor: isDark ? '#1e1e1e' : '#ffffff',
+        }}
+      >
+        {NAV.map((item) => {
+          const active = location === item.href || location.startsWith(item.href + '/');
+          return (
+            <Link key={item.href} href={item.href}>
+              <a
+                className="relative flex items-center justify-center"
+                style={{ width: 52, height: 64 }}
+                aria-label={item.label}
+              >
+                {active ? (
+                  <motion.div
+                    layoutId="bottom-nav-active"
+                    className="absolute flex items-center justify-center rounded-2xl"
+                    style={{
+                      width: 48,
+                      height: 48,
+                      backgroundColor: '#4B8BF5',
+                      top: '50%',
+                      transform: 'translateY(-58%)',
+                    }}
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  >
+                    <item.icon className="w-5 h-5 text-white" strokeWidth={2} />
+                  </motion.div>
+                ) : (
+                  <item.icon
+                    className="w-5 h-5 transition-colors"
+                    strokeWidth={1.75}
+                    style={{ color: isDark ? '#7a7a7a' : '#9a9a9a' }}
+                  />
+                )}
+              </a>
+            </Link>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 interface Props {
   children: React.ReactNode;
 }
@@ -182,10 +240,13 @@ export function DashboardLayout({ children }: Props) {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto pb-28 lg:pb-0">
           {children}
         </main>
       </div>
+
+      {/* Floating bottom nav — mobile only */}
+      <BottomNav />
     </div>
   );
 }
