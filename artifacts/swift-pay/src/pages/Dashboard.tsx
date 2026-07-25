@@ -176,14 +176,14 @@ export default function Dashboard() {
             <h3 className="text-sm font-semibold text-foreground">Taux du marché</h3>
             <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-medium">LIVE</span>
           </div>
-          <div className="flex gap-6">
+          <div className="space-y-2">
             {[
               { pair: 'USDT → FCFA', rate: '649', change: '+0.3%' },
               { pair: 'BTC → FCFA', rate: '45,000,000', change: '+1.2%' },
             ].map((r) => (
-              <div key={r.pair} className="flex items-center gap-4">
+              <div key={r.pair} className="flex items-center justify-between py-2 border-b border-border last:border-0">
                 <span className="text-xs font-medium text-muted-foreground">{r.pair}</span>
-                <div>
+                <div className="text-right">
                   <span className="text-sm font-bold text-foreground">{r.rate}</span>
                   <span className="text-[11px] text-primary ml-1.5">{r.change}</span>
                 </div>
