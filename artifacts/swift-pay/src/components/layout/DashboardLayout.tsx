@@ -16,7 +16,6 @@ const NAV = [
   { href: '/envoyer', icon: Send, label: 'Dépense les crypto' },
   { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { href: '/profil', icon: User, label: 'Profil' },
-  { href: '/notifications', icon: Bell, label: 'Notifications' },
 ];
 
 function BottomNav({ hidden }: { hidden?: boolean }) {
@@ -146,11 +145,6 @@ export function DashboardLayout({ children }: Props) {
               >
                 <item.icon className={`w-4 h-4 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
                 {item.label}
-                {item.href === '/notifications' && unreadCount > 0 && (
-                  <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
                 {active && <ChevronRight className="w-3 h-3 ml-auto text-primary" />}
               </a>
             </Link>
