@@ -17,10 +17,12 @@ const NAV = [
   { href: '/profil', icon: User, label: 'Profil' },
 ];
 
-function BottomNav() {
+function BottomNav({ hidden }: { hidden?: boolean }) {
   const [location] = useLocation();
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+
+  if (hidden) return null;
 
   return (
     <nav
@@ -245,8 +247,8 @@ export function DashboardLayout({ children }: Props) {
         </main>
       </div>
 
-      {/* Floating bottom nav — mobile only */}
-      <BottomNav />
+      {/* Floating bottom nav — mobile only, hidden when sidebar is open */}
+      <BottomNav hidden={sidebarOpen} />
     </div>
   );
 }
