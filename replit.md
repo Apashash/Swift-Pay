@@ -1,53 +1,48 @@
 # SwiftPay
 
-A crypto-to-mobile-money payment platform. Users send crypto from anywhere; recipients receive Mobile Money (FCFA) in seconds — no crypto knowledge required.
-
-## Run & Operate
-
-- `pnpm --filter @workspace/swift-pay run dev` — run the frontend (port 22199)
-- `pnpm --filter @workspace/api-server run dev` — run the API server
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
+A crypto-to-Mobile Money payment platform. Users send crypto (USDT, BTC, ETH, etc.) and recipients receive FCFA via Mobile Money operators (Orange Money, MTN MoMo, Wave, Moov Money, etc.).
 
 ## Stack
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- Frontend: React 19, Vite 7, Tailwind CSS 4, Wouter (routing), Framer Motion
-- API: Express 5, Pino (logging)
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod, drizzle-zod
-- UI: shadcn/ui components (Radix primitives)
-- i18n: custom LanguageProvider (`/src/lib/i18n`)
-- Theming: custom ThemeProvider (`/src/lib/theme`)
+- **Frontend**: React + Vite + TypeScript + Tailwind CSS + shadcn/ui (`artifacts/swift-pay`)
+- **Backend**: Express 5 + TypeScript API server (`artifacts/api-server`)
+- **Database**: PostgreSQL via Drizzle ORM (`lib/db`)
+- **Monorepo**: pnpm workspaces
 
-## Where things live
+## Running the project
 
-- `artifacts/swift-pay/` — React frontend (landing page)
-- `artifacts/api-server/` — Express backend, routes under `/api`
-- `artifacts/mockup-sandbox/` — UI component preview sandbox (design tool)
-- `lib/` — shared libraries (api-zod schemas, api-client-react, db)
+Both services start automatically via the configured workflows:
 
-## Architecture decisions
+- **SwiftPay web app** — `pnpm --filter @workspace/swift-pay run dev` (port from `PORT` env)
+- **API server** — `pnpm --filter @workspace/api-server run dev` (port 8080)
 
-- Monorepo with pnpm workspaces; each artifact is its own package
-- Frontend uses `BASE_URL` for all routing so the app works under Replit's path-based proxy
-- API server bundles with esbuild at dev time (no ts-node)
-- All API contracts defined via Zod schemas in `@workspace/api-zod`
+## Environment variables
 
-## Product
+- `DATABASE_URL` — PostgreSQL connection string (auto-provided by Replit)
+- `SESSION_SECRET` — Secret for session signing
+- `PORT` — Port for each artifact service (auto-assigned by Replit)
 
-SwiftPay lets senders pay in crypto (USDT/BTC) and recipients receive Mobile Money (FCFA) via Orange Money, MTN, Wave, or Moov — targeting West Africa (Côte d'Ivoire and neighbours). The landing page covers Hero, How It Works, Supported Networks, Usage Modes, For Businesses, and example stories.
+## Database schema
+
+Schema lives in `lib/db/src/schema/`. Push changes with:
+
+```
+cd lib/db && pnpm run push
+```
+
+## Project structure
+
+```
+artifacts/
+  swift-pay/      # React frontend
+  api-server/     # Express API
+lib/
+  db/             # Drizzle ORM schema + client
+  api-spec/       # OpenAPI spec + Orval codegen config
+  api-client-react/  # Generated React Query hooks
+  api-zod/        # Zod validation schemas
+```
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-- Run `pnpm install` from the workspace root before starting any service — node_modules are not committed.
-- The `SwiftPay` legacy workflow (auto-created by import) conflicts with the managed `artifacts/swift-pay: web` workflow; use the managed one.
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Keep the existing French routing convention (`/connexion`, `/inscription`, etc.)

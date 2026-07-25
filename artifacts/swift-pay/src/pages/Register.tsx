@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, UserPlus, AlertCircle, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Eye, EyeOff, UserPlus, AlertCircle, CheckCircle2, ChevronDown, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -52,6 +52,7 @@ export default function Register() {
   const [form, setForm] = useState({
     fullName: '',
     email: '',
+    phone: '',
     country: '',
     countryCode: '',
     password: '',
@@ -101,7 +102,7 @@ export default function Register() {
       const data: RegisterData = {
         fullName: form.fullName,
         email: form.email,
-        phone: '',
+        phone: selectedCountry ? `${selectedCountry.dialCode}${form.phone}` : form.phone,
         country: form.country,
         countryCode: form.countryCode,
         password: form.password,
@@ -258,6 +259,26 @@ export default function Register() {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
+
+            {/* Phone */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Numéro de téléphone</Label>
+              <div className="flex h-12 rounded-lg border border-input bg-background overflow-hidden focus-within:ring-1 focus-within:ring-ring">
+                <div className="flex items-center gap-1.5 px-3 border-r border-input bg-secondary/40 text-sm text-muted-foreground whitespace-nowrap flex-shrink-0">
+                  <Phone className="w-3.5 h-3.5" />
+                  {selectedCountry ? selectedCountry.dialCode : '+?'}
+                </div>
+                <input
+                  id="phone"
+                  type="tel"
+                  placeholder="07 12 34 56"
+                  value={form.phone}
+                  onChange={(e) => set('phone', e.target.value.replace(/[^\d\s\-]/g, ''))}
+                  className="flex-1 px-3 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  autoComplete="tel"
+                />
+              </div>
             </div>
 
             {/* Password */}
