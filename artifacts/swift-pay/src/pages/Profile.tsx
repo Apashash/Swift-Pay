@@ -13,18 +13,24 @@ import { useLocation } from 'wouter';
 import { MOCK_TRANSACTIONS } from '@/lib/mock-data';
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [, navigate] = useLocation();
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ fullName: user?.fullName || '', email: user?.email || '' });
+  const [form, setForm] = useState({ fullName: user?.fullName || '', email: user?.email || '', phone: user?.phone || '' });
   const [saved, setSaved] = useState(false);
 
   const handleLogout = () => { logout(); navigate('/'); };
 
   const handleSave = () => {
+    updateUser({ fullName: form.fullName, email: form.email, phone: form.phone });
     setSaved(true);
     setEditing(false);
     setTimeout(() => setSaved(false), 3000);
+  };
+
+  const handleEdit = () => {
+    setForm({ fullName: user?.fullName || '', email: user?.email || '', phone: user?.phone || '' });
+    setEditing(true);
   };
 
   const initials = user?.fullName
@@ -133,7 +139,7 @@ export default function Profile() {
             <h3 className="text-sm font-semibold text-foreground">Informations personnelles</h3>
             {!editing ? (
               <button
-                onClick={() => setEditing(true)}
+                onClick={handleEdit}
                 className="flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
               >
                 <Edit2 className="w-3.5 h-3.5" /> Modifier
@@ -176,7 +182,17 @@ export default function Profile() {
                 <Label className="flex items-center gap-1.5 text-xs">
                   <Phone className="w-3.5 h-3.5 text-muted-foreground" /> Téléphone
                 </Label>
-                <div className="h-11 px-3 flex items-center bg-secondary/40 rounded-lg text-sm text-foreground">{user?.phone || '–'}</div>
+                {editing ? (
+                  <Input
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                    placeholder="+237 6XX XX XX XX"
+                    className="h-11"
+                  />
+                ) : (
+                  <div className="h-11 px-3 flex items-center bg-secondary/40 rounded-lg text-sm text-foreground">{user?.phone || '–'}</div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label className="flex items-center gap-1.5 text-xs">

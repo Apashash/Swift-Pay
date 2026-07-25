@@ -18,6 +18,7 @@ interface AuthContextValue {
   login: (identifier: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  updateUser: (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone'>>) => void;
 }
 
 export interface RegisterData {
@@ -104,8 +105,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
+  const updateUser = (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone'>>) => {
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...fields };
+      // Sync to users store
+      const users = getUsers();
+      if (users[prev.id]) {
+        users[prev.id].user = updated;
+        localStorage.setItem(USERS_KEY, JSON.stringify(users));
+      }
+      return updated;
+    });
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

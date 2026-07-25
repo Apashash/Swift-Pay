@@ -102,7 +102,7 @@ export default function Register() {
       const data: RegisterData = {
         fullName: form.fullName,
         email: form.email,
-        phone: selectedCountry ? `${selectedCountry.dialCode}${form.phone}` : form.phone,
+        phone: selectedCountry && form.phone.trim() ? `${selectedCountry.dialCode}${form.phone.trim()}` : form.phone.trim(),
         country: form.country,
         countryCode: form.countryCode,
         password: form.password,
