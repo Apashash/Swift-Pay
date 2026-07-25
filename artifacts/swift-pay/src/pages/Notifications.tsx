@@ -7,6 +7,7 @@ import {
   Check,
   CheckCheck,
   CircleAlert,
+  X,
   Info,
   ShieldCheck,
   Trash2,
@@ -136,7 +137,7 @@ export function Notifications() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-8 max-w-4xl mx-auto space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="relative flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <div className="flex items-center gap-3">
               <div className="w-11 h-11 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
@@ -151,33 +152,43 @@ export function Notifications() {
               {unreadCount > 0 ? `${unreadCount} notification${unreadCount > 1 ? 's' : ''} non lue${unreadCount > 1 ? 's' : ''}` : 'Vous êtes à jour'}
             </p>
           </div>
-          {notifications.length > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="outline" className="w-fit border-destructive/25 text-destructive hover:bg-destructive/10">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Tout supprimer
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Supprimer toutes les notifications ?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Cette action supprimera définitivement toutes vos notifications de cet appareil.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Annuler</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={removeAll}
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
+          <div className="flex items-center gap-2 sm:pr-12">
+            {notifications.length > 0 && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" className="w-fit border-destructive/25 text-destructive hover:bg-destructive/10">
+                    <Trash2 className="w-4 h-4 mr-2" />
                     Tout supprimer
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Supprimer toutes les notifications ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Cette action supprimera définitivement toutes vos notifications de cet appareil.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={removeAll}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Tout supprimer
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+          </div>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="absolute right-0 top-0 w-10 h-10 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            aria-label="Fermer les notifications"
+            title="Fermer"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
@@ -240,12 +251,22 @@ export function NotificationDetail() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-8 max-w-2xl mx-auto space-y-6">
-        <button
-          onClick={() => navigate('/notifications')}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" /> Retour aux notifications
-        </button>
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate('/notifications')}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> Retour aux notifications
+          </button>
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="w-10 h-10 flex items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+            aria-label="Fermer les notifications"
+            title="Fermer"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
         <div className="bg-card border border-border rounded-2xl overflow-hidden">
           <div className="p-6 sm:p-8 border-b border-border bg-primary/[0.03]">
