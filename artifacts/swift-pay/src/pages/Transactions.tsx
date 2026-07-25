@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link } from 'wouter';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search, Filter, CheckCircle2, AlertCircle, Loader2,
-  ChevronRight, ArrowUpDown, Download,
+  Search, CheckCircle2, AlertCircle, Loader2,
+  ChevronRight, ArrowUpDown, Download, ChevronDown,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,59 @@ const FILTERS: { value: TxStatus | 'all'; label: string }[] = [
 ];
 
 const fmt = (n: number) => n.toLocaleString('fr-FR');
+
+function StatusDropdown({ value, onChange }: { value: TxStatus | 'all'; onChange: (v: TxStatus | 'all') => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  const current = FILTERS.find((f) => f.value === value)!;
+
+  return (
+    <div ref={ref} className="relative w-fit">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 h-10 px-4 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+      >
+        <span>{current.label}</span>
+        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 mt-1.5 z-50 bg-card border border-border rounded-xl shadow-xl overflow-hidden min-w-[150px]"
+          >
+            {FILTERS.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => { onChange(f.value); setOpen(false); }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                  value === f.value
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-foreground hover:bg-secondary'
+                }`}
+              >
+                {f.label}
+                {value === f.value && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export default function Transactions() {
   const [search, setSearch] = useState('');
@@ -84,21 +137,7 @@ export default function Transactions() {
               className="pl-10 h-10"
             />
           </div>
-          <div className="flex gap-2">
-            {FILTERS.map((f) => (
-              <button
-                key={f.value}
-                onClick={() => setStatusFilter(f.value)}
-                className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
-                  statusFilter === f.value
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
+          <StatusDropdown value={statusFilter} onChange={setStatusFilter} />
         </div>
 
         {/* Table */}
