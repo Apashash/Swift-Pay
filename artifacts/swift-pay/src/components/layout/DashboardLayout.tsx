@@ -9,12 +9,14 @@ import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
 import { useTranslation, type Lang } from '@/lib/i18n';
 import swiftPayLogo from '@assets/swift-logo.png';
+import { useNotifications } from '@/lib/notifications';
 
 const NAV = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/envoyer', icon: Send, label: 'Dépense les crypto' },
   { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { href: '/profil', icon: User, label: 'Profil' },
+  { href: '/notifications', icon: Bell, label: 'Notifications' },
 ];
 
 function BottomNav({ hidden }: { hidden?: boolean }) {
@@ -88,6 +90,7 @@ export function DashboardLayout({ children }: Props) {
   const { lang, setLang } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [, navigate] = useLocation();
+  const { unreadCount } = useNotifications(user?.id);
 
   const handleLogout = () => {
     logout();
@@ -143,6 +146,11 @@ export function DashboardLayout({ children }: Props) {
               >
                 <item.icon className={`w-4 h-4 ${active ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} />
                 {item.label}
+                {item.href === '/notifications' && unreadCount > 0 && (
+                  <span className="ml-auto min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
                 {active && <ChevronRight className="w-3 h-3 ml-auto text-primary" />}
               </a>
             </Link>
@@ -231,9 +239,17 @@ export function DashboardLayout({ children }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button className="relative w-9 h-9 flex items-center justify-center rounded-xl border border-border bg-secondary hover:bg-muted transition-colors">
+             <button
+               onClick={() => navigate('/notifications')}
+               className="relative w-9 h-9 flex items-center justify-center rounded-xl border border-border bg-secondary hover:bg-muted transition-colors"
+               aria-label={unreadCount > 0 ? `${unreadCount} notifications non lues` : 'Notifications'}
+             >
               <Bell className="w-4 h-4 text-muted-foreground" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />
+               {unreadCount > 0 && (
+                 <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center border-2 border-card">
+                   {unreadCount > 9 ? '9+' : unreadCount}
+                 </span>
+               )}
             </button>
             <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
               {initials}

@@ -13,6 +13,7 @@ import SendPayment from '@/pages/SendPayment';
 import Transactions from '@/pages/Transactions';
 import TransactionDetail from '@/pages/TransactionDetail';
 import Profile from '@/pages/Profile';
+import { Notifications, NotificationDetail } from '@/pages/Notifications';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { LanguageProvider } from '@/lib/i18n';
 import { AuthProvider, useAuth } from '@/lib/auth';
@@ -51,6 +52,12 @@ function Router() {
       </Route>
       <Route path="/profil">
         {() => <ProtectedRoute component={Profile} />}
+      </Route>
+      <Route path="/notifications">
+        {() => <ProtectedRoute component={Notifications} />}
+      </Route>
+      <Route path="/notifications/:id">
+        {() => <ProtectedRoute component={NotificationDetail} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
