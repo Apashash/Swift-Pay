@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, LogIn, UserPlus, ArrowLeftRight, HeadphonesIcon, ChevronRight, Building2, Globe, Sun, Moon } from 'lucide-react';
+import { Menu, X, LogIn, UserPlus, ArrowLeftRight, HeadphonesIcon, ChevronRight, Building2, Globe, Sun, Moon, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import swiftPayLogo from "@assets/swift-logo.png";
 import { useTranslation, type Lang } from '@/lib/i18n';
 import { useTheme } from '@/lib/theme';
+import { useAuth } from '@/lib/auth';
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
@@ -13,19 +14,27 @@ export function Navbar() {
   const { lang, setLang, t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
   const [, navigate] = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const menuItems = [
-    { labelKey: 'nav_menu_login' as const, descKey: 'nav_menu_login_desc' as const, icon: LogIn },
-    { labelKey: 'nav_menu_register' as const, descKey: 'nav_menu_register_desc' as const, icon: UserPlus },
-    { labelKey: 'nav_menu_transactions' as const, descKey: 'nav_menu_transactions_desc' as const, icon: ArrowLeftRight },
-    { labelKey: 'nav_menu_business' as const, descKey: 'nav_menu_business_desc' as const, icon: Building2 },
-    { labelKey: 'nav_menu_support' as const, descKey: 'nav_menu_support_desc' as const, icon: HeadphonesIcon },
+    { labelKey: 'nav_menu_login' as const, descKey: 'nav_menu_login_desc' as const, icon: LogIn, href: '/connexion' },
+    { labelKey: 'nav_menu_register' as const, descKey: 'nav_menu_register_desc' as const, icon: UserPlus, href: '/inscription' },
+    { labelKey: 'nav_menu_transactions' as const, descKey: 'nav_menu_transactions_desc' as const, icon: ArrowLeftRight, href: '/transactions' },
+    { labelKey: 'nav_menu_business' as const, descKey: 'nav_menu_business_desc' as const, icon: Building2, href: '#business' },
+    { labelKey: 'nav_menu_support' as const, descKey: 'nav_menu_support_desc' as const, icon: HeadphonesIcon, href: '#' },
   ];
 
   const languages: { code: Lang; label: string; flag: string }[] = [
     { code: 'fr', label: 'Français', flag: '🇫🇷' },
     { code: 'en', label: 'English', flag: '🇬🇧' },
   ];
+
+  const initials = user?.fullName
+    .split(' ')
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase() || '';
 
   return (
     <>
@@ -49,12 +58,39 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button variant="ghost" className="hidden sm:inline-flex text-muted-foreground hover:text-foreground hover:bg-secondary">
-              {t('nav_signIn')}
-            </Button>
-            <Button className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.4)] transition-all hover:shadow-[0_0_30px_rgba(0,230,118,0.6)]">
-              {t('nav_getStarted')}
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  variant="ghost"
+                  className="hidden sm:inline-flex text-muted-foreground hover:text-foreground hover:bg-secondary gap-2"
+                  onClick={() => navigate('/dashboard')}
+                >
+                  <LayoutDashboard className="w-4 h-4" /> Dashboard
+                </Button>
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="hidden sm:flex w-9 h-9 rounded-full bg-primary items-center justify-center text-primary-foreground text-sm font-bold"
+                >
+                  {initials}
+                </button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  className="hidden sm:inline-flex text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  onClick={() => navigate('/connexion')}
+                >
+                  {t('nav_signIn')}
+                </Button>
+                <Button
+                  className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.4)] transition-all hover:shadow-[0_0_30px_rgba(0,230,118,0.6)]"
+                  onClick={() => navigate('/inscription')}
+                >
+                  {t('nav_getStarted')}
+                </Button>
+              </>
+            )}
 
             {/* Language switcher */}
             <div className="relative">
@@ -159,41 +195,104 @@ export function Navbar() {
                 </div>
               </div>
 
+              {isAuthenticated && user && (
+                <div className="mx-4 mt-4 p-3 bg-secondary/60 rounded-xl flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold flex-shrink-0">
+                    {initials}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-sm font-semibold text-foreground truncate">{user.fullName}</div>
+                    <div className="text-xs text-muted-foreground truncate">{user.email}</div>
+                  </div>
+                </div>
+              )}
+
               <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-                {menuItems.map((item, i) => (
-                  <motion.a
-                    key={item.labelKey}
-                    href={item.labelKey === 'nav_menu_transactions' ? '/verifier' : '#'}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    onClick={(event) => {
-                      setOpen(false);
-                      if (item.labelKey === 'nav_menu_transactions') {
-                        event.preventDefault();
-                        navigate('/verifier');
-                      }
-                    }}
-                    data-testid={`link-menu-${item.labelKey}`}
-                    className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-secondary group transition-colors"
-                  >
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
-                      <item.icon className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold text-foreground">{t(item.labelKey)}</div>
-                      <div className="text-xs text-muted-foreground">{t(item.descKey)}</div>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </motion.a>
-                ))}
+                {isAuthenticated ? (
+                  <>
+                    {[
+                      { label: 'Tableau de bord', href: '/dashboard', icon: LayoutDashboard, desc: 'Vue d\'ensemble de votre compte' },
+                      { label: t('nav_menu_transactions'), href: '/transactions', icon: ArrowLeftRight, desc: t('nav_menu_transactions_desc') },
+                      { label: t('nav_menu_business'), href: '#business', icon: Building2, desc: t('nav_menu_business_desc') },
+                      { label: t('nav_menu_support'), href: '#', icon: HeadphonesIcon, desc: t('nav_menu_support_desc') },
+                    ].map((item, i) => (
+                      <motion.a
+                        key={item.label}
+                        href={item.href}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.06 }}
+                        onClick={(e) => {
+                          setOpen(false);
+                          if (!item.href.startsWith('#')) {
+                            e.preventDefault();
+                            navigate(item.href);
+                          }
+                        }}
+                        className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-secondary group transition-colors"
+                      >
+                        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                          <item.icon className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-foreground">{item.label}</div>
+                          <div className="text-xs text-muted-foreground">{item.desc}</div>
+                        </div>
+                        <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                      </motion.a>
+                    ))}
+                  </>
+                ) : (
+                  menuItems.map((item, i) => (
+                    <motion.a
+                      key={item.labelKey}
+                      href={item.href}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.06 }}
+                      onClick={(e) => {
+                        setOpen(false);
+                        if (!item.href.startsWith('#')) {
+                          e.preventDefault();
+                          navigate(item.href);
+                        }
+                      }}
+                      data-testid={`link-menu-${item.labelKey}`}
+                      className="flex items-center gap-4 px-4 py-3.5 rounded-xl hover:bg-secondary group transition-colors"
+                    >
+                      <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+                        <item.icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-semibold text-foreground">{t(item.labelKey)}</div>
+                        <div className="text-xs text-muted-foreground">{t(item.descKey)}</div>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </motion.a>
+                  ))
+                )}
               </nav>
 
               <div className="px-4 pb-6 space-y-3 border-t border-border/50 pt-4">
-                <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.3)]">
-                  {t('nav_getStarted')}
-                </Button>
-                <p className="text-center text-xs text-muted-foreground">{t('nav_tagline')}</p>
+                {isAuthenticated ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => { logout(); setOpen(false); navigate('/'); }}
+                    className="w-full border-destructive/30 text-destructive hover:bg-destructive/10"
+                  >
+                    Se déconnecter
+                  </Button>
+                ) : (
+                  <>
+                    <Button
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.3)]"
+                      onClick={() => { setOpen(false); navigate('/inscription'); }}
+                    >
+                      {t('nav_getStarted')}
+                    </Button>
+                    <p className="text-center text-xs text-muted-foreground">{t('nav_tagline')}</p>
+                  </>
+                )}
               </div>
             </motion.div>
           </>

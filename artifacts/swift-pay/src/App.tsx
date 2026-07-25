@@ -6,18 +6,65 @@ import { SupportButton } from '@/components/layout/SupportButton';
 import NotFound from '@/pages/not-found';
 import Home from '@/pages/Home';
 import VerifyTransaction from '@/pages/VerifyTransaction';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import Dashboard from '@/pages/Dashboard';
+import SendPayment from '@/pages/SendPayment';
+import Transactions from '@/pages/Transactions';
+import TransactionDetail from '@/pages/TransactionDetail';
+import Profile from '@/pages/Profile';
+import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { LanguageProvider } from '@/lib/i18n';
+import { AuthProvider, useAuth } from '@/lib/auth';
 
 const queryClient = new QueryClient();
+
+function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
+  const { isAuthenticated } = useAuth();
+  const [, navigate] = useLocation();
+
+  if (!isAuthenticated) {
+    navigate('/connexion');
+    return null;
+  }
+  return <Component />;
+}
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/verifier" component={VerifyTransaction} />
+      <Route path="/connexion" component={Login} />
+      <Route path="/inscription" component={Register} />
+      <Route path="/dashboard">
+        {() => <ProtectedRoute component={Dashboard} />}
+      </Route>
+      <Route path="/envoyer">
+        {() => <ProtectedRoute component={SendPayment} />}
+      </Route>
+      <Route path="/transactions">
+        {() => <ProtectedRoute component={Transactions} />}
+      </Route>
+      <Route path="/transactions/:id">
+        {() => <ProtectedRoute component={TransactionDetail} />}
+      </Route>
+      <Route path="/profil">
+        {() => <ProtectedRoute component={Profile} />}
+      </Route>
       <Route component={NotFound} />
     </Switch>
+  );
+}
+
+function AppInner() {
+  const { isAuthenticated } = useAuth();
+  return (
+    <>
+      <Router />
+      {/* Only show the floating support button on public pages */}
+      {!isAuthenticated && <SupportButton />}
+    </>
   );
 }
 
@@ -25,15 +72,16 @@ function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
-        <QueryClientProvider client={queryClient}>
-          <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-              <Router />
-              <SupportButton />
-            </WouterRouter>
-            <Toaster />
-          </TooltipProvider>
-        </QueryClientProvider>
+        <AuthProvider>
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+                <AppInner />
+              </WouterRouter>
+              <Toaster />
+            </TooltipProvider>
+          </QueryClientProvider>
+        </AuthProvider>
       </LanguageProvider>
     </ThemeProvider>
   );
