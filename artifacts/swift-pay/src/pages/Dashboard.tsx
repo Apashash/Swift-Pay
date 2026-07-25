@@ -44,37 +44,6 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-8 space-y-6 max-w-6xl mx-auto">
-        {/* Welcome banner */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="relative overflow-hidden rounded-2xl bg-card border border-border p-6"
-        >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,230,118,0.1),transparent_60%)]" />
-          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-            <div>
-              <h1 className="text-xl font-bold text-foreground">
-                Bonjour, {user?.fullName?.split(' ')[0]} 👋
-              </h1>
-              <p className="text-muted-foreground text-sm mt-1">
-                Bienvenue sur votre tableau de bord SwiftPay
-              </p>
-              {!user?.verified && (
-                <div className="mt-3 inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-500 text-xs font-medium px-3 py-1.5 rounded-full">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  Vérifiez votre identité pour débloquer les montants illimités
-                </div>
-              )}
-            </div>
-            <Link href="/envoyer">
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-[0_0_20px_rgba(0,230,118,0.3)] shrink-0 gap-2">
-                <Send className="w-4 h-4" /> Envoyer de l'argent
-              </Button>
-            </Link>
-          </div>
-        </motion.div>
-
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {stats.map((stat, i) => (
