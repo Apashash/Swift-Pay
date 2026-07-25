@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Link } from 'wouter';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, ArrowLeftRight, TrendingUp, Clock,
   ChevronRight, CheckCircle2, AlertCircle, Loader2,
-  ArrowUpRight, Users,
+  ArrowUpRight, Users, ChevronDown,
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/lib/auth';
@@ -52,6 +52,58 @@ const PERIOD_LABELS: Record<Period, string> = {
   année: 'Cette année',
 };
 
+function PeriodDropdown({ period, onChange }: { period: Period; onChange: (p: Period) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative w-fit">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 h-9 px-4 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors"
+      >
+        <span>{PERIOD_LABELS[period]}</span>
+        <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 mt-1.5 z-50 bg-card border border-border rounded-xl shadow-xl overflow-hidden min-w-[140px]"
+          >
+            {PERIODS.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => { onChange(key); setOpen(false); }}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
+                  period === key
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-foreground hover:bg-secondary'
+                }`}
+              >
+                {label}
+                {period === key && <span className="w-1.5 h-1.5 rounded-full bg-primary" />}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [period, setPeriod] = useState<Period>('mois');
@@ -85,34 +137,8 @@ export default function Dashboard() {
     <DashboardLayout>
       <div className="p-4 lg:p-8 space-y-5 max-w-6xl mx-auto">
 
-        {/* Period filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="flex items-center gap-1.5 p-1 bg-card border border-border rounded-2xl w-fit"
-        >
-          {PERIODS.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setPeriod(key)}
-              className={`relative px-4 py-2 text-sm font-medium rounded-xl transition-all ${
-                period === key
-                  ? 'text-primary-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              {period === key && (
-                <motion.span
-                  layoutId="period-pill"
-                  className="absolute inset-0 bg-primary rounded-xl"
-                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                />
-              )}
-              <span className="relative z-10">{label}</span>
-            </button>
-          ))}
-        </motion.div>
+        {/* Period filter dropdown */}
+        <PeriodDropdown period={period} onChange={setPeriod} />
 
         {/* Stats grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
