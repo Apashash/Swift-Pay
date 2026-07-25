@@ -47,11 +47,6 @@ export default function Profile() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-8 max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">Profil</h1>
-          <p className="text-sm text-muted-foreground mt-1">Gérez vos informations personnelles</p>
-        </div>
-
         {/* Avatar + stats */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
