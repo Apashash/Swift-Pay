@@ -170,6 +170,28 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Rate card */}
+        <div className="bg-card border border-border rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-foreground">Taux du marché</h3>
+            <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-medium">LIVE</span>
+          </div>
+          <div className="flex gap-6">
+            {[
+              { pair: 'USDT → FCFA', rate: '649', change: '+0.3%' },
+              { pair: 'BTC → FCFA', rate: '45,000,000', change: '+1.2%' },
+            ].map((r) => (
+              <div key={r.pair} className="flex items-center gap-4">
+                <span className="text-xs font-medium text-muted-foreground">{r.pair}</span>
+                <div>
+                  <span className="text-sm font-bold text-foreground">{r.rate}</span>
+                  <span className="text-[11px] text-primary ml-1.5">{r.change}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Filtered transactions */}
           <motion.div
@@ -258,27 +280,6 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Rate card */}
-            <div className="bg-card border border-border rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-foreground">Taux du marché</h3>
-                <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-medium">LIVE</span>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { pair: 'USDT → FCFA', rate: '649', change: '+0.3%' },
-                  { pair: 'BTC → FCFA', rate: '45,000,000', change: '+1.2%' },
-                ].map((r) => (
-                  <div key={r.pair} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                    <span className="text-xs font-medium text-muted-foreground">{r.pair}</span>
-                    <div className="text-right">
-                      <div className="text-sm font-bold text-foreground">{r.rate}</div>
-                      <div className="text-[11px] text-primary">{r.change}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
           </motion.div>
         </div>
       </div>
