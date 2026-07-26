@@ -26,6 +26,7 @@ pnpm install
 ## Environment
 
 - `DATABASE_URL` — provided automatically by Replit (runtime-managed)
+- `SUPABASE_DATABASE_URL` — optional Replit Secret; when present, the API and Drizzle use this Supabase PostgreSQL connection instead of `DATABASE_URL`
 - `SESSION_SECRET` — stored as a Replit Secret
 
 ## Notes
