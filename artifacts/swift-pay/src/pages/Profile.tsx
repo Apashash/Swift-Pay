@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Mail, Phone, MapPin, Shield, Bell,
-  ChevronRight, CheckCircle2, AlertCircle, Edit2, Save, X, LogOut,
+  ChevronRight, CheckCircle2, AlertCircle, Edit2, Save, X, LogOut, Camera,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,24 @@ export default function Profile() {
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({ fullName: user?.fullName || '', email: user?.email || '', phone: user?.phone || '' });
   const [saved, setSaved] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarClick = () => fileInputRef.current?.click();
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      updateUser({ avatar: dataUrl });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    };
+    reader.readAsDataURL(file);
+    // reset so the same file can be re-selected
+    e.target.value = '';
+  };
 
   const handleLogout = () => { logout(); navigate('/'); };
 
@@ -55,10 +73,37 @@ export default function Profile() {
           className="relative overflow-hidden bg-card border border-border rounded-2xl p-6"
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,230,118,0.08),transparent_60%)]" />
+          {/* Hidden file input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
+
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-5">
-            <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold flex-shrink-0">
-              {initials}
-            </div>
+            <button
+              onClick={handleAvatarClick}
+              className="relative w-20 h-20 rounded-full flex-shrink-0 group focus:outline-none"
+              aria-label="Changer la photo de profil"
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="Photo de profil"
+                  className="w-20 h-20 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
+                  {initials}
+                </div>
+              )}
+              {/* Overlay on hover */}
+              <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity flex items-center justify-center">
+                <Camera className="w-6 h-6 text-white" />
+              </div>
+            </button>
             <div className="flex-1 min-w-0">
               <h2 className="text-lg font-bold text-foreground">{user?.fullName}</h2>
               <p className="text-sm text-muted-foreground">{user?.email}</p>

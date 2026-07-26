@@ -135,8 +135,10 @@ export function DashboardLayout({ children }: Props) {
 
       {/* User card */}
       <div className="mx-4 mt-4 p-3 bg-secondary/60 rounded-xl flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold flex-shrink-0">
-          {initials}
+        <div className="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold">
+          {user?.avatar
+            ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+            : initials}
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-semibold text-foreground truncate">{user?.fullName}</div>
@@ -267,9 +269,11 @@ export function DashboardLayout({ children }: Props) {
             </button>
             <button
               onClick={() => navigate('/profil')}
-              className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
+              className="w-9 h-9 rounded-full overflow-hidden bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
             >
-              {initials}
+              {user?.avatar
+                ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                : initials}
             </button>
           </div>
         </header>

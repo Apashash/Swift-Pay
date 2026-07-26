@@ -18,7 +18,7 @@ interface AuthContextValue {
   login: (identifier: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
-  updateUser: (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone'>>) => void;
+  updateUser: (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone' | 'avatar'>>) => void;
 }
 
 export interface RegisterData {
@@ -105,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   };
 
-  const updateUser = (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone'>>) => {
+  const updateUser = (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone' | 'avatar'>>) => {
     setUser((prev) => {
       if (!prev) return prev;
       const updated = { ...prev, ...fields };
