@@ -1,48 +1,37 @@
 # SwiftPay
 
-A crypto-to-Mobile Money payment platform. Users send crypto (USDT, BTC, ETH, etc.) and recipients receive FCFA via Mobile Money operators (Orange Money, MTN MoMo, Wave, Moov Money, etc.).
+A French-localized crypto payment platform targeting West Africa. Users send crypto from anywhere; recipients receive FCFA via Mobile Money (Orange Money, MTN, Wave, Moov Money) in seconds.
 
 ## Stack
 
-- **Frontend**: React + Vite + TypeScript + Tailwind CSS + shadcn/ui (`artifacts/swift-pay`)
-- **Backend**: Express 5 + TypeScript API server (`artifacts/api-server`)
-- **Database**: PostgreSQL via Drizzle ORM (`lib/db`)
-- **Monorepo**: pnpm workspaces
+- **Frontend**: React + Vite + Wouter + TailwindCSS (artifact: `artifacts/swift-pay`)
+- **API Server**: Express 5 + Drizzle ORM + PostgreSQL (artifact: `artifacts/api-server`)
+- **Shared libs**: `lib/api-spec` (OpenAPI), `lib/api-zod` (Zod schemas), `lib/api-client-react` (TanStack Query client), `lib/db` (Drizzle schema + connection)
+- **Package manager**: pnpm workspaces
 
 ## Running the project
 
-Both services start automatically via the configured workflows:
+Both services start automatically via the **Project** run button:
 
-- **SwiftPay web app** — `pnpm --filter @workspace/swift-pay run dev` (port from `PORT` env)
-- **API server** — `pnpm --filter @workspace/api-server run dev` (port 8080)
+| Service | Command | Port |
+|---|---|---|
+| SwiftPay frontend | `pnpm --filter @workspace/swift-pay run dev` | 22199 |
+| API Server | `pnpm --filter @workspace/api-server run dev` | 8080 |
 
-## Environment variables
-
-- `DATABASE_URL` — PostgreSQL connection string (auto-provided by Replit)
-- `SESSION_SECRET` — Secret for session signing
-- `PORT` — Port for each artifact service (auto-assigned by Replit)
-
-## Database schema
-
-Schema lives in `lib/db/src/schema/`. Push changes with:
-
+Install dependencies first if `node_modules` is missing:
 ```
-cd lib/db && pnpm run push
+pnpm install
 ```
 
-## Project structure
+## Environment
 
-```
-artifacts/
-  swift-pay/      # React frontend
-  api-server/     # Express API
-lib/
-  db/             # Drizzle ORM schema + client
-  api-spec/       # OpenAPI spec + Orval codegen config
-  api-client-react/  # Generated React Query hooks
-  api-zod/        # Zod validation schemas
-```
+- `DATABASE_URL` — provided automatically by Replit (runtime-managed)
+- `SESSION_SECRET` — stored as a Replit Secret
+
+## Notes
+
+- Auth is currently mock/localStorage-based in the frontend; no real backend auth yet
+- The database schema (`lib/db/src/schema/index.ts`) is a placeholder — no tables defined yet
+- API routes beyond `/api/healthz` are defined in the OpenAPI spec but not yet implemented
 
 ## User preferences
-
-- Keep the existing French routing convention (`/connexion`, `/inscription`, etc.)
