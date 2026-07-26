@@ -6,7 +6,7 @@ import {
   Banknote, FileText, Clock, X, ChevronRight,
   Sparkles, ExternalLink, ArrowLeft, Tag,
   LockKeyhole, Infinity, Phone, MapPin, Search,
-  ChevronDown,
+  ChevronDown, Pencil,
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { Button } from '@/components/ui/button';
@@ -88,6 +88,7 @@ function generateId() {
 
 /* ─── Helpers ─── */
 const fmtAmount = (n: number) => n.toLocaleString('fr-FR');
+const fmtInput  = (val: string) => val.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 const fmtDate   = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 const isExpired = (expiry: string) => !!expiry && new Date(expiry) < new Date();
@@ -112,7 +113,7 @@ function OperatorLogo({ opId, size = 'sm' }: { opId: string; size?: 'sm' | 'xs' 
 }
 
 /* ─── LinkCard ─── */
-function LinkCard({ link, onDelete }: { link: PaymentLinkItem; onDelete: () => void }) {
+function LinkCard({ link, onDelete, onEdit }: { link: PaymentLinkItem; onDelete: () => void; onEdit: () => void }) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const expired = isExpired(link.expiry);
@@ -210,6 +211,9 @@ function LinkCard({ link, onDelete }: { link: PaymentLinkItem; onDelete: () => v
         <button onClick={handleShare} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
           <Share2 className="w-3.5 h-3.5" /> Partager
         </button>
+        <button onClick={onEdit} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
+          <Pencil className="w-3.5 h-3.5" /> Éditer
+        </button>
         <div className="ml-auto">
           <AlertDialog>
             <AlertDialogTrigger asChild>
@@ -239,15 +243,29 @@ function LinkCard({ link, onDelete }: { link: PaymentLinkItem; onDelete: () => v
 }
 
 /* ─── CreateForm ─── */
-function CreateForm({ onCreated, onClose }: { onCreated: (l: PaymentLinkItem) => void; onClose: () => void }) {
-  const [title, setTitle]           = useState('');
-  const [amountType, setAmountType] = useState<AmountType>('fixed');
-  const [amount, setAmount]         = useState('');
-  const [description, setDescription] = useState('');
-  const [expiry, setExpiry]         = useState('');
-  const [countryCode, setCountryCode] = useState('CI');
-  const [operator, setOperator]     = useState('Orange');
-  const [phone, setPhone]           = useState('');
+function CreateForm({ onSaved, onClose, onDelete, initialLink }: {
+  onSaved: (l: PaymentLinkItem, isEdit: boolean) => void;
+  onClose: () => void;
+  onDelete?: () => void;
+  initialLink?: PaymentLinkItem;
+}) {
+  const isEdit = !!initialLink;
+
+  // Strip dial code prefix from stored phone for editing
+  const barePhone = (link: PaymentLinkItem) => {
+    const c = COUNTRIES.find(x => x.code === link.countryCode);
+    const prefix = c ? `${c.dialCode} ` : '';
+    return link.phone.startsWith(prefix) ? link.phone.slice(prefix.length) : link.phone;
+  };
+
+  const [title, setTitle]           = useState(initialLink?.title ?? '');
+  const [amountType, setAmountType] = useState<AmountType>(initialLink?.amountType ?? 'fixed');
+  const [amount, setAmount]         = useState(initialLink?.amount != null ? fmtInput(String(initialLink.amount)) : '');
+  const [description, setDescription] = useState(initialLink?.description ?? '');
+  const [expiry, setExpiry]         = useState(initialLink?.expiry ?? '');
+  const [countryCode, setCountryCode] = useState(initialLink?.countryCode ?? 'CI');
+  const [operator, setOperator]     = useState(initialLink?.operator ?? 'Orange');
+  const [phone, setPhone]           = useState(initialLink ? barePhone(initialLink) : '');
   const [showCountryMenu, setShowCountryMenu] = useState(false);
   const [countrySearch, setCountrySearch]     = useState('');
   const menuRef   = useRef<HTMLDivElement>(null);
@@ -285,19 +303,18 @@ function CreateForm({ onCreated, onClose }: { onCreated: (l: PaymentLinkItem) =>
   const amountOk  = amountType === 'flexible' || amountNum >= 500;
   const isValid   = title.trim().length >= 2 && amountOk && operator && phone.trim().length >= 8;
 
-  const fmtInput = (val: string) => val.replace(/\D/g, '').replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
   const handleCreate = () => {
-    const id  = generateId();
-    const url = `${window.location.origin}/pay/${id}`;
-    onCreated({
+    const id  = isEdit ? initialLink!.id : generateId();
+    const url = isEdit ? initialLink!.url : `${window.location.origin}/pay/${id}`;
+    onSaved({
       id, title: title.trim(),
       amountType, amount: amountType === 'fixed' ? amountNum : null,
       description: description.trim(), expiry,
       countryCode, countryFlag: country.flag, countryName: country.name,
       operator, phone: `${country.dialCode} ${phone.trim()}`,
-      url, createdAt: new Date().toISOString(),
-    });
+      url, createdAt: isEdit ? initialLink!.createdAt : new Date().toISOString(),
+    }, isEdit);
   };
 
   return (
@@ -308,7 +325,7 @@ function CreateForm({ onCreated, onClose }: { onCreated: (l: PaymentLinkItem) =>
     >
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-        <h2 className="text-sm font-bold text-foreground">Nouveau lien de paiement</h2>
+        <h2 className="text-sm font-bold text-foreground">{isEdit ? 'Modifier le lien' : 'Nouveau lien de paiement'}</h2>
         <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
           <X className="w-4 h-4" />
         </button>
@@ -514,10 +531,34 @@ function CreateForm({ onCreated, onClose }: { onCreated: (l: PaymentLinkItem) =>
           className="w-full h-11 bg-primary text-primary-foreground font-semibold shadow-[0_0_20px_rgba(0,230,118,0.3)] disabled:opacity-40 disabled:shadow-none"
           disabled={!isValid} onClick={handleCreate}
         >
-          <Sparkles className="w-4 h-4 mr-2" />
-          Générer le lien
+          {isEdit ? <Pencil className="w-4 h-4 mr-2" /> : <Sparkles className="w-4 h-4 mr-2" />}
+          {isEdit ? 'Enregistrer les modifications' : 'Générer le lien'}
           <ChevronRight className="w-4 h-4 ml-auto" />
         </Button>
+
+        {isEdit && onDelete && (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <button className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border hover:border-destructive/30 transition-colors">
+                <Trash2 className="w-3.5 h-3.5" /> Supprimer ce lien
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Supprimer ce lien ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Le lien «&nbsp;{initialLink!.title}&nbsp;» sera définitivement supprimé.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                  Supprimer
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
       </div>
     </motion.div>
   );
@@ -528,19 +569,23 @@ export default function PaymentLink() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const { toast } = useToast();
-  const [links, setLinks]     = useState<PaymentLinkItem[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [links, setLinks]         = useState<PaymentLinkItem[]>([]);
+  const [showForm, setShowForm]   = useState(false);
+  const [editingLink, setEditingLink] = useState<PaymentLinkItem | undefined>();
 
   useEffect(() => {
     if (user?.id) setLinks(loadLinks(user.id));
   }, [user?.id]);
 
-  const handleCreated = (link: PaymentLinkItem) => {
-    const updated = [link, ...links];
+  const handleSaved = (link: PaymentLinkItem, isEdit: boolean) => {
+    const updated = isEdit
+      ? links.map(l => l.id === link.id ? link : l)
+      : [link, ...links];
     setLinks(updated);
     if (user?.id) saveLinks(user.id, updated);
     setShowForm(false);
-    toast({ title: 'Lien créé !', description: link.title });
+    setEditingLink(undefined);
+    toast({ title: isEdit ? 'Lien modifié !' : 'Lien créé !', description: link.title });
   };
 
   const handleDelete = (id: string) => {
@@ -548,6 +593,16 @@ export default function PaymentLink() {
     setLinks(updated);
     if (user?.id) saveLinks(user.id, updated);
     toast({ title: 'Lien supprimé' });
+  };
+
+  const handleEdit = (link: PaymentLinkItem) => {
+    setEditingLink(link);
+    setShowForm(true);
+  };
+
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setEditingLink(undefined);
   };
 
   return (
@@ -586,7 +641,7 @@ export default function PaymentLink() {
 
         {/* Form */}
         <AnimatePresence>
-          {showForm && <CreateForm onCreated={handleCreated} onClose={() => setShowForm(false)} />}
+          {showForm && <CreateForm onSaved={handleSaved} onClose={handleCloseForm} initialLink={editingLink} onDelete={editingLink ? () => { handleDelete(editingLink.id); handleCloseForm(); } : undefined} />}
         </AnimatePresence>
 
         {/* List */}
@@ -597,7 +652,7 @@ export default function PaymentLink() {
             </p>
             <AnimatePresence>
               {links.map(link => (
-                <LinkCard key={link.id} link={link} onDelete={() => handleDelete(link.id)} />
+                <LinkCard key={link.id} link={link} onDelete={() => handleDelete(link.id)} onEdit={() => handleEdit(link)} />
               ))}
             </AnimatePresence>
           </div>
