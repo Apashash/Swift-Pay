@@ -265,9 +265,12 @@ export function DashboardLayout({ children }: Props) {
                  </span>
                )}
             </button>
-            <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+            <button
+              onClick={() => navigate('/profil')}
+              className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold hover:opacity-90 transition-opacity"
+            >
               {initials}
-            </div>
+            </button>
           </div>
         </header>
 
