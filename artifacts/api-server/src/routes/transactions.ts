@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
-import { db, transactionsTable, usersTable, authSessionsTable } from "@workspace/db";
+import { db, transactionsTable, notificationsTable, usersTable, authSessionsTable } from "@workspace/db";
 import { getBearerToken, getUserFromToken } from "../lib/auth";
 
 const router: IRouter = Router();
@@ -189,6 +189,18 @@ router.post("/transactions", async (req, res, next) => {
       .set({ paymentAddress })
       .where(eq(transactionsTable.id, tx.id))
       .returning();
+
+    // Auto-create a notification for the new transaction
+    await db.insert(notificationsTable).values({
+      userId: user.id,
+      type: "transaction",
+      title: `Transfert vers ${updated.recipient}`,
+      message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA est en cours de traitement.`,
+      details: `Vous avez envoyé ${updated.amountCrypto} ${updated.cryptoCurrency} via ${updated.network} en ${updated.countryName}. Nous vous notifierons dès que le paiement sera confirmé.`,
+      read: false,
+      actionLabel: "Suivre le transfert",
+      actionHref: `/transactions/${updated.id}`,
+    });
 
     res.status(201).json({ transaction: updated });
   } catch (error) {

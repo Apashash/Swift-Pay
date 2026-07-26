@@ -85,6 +85,33 @@ export const transactionsTable = pgTable(
   }),
 );
 
+export const notificationsTable = pgTable(
+  "notifications",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    type: text("type").notNull().default("info"), // 'transaction' | 'security' | 'info'
+    title: text("title").notNull(),
+    message: text("message").notNull(),
+    details: text("details").notNull().default(""),
+    read: boolean("read").notNull().default(false),
+    actionLabel: text("action_label"),
+    actionHref: text("action_href"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("notifications_user_id_idx").on(table.userId),
+    readIdx: index("notifications_read_idx").on(table.read),
+    createdAtIdx: index("notifications_created_at_idx").on(table.createdAt),
+  }),
+);
+
 export type User = typeof usersTable.$inferSelect;
 export type Transaction = typeof transactionsTable.$inferSelect;
 export type NewTransaction = typeof transactionsTable.$inferInsert;
+export type Notification = typeof notificationsTable.$inferSelect;
+export type NewNotification = typeof notificationsTable.$inferInsert;
