@@ -1,8 +1,8 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   User, Mail, Phone, MapPin, Shield, Bell,
-  ChevronRight, CheckCircle2, AlertCircle, Edit2, Save, X, LogOut, Camera,
+  ChevronRight, CheckCircle2, AlertCircle, Edit2, Save, X, LogOut, Camera, Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +10,14 @@ import { Label } from '@/components/ui/label';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/lib/auth';
 import { useLocation } from 'wouter';
-import { MOCK_TRANSACTIONS } from '@/lib/mock-data';
+import { apiFetch } from '@/lib/api';
+
+interface Stats {
+  totalSent: number;
+  totalCount: number;
+  pendingCount: number;
+  countriesCount: number;
+}
 
 export default function Profile() {
   const { user, logout, updateUser } = useAuth();
@@ -19,6 +26,16 @@ export default function Profile() {
   const [form, setForm] = useState({ fullName: user?.fullName || '', email: user?.email || '', phone: user?.phone || '' });
   const [saved, setSaved] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  useEffect(() => {
+    setLoadingStats(true);
+    apiFetch<Stats>('/transactions/stats')
+      .then((data) => setStats(data))
+      .catch(() => setStats(null))
+      .finally(() => setLoadingStats(false));
+  }, []);
 
   const handleAvatarClick = () => fileInputRef.current?.click();
 
@@ -33,7 +50,6 @@ export default function Profile() {
       setTimeout(() => setSaved(false), 3000);
     };
     reader.readAsDataURL(file);
-    // reset so the same file can be re-selected
     e.target.value = '';
   };
 
@@ -58,9 +74,7 @@ export default function Profile() {
     .join('')
     .toUpperCase() || 'SP';
 
-  const totalSent = MOCK_TRANSACTIONS
-    .filter((t) => t.status === 'completed')
-    .reduce((a, t) => a + t.amountFCFA, 0);
+  const fmt = (n: number) => n.toLocaleString('fr-FR');
 
   return (
     <DashboardLayout>
@@ -73,7 +87,6 @@ export default function Profile() {
           className="relative overflow-hidden bg-card border border-border rounded-2xl p-6"
         >
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(0,230,118,0.08),transparent_60%)]" />
-          {/* Hidden file input */}
           <input
             ref={fileInputRef}
             type="file"
@@ -89,17 +102,12 @@ export default function Profile() {
               aria-label="Changer la photo de profil"
             >
               {user?.avatar ? (
-                <img
-                  src={user.avatar}
-                  alt="Photo de profil"
-                  className="w-20 h-20 rounded-full object-cover"
-                />
+                <img src={user.avatar} alt="Photo de profil" className="w-20 h-20 rounded-full object-cover" />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold">
                   {initials}
                 </div>
               )}
-              {/* Overlay on hover */}
               <div className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity flex items-center justify-center">
                 <Camera className="w-6 h-6 text-white" />
               </div>
@@ -122,18 +130,24 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Real stats */}
           <div className="relative z-10 grid grid-cols-3 gap-4 mt-6 pt-5 border-t border-border">
-            {[
-              { label: 'Transactions', value: MOCK_TRANSACTIONS.length },
-              { label: 'Total envoyé', value: `${(totalSent / 1000).toFixed(0)}k FCFA` },
-              { label: 'Pays', value: '4' },
-            ].map((s) => (
-              <div key={s.label} className="text-center">
-                <div className="text-lg font-bold text-foreground">{s.value}</div>
-                <div className="text-xs text-muted-foreground">{s.label}</div>
+            {loadingStats ? (
+              <div className="col-span-3 flex items-center justify-center gap-2 py-2 text-muted-foreground text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" /> Chargement…
               </div>
-            ))}
+            ) : (
+              [
+                { label: 'Transactions', value: stats?.totalCount ?? 0 },
+                { label: 'Total envoyé', value: stats ? `${Math.round(stats.totalSent / 1000)}k FCFA` : '0 FCFA' },
+                { label: 'Pays', value: stats?.countriesCount ?? 0 },
+              ].map((s) => (
+                <div key={s.label} className="text-center">
+                  <div className="text-lg font-bold text-foreground">{s.value}</div>
+                  <div className="text-xs text-muted-foreground">{s.label}</div>
+                </div>
+              ))
+            )}
           </div>
         </motion.div>
 
@@ -178,10 +192,7 @@ export default function Profile() {
           <div className="flex items-center justify-between px-6 py-4 border-b border-border">
             <h3 className="text-sm font-semibold text-foreground">Informations personnelles</h3>
             {!editing ? (
-              <button
-                onClick={handleEdit}
-                className="flex items-center gap-1.5 text-xs text-primary hover:underline font-medium"
-              >
+              <button onClick={handleEdit} className="flex items-center gap-1.5 text-xs text-primary hover:underline font-medium">
                 <Edit2 className="w-3.5 h-3.5" /> Modifier
               </button>
             ) : (
@@ -244,7 +255,7 @@ export default function Profile() {
           </div>
         </motion.div>
 
-        {/* Settings sections */}
+        {/* Settings */}
         {[
           {
             title: 'Sécurité',
@@ -293,7 +304,7 @@ export default function Profile() {
           </motion.div>
         ))}
 
-        {/* Danger zone */}
+        {/* Logout */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

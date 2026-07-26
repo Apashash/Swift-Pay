@@ -4,10 +4,10 @@ import {
   CheckCircle2, AlertCircle, Loader2, ArrowLeft,
   Copy, ExternalLink, Share2, Check,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { MOCK_TRANSACTIONS, type TxStatus } from '@/lib/mock-data';
+import { apiFetch, type ApiTransaction, type TxStatus } from '@/lib/api';
 
 const STATUS_CONFIG: Record<TxStatus, { label: string; icon: React.ElementType; color: string; bg: string; border: string; desc: string }> = {
   completed: {
@@ -32,7 +32,7 @@ const STATUS_CONFIG: Record<TxStatus, { label: string; icon: React.ElementType; 
     color: 'text-destructive',
     bg: 'bg-destructive/10',
     border: 'border-destructive/20',
-    desc: 'La transaction a échoué. Aucun fonds n\'a été débité.',
+    desc: "La transaction a échoué. Aucun fonds n'a été débité.",
   },
 };
 
@@ -42,10 +42,32 @@ export default function TransactionDetail() {
   const params = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const [copiedHash, setCopiedHash] = useState(false);
+  const [tx, setTx] = useState<ApiTransaction | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const tx = MOCK_TRANSACTIONS.find((t) => t.id === params.id);
+  useEffect(() => {
+    if (!params.id) return;
+    setLoading(true);
+    setError(false);
+    apiFetch<{ transaction: ApiTransaction }>(`/transactions/${params.id}`)
+      .then((data) => setTx(data.transaction))
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [params.id]);
 
-  if (!tx) {
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center gap-2 h-64 text-muted-foreground">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span className="text-sm">Chargement…</span>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error || !tx) {
     return (
       <DashboardLayout>
         <div className="flex flex-col items-center justify-center h-64 gap-4 text-muted-foreground">
@@ -60,11 +82,12 @@ export default function TransactionDetail() {
   }
 
   const cfg = STATUS_CONFIG[tx.status];
-  const date = new Date(tx.date);
+  const date = new Date(tx.createdAt);
 
   const handleCopyHash = () => {
-    if (tx.txHash) {
-      navigator.clipboard.writeText(tx.txHash);
+    const value = tx.txHash || tx.paymentAddress;
+    if (value) {
+      navigator.clipboard.writeText(value);
       setCopiedHash(true);
       setTimeout(() => setCopiedHash(false), 2000);
     }
@@ -104,7 +127,7 @@ export default function TransactionDetail() {
             <p className="text-sm text-muted-foreground mt-1">{cfg.desc}</p>
           </div>
           <div className={`inline-flex items-center gap-2 text-sm font-bold ${cfg.color}`}>
-            {fmt(tx.amountFCFA)} FCFA
+            {fmt(tx.amountFcfa)} FCFA
           </div>
         </motion.div>
 
@@ -120,16 +143,20 @@ export default function TransactionDetail() {
           </div>
           <div className="divide-y divide-border text-sm">
             {[
-              { label: 'ID Transaction', value: tx.id, mono: true },
+              { label: 'ID Transaction', value: tx.id.slice(0, 18) + '…', mono: true },
               { label: 'Date', value: date.toLocaleString('fr-FR') },
               { label: 'Destinataire', value: tx.recipient },
               { label: 'Numéro', value: tx.recipientPhone, mono: true },
               { label: 'Réseau', value: `${tx.networkFlag} ${tx.network}` },
-              { label: 'Pays', value: tx.country },
-              { label: 'Montant reçu', value: `${fmt(tx.amountFCFA)} FCFA`, bold: true, green: true },
-              { label: 'Crypto envoyé', value: `${tx.amountCrypto.toFixed(tx.cryptoCurrency === 'BTC' ? 6 : 2)} ${tx.cryptoCurrency}`, mono: true },
-              { label: 'Taux appliqué', value: `1 ${tx.cryptoCurrency} = ${tx.rate.toLocaleString()} FCFA` },
-              { label: 'Frais (1%)', value: `${tx.fee.toFixed(2)} ${tx.cryptoCurrency}` },
+              { label: 'Pays', value: tx.countryName },
+              { label: 'Montant reçu', value: `${fmt(tx.amountFcfa)} FCFA`, bold: true, green: true },
+              {
+                label: 'Crypto envoyé',
+                value: `${tx.cryptoCurrency === 'BTC' ? tx.amountCrypto.toFixed(6) : tx.amountCrypto.toFixed(2)} ${tx.cryptoCurrency}`,
+                mono: true,
+              },
+              { label: 'Taux appliqué', value: `1 ${tx.cryptoCurrency} = ${fmt(tx.rate)} FCFA` },
+              { label: 'Frais (1%)', value: `${tx.cryptoCurrency === 'BTC' ? tx.fee.toFixed(6) : tx.fee.toFixed(4)} ${tx.cryptoCurrency}` },
             ].map((row) => (
               <div key={row.label} className="flex items-center justify-between px-6 py-3.5">
                 <span className="text-muted-foreground">{row.label}</span>
@@ -187,18 +214,20 @@ export default function TransactionDetail() {
           </div>
         </motion.div>
 
-        {/* TX hash */}
-        {tx.txHash && (
+        {/* Payment address / TX hash */}
+        {(tx.paymentAddress || tx.txHash) && (
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: 0.2 }}
             className="bg-card border border-border rounded-2xl p-5 space-y-3"
           >
-            <h3 className="text-sm font-semibold text-foreground">Hash blockchain</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              {tx.txHash ? 'Hash blockchain' : 'Adresse de paiement'}
+            </h3>
             <div className="flex gap-2">
               <div className="flex-1 bg-secondary/60 rounded-xl px-4 py-2.5 font-mono text-xs text-foreground break-all">
-                {tx.txHash}
+                {tx.txHash || tx.paymentAddress}
               </div>
               <button
                 onClick={handleCopyHash}
@@ -206,14 +235,6 @@ export default function TransactionDetail() {
               >
                 {copiedHash ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4 text-muted-foreground" />}
               </button>
-              <a
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-xl border border-border bg-secondary hover:bg-muted transition-colors flex-shrink-0"
-              >
-                <ExternalLink className="w-4 h-4 text-muted-foreground" />
-              </a>
             </div>
           </motion.div>
         )}
@@ -224,8 +245,10 @@ export default function TransactionDetail() {
             <Share2 className="w-4 h-4" /> Partager le reçu
           </Button>
           {tx.status === 'failed' && (
-            <Button className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold gap-2"
-              onClick={() => navigate('/envoyer')}>
+            <Button
+              className="flex-1 h-12 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold gap-2"
+              onClick={() => navigate('/envoyer')}
+            >
               Réessayer
             </Button>
           )}

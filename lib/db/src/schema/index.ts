@@ -1,6 +1,8 @@
 import {
   boolean,
+  doublePrecision,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -48,4 +50,41 @@ export const authSessionsTable = pgTable(
   }),
 );
 
+export const transactionsTable = pgTable(
+  "transactions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    recipient: text("recipient").notNull(),
+    recipientPhone: text("recipient_phone").notNull(),
+    countryCode: text("country_code").notNull(),
+    countryName: text("country_name").notNull(),
+    networkFlag: text("network_flag").notNull(),
+    network: text("network").notNull(),
+    amountFcfa: integer("amount_fcfa").notNull(),
+    amountCrypto: doublePrecision("amount_crypto").notNull(),
+    cryptoCurrency: text("crypto_currency").notNull(), // 'USDT' | 'BTC'
+    rate: doublePrecision("rate").notNull(),
+    fee: doublePrecision("fee").notNull(),
+    status: text("status").notNull().default("pending"), // 'pending' | 'completed' | 'failed'
+    txHash: text("tx_hash"),
+    paymentAddress: text("payment_address"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("transactions_user_id_idx").on(table.userId),
+    statusIdx: index("transactions_status_idx").on(table.status),
+    createdAtIdx: index("transactions_created_at_idx").on(table.createdAt),
+  }),
+);
+
 export type User = typeof usersTable.$inferSelect;
+export type Transaction = typeof transactionsTable.$inferSelect;
+export type NewTransaction = typeof transactionsTable.$inferInsert;

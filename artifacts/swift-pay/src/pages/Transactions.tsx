@@ -1,14 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, CheckCircle2, AlertCircle, Loader2,
-  ChevronRight, ArrowUpDown, Download, ChevronDown,
+  ChevronRight, ArrowUpDown, ChevronDown,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
-import { MOCK_TRANSACTIONS, type TxStatus } from '@/lib/mock-data';
+import { apiFetch, type ApiTransaction, type TxStatus } from '@/lib/api';
 
 const STATUS_CONFIG: Record<TxStatus, { label: string; icon: React.ElementType; color: string; bg: string; border: string }> = {
   completed: { label: 'Complété', icon: CheckCircle2, color: 'text-primary', bg: 'bg-primary/10', border: 'border-primary/20' },
@@ -27,20 +26,10 @@ const fmt = (n: number) => n.toLocaleString('fr-FR');
 
 function StatusDropdown({ value, onChange }: { value: TxStatus | 'all'; onChange: (v: TxStatus | 'all') => void }) {
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
   const current = FILTERS.find((f) => f.value === value)!;
 
   return (
-    <div ref={ref} className="relative w-fit">
+    <div className="relative w-fit">
       <button
         onClick={() => setOpen((o) => !o)}
         className="flex items-center gap-2 h-10 px-4 bg-card border border-border rounded-xl text-sm font-medium text-foreground hover:bg-secondary transition-colors"
@@ -81,20 +70,34 @@ function StatusDropdown({ value, onChange }: { value: TxStatus | 'all'; onChange
 export default function Transactions() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<TxStatus | 'all'>('all');
+  const [transactions, setTransactions] = useState<ApiTransaction[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filtered = MOCK_TRANSACTIONS.filter((tx) => {
+  useEffect(() => {
+    setLoading(true);
+    apiFetch<{ transactions: ApiTransaction[] }>('/transactions')
+      .then((data) => setTransactions(data.transactions))
+      .catch(() => setTransactions([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filtered = transactions.filter((tx) => {
     const matchesStatus = statusFilter === 'all' || tx.status === statusFilter;
     const q = search.toLowerCase();
     const matchesSearch =
       !q ||
       tx.recipient.toLowerCase().includes(q) ||
       tx.network.toLowerCase().includes(q) ||
-      tx.country.toLowerCase().includes(q) ||
-      tx.id.toLowerCase().includes(q);
+      tx.countryName.toLowerCase().includes(q) ||
+      tx.id.toLowerCase().includes(q) ||
+      tx.recipientPhone.toLowerCase().includes(q);
     return matchesStatus && matchesSearch;
   });
 
-  const totalCompleted = MOCK_TRANSACTIONS.filter((t) => t.status === 'completed').reduce((a, t) => a + t.amountFCFA, 0);
+  const totalCompleted = transactions.filter((t) => t.status === 'completed').reduce((a, t) => a + t.amountFcfa, 0);
+  const completedCount = transactions.filter((t) => t.status === 'completed').length;
+  const pendingCount = transactions.filter((t) => t.status === 'pending').length;
+  const failedCount = transactions.filter((t) => t.status === 'failed').length;
 
   return (
     <DashboardLayout>
@@ -104,23 +107,20 @@ export default function Transactions() {
           <div>
             <h1 className="text-xl font-bold text-foreground">Transactions</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {MOCK_TRANSACTIONS.length} transactions · {fmt(totalCompleted)} FCFA envoyés
+              {loading ? '…' : `${transactions.length} transactions · ${fmt(totalCompleted)} FCFA envoyés`}
             </p>
           </div>
-          <Button variant="outline" className="gap-2 self-start sm:self-auto">
-            <Download className="w-4 h-4" /> Exporter CSV
-          </Button>
         </div>
 
         {/* Summary cards */}
         <div className="grid grid-cols-3 gap-4">
           {[
-            { label: 'Complétées', count: MOCK_TRANSACTIONS.filter(t => t.status === 'completed').length, color: 'text-primary', bg: 'bg-primary/10' },
-            { label: 'En cours', count: MOCK_TRANSACTIONS.filter(t => t.status === 'pending').length, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-            { label: 'Échouées', count: MOCK_TRANSACTIONS.filter(t => t.status === 'failed').length, color: 'text-destructive', bg: 'bg-destructive/10' },
+            { label: 'Complétées', count: completedCount, color: 'text-primary', bg: 'bg-primary/10' },
+            { label: 'En cours', count: pendingCount, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+            { label: 'Échouées', count: failedCount, color: 'text-destructive', bg: 'bg-destructive/10' },
           ].map((s) => (
             <div key={s.label} className="bg-card border border-border rounded-xl p-4 text-center">
-              <div className={`text-2xl font-bold ${s.color}`}>{s.count}</div>
+              <div className={`text-2xl font-bold ${s.color}`}>{loading ? '…' : s.count}</div>
               <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
             </div>
           ))}
@@ -154,7 +154,12 @@ export default function Transactions() {
             <span>Détails</span>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="py-16 flex items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="w-5 h-5 animate-spin" />
+              <span className="text-sm">Chargement…</span>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="py-16 text-center text-muted-foreground">
               <Search className="w-8 h-8 mx-auto mb-3 opacity-30" />
               <p className="text-sm">Aucune transaction trouvée</p>
@@ -163,7 +168,7 @@ export default function Transactions() {
             <div className="divide-y divide-border">
               {filtered.map((tx, i) => {
                 const cfg = STATUS_CONFIG[tx.status];
-                const date = new Date(tx.date);
+                const date = new Date(tx.createdAt);
                 return (
                   <motion.div
                     key={tx.id}
@@ -182,12 +187,16 @@ export default function Transactions() {
                           <span className="text-base">{tx.networkFlag}</span>
                           <div>
                             <div className="text-sm text-foreground">{tx.network}</div>
-                            <div className="text-xs text-muted-foreground">{tx.country}</div>
+                            <div className="text-xs text-muted-foreground">{tx.countryName}</div>
                           </div>
                         </div>
                         <div>
-                          <div className="text-sm font-bold text-foreground">{fmt(tx.amountFCFA)} FCFA</div>
-                          <div className="text-xs text-muted-foreground">{tx.amountCrypto.toFixed(tx.cryptoCurrency === 'BTC' ? 6 : 2)} {tx.cryptoCurrency}</div>
+                          <div className="text-sm font-bold text-foreground">{fmt(tx.amountFcfa)} FCFA</div>
+                          <div className="text-xs text-muted-foreground">
+                            {tx.cryptoCurrency === 'BTC'
+                              ? tx.amountCrypto.toFixed(6)
+                              : tx.amountCrypto.toFixed(2)} {tx.cryptoCurrency}
+                          </div>
                         </div>
                         <div>
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
@@ -199,7 +208,7 @@ export default function Transactions() {
                       </a>
                     </Link>
 
-                    {/* Mobile card */}
+                    {/* Mobile */}
                     <Link href={`/transactions/${tx.id}`}>
                       <a className="sm:hidden flex items-center gap-3 px-5 py-4 hover:bg-secondary/40 transition-colors">
                         <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-lg flex-shrink-0">
@@ -210,7 +219,7 @@ export default function Transactions() {
                           <div className="text-xs text-muted-foreground">{tx.network} · {date.toLocaleDateString('fr-FR')}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-sm font-bold text-foreground">{fmt(tx.amountFCFA)} FCFA</div>
+                          <div className="text-sm font-bold text-foreground">{fmt(tx.amountFcfa)} FCFA</div>
                           <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
                         </div>
                       </a>

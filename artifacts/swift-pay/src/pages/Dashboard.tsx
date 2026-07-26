@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/lib/auth';
-import { MOCK_TRANSACTIONS, type TxStatus } from '@/lib/mock-data';
+import { apiFetch, type ApiTransaction, type TxStatus, type Rates } from '@/lib/api';
 
 const STATUS_CONFIG: Record<TxStatus, { label: string; icon: React.ElementType; color: string; bg: string }> = {
   completed: { label: 'Complété', icon: CheckCircle2, color: 'text-primary', bg: 'bg-primary/10' },
@@ -25,32 +25,14 @@ const PERIODS: { key: Period; label: string }[] = [
   { key: 'année', label: 'Année' },
 ];
 
-function getStartOf(period: Period): Date {
-  const now = new Date();
-  if (period === 'jour') {
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  }
-  if (period === 'semaine') {
-    const d = new Date(now);
-    d.setDate(d.getDate() - d.getDay());
-    d.setHours(0, 0, 0, 0);
-    return d;
-  }
-  if (period === 'mois') {
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  }
-  // année
-  return new Date(now.getFullYear(), 0, 1);
-}
-
-const fmt = (n: number) => n.toLocaleString('fr-FR');
-
 const PERIOD_LABELS: Record<Period, string> = {
   jour: "Aujourd'hui",
   semaine: 'Cette semaine',
   mois: 'Ce mois',
   année: 'Cette année',
 };
+
+const fmt = (n: number) => n.toLocaleString('fr-FR');
 
 function PeriodDropdown({ period, onChange }: { period: Period; onChange: (p: Period) => void }) {
   const [open, setOpen] = useState(false);
@@ -73,7 +55,6 @@ function PeriodDropdown({ period, onChange }: { period: Period; onChange: (p: Pe
         <span>{PERIOD_LABELS[period]}</span>
         <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
-
       <AnimatePresence>
         {open && (
           <motion.div
@@ -107,24 +88,48 @@ function PeriodDropdown({ period, onChange }: { period: Period; onChange: (p: Pe
 export default function Dashboard() {
   const { user } = useAuth();
   const [period, setPeriod] = useState<Period>('mois');
+  const [transactions, setTransactions] = useState<ApiTransaction[]>([]);
+  const [rates, setRates] = useState<Rates>({ USDT: 655, BTC: 46_000_000 });
+  const [loadingTx, setLoadingTx] = useState(true);
+  const [loadingRates, setLoadingRates] = useState(true);
 
-  const filtered = useMemo(() => {
-    const start = getStartOf(period);
-    return MOCK_TRANSACTIONS.filter((t) => new Date(t.date) >= start);
+  // Fetch transactions for selected period
+  useEffect(() => {
+    setLoadingTx(true);
+    apiFetch<{ transactions: ApiTransaction[] }>(`/transactions?period=${period}`)
+      .then((data) => setTransactions(data.transactions))
+      .catch(() => setTransactions([]))
+      .finally(() => setLoadingTx(false));
   }, [period]);
 
-  const totalSent = filtered
+  // Fetch live rates once
+  useEffect(() => {
+    setLoadingRates(true);
+    apiFetch<{ rates: Rates }>('/rates')
+      .then((data) => setRates(data.rates))
+      .catch(() => {})
+      .finally(() => setLoadingRates(false));
+  }, []);
+
+  const totalSent = transactions
     .filter((t) => t.status === 'completed')
-    .reduce((acc, t) => acc + t.amountFCFA, 0);
-  const totalTx = filtered.length;
-  const pendingTx = filtered.filter((t) => t.status === 'pending').length;
+    .reduce((acc, t) => acc + t.amountFcfa, 0);
+  const totalTx = transactions.length;
+  const pendingTx = transactions.filter((t) => t.status === 'pending').length;
   const periodLabel = PERIOD_LABELS[period];
 
   const stats = [
     { label: 'Total envoyé', value: `${fmt(totalSent)} FCFA`, sub: periodLabel, icon: TrendingUp, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: 'Transactions', value: totalTx.toString(), sub: periodLabel, icon: ArrowLeftRight, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-    { label: 'En attente', value: pendingTx.toString(), sub: 'À confirmer', icon: Clock, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { label: 'Taux actuel', value: '649 FCFA', sub: '1 USDT · Live', icon: ArrowUpRight, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+    { label: 'Transactions', value: loadingTx ? '…' : totalTx.toString(), sub: periodLabel, icon: ArrowLeftRight, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+    { label: 'En attente', value: loadingTx ? '…' : pendingTx.toString(), sub: 'À confirmer', icon: Clock, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    {
+      label: 'Taux actuel',
+      value: loadingRates ? '…' : `${fmt(rates.USDT)} FCFA`,
+      sub: '1 USDT · Live',
+      icon: ArrowUpRight,
+      color: 'text-purple-500',
+      bg: 'bg-purple-500/10',
+    },
   ];
 
   const quickActions = [
@@ -136,8 +141,6 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <div className="p-4 lg:p-8 space-y-5 max-w-6xl mx-auto">
-
-        {/* Period filter dropdown */}
         <PeriodDropdown period={period} onChange={setPeriod} />
 
         {/* Stats grid */}
@@ -177,23 +180,26 @@ export default function Dashboard() {
             <span className="text-[10px] bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full font-medium">LIVE</span>
           </div>
           <div className="space-y-2">
-            {[
-              { pair: 'USDT → FCFA', rate: '649', change: '+0.3%' },
-              { pair: 'BTC → FCFA', rate: '45,000,000', change: '+1.2%' },
-            ].map((r) => (
-              <div key={r.pair} className="flex items-center justify-between py-2 border-b border-border last:border-0">
-                <span className="text-xs font-medium text-muted-foreground">{r.pair}</span>
-                <div className="text-right">
-                  <span className="text-sm font-bold text-foreground">{r.rate}</span>
-                  <span className="text-[11px] text-primary ml-1.5">{r.change}</span>
-                </div>
+            {loadingRates ? (
+              <div className="py-3 flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" /> Chargement des taux…
               </div>
-            ))}
+            ) : (
+              [
+                { pair: 'USDT → FCFA', rate: fmt(rates.USDT) },
+                { pair: 'BTC → FCFA', rate: fmt(rates.BTC) },
+              ].map((r) => (
+                <div key={r.pair} className="flex items-center justify-between py-2 border-b border-border last:border-0">
+                  <span className="text-xs font-medium text-muted-foreground">{r.pair}</span>
+                  <span className="text-sm font-bold text-foreground">{r.rate}</span>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* Filtered transactions */}
+          {/* Transactions */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -211,13 +217,17 @@ export default function Dashboard() {
               </Link>
             </div>
             <div className="divide-y divide-border">
-              {filtered.length === 0 ? (
+              {loadingTx ? (
+                <div className="flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Chargement…
+                </div>
+              ) : transactions.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-12 text-center">
                   <ArrowLeftRight className="w-8 h-8 text-muted-foreground/40 mb-3" />
                   <p className="text-sm text-muted-foreground">Aucune transaction {periodLabel.toLowerCase()}</p>
                 </div>
               ) : (
-                filtered.slice(0, 5).map((tx) => {
+                transactions.slice(0, 5).map((tx) => {
                   const cfg = STATUS_CONFIG[tx.status];
                   return (
                     <Link key={tx.id} href={`/transactions/${tx.id}`}>
@@ -227,10 +237,10 @@ export default function Dashboard() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-semibold text-foreground truncate">{tx.recipient}</div>
-                          <div className="text-xs text-muted-foreground">{tx.network} · {tx.country}</div>
+                          <div className="text-xs text-muted-foreground">{tx.network} · {tx.countryName}</div>
                         </div>
                         <div className="text-right flex-shrink-0">
-                          <div className="text-sm font-bold text-foreground">{fmt(tx.amountFCFA)} FCFA</div>
+                          <div className="text-sm font-bold text-foreground">{fmt(tx.amountFcfa)} FCFA</div>
                           <div className={`text-xs flex items-center gap-1 justify-end ${cfg.color}`}>
                             <cfg.icon className={`w-3 h-3 ${tx.status === 'pending' ? 'animate-spin' : ''}`} />
                             {cfg.label}
@@ -245,7 +255,7 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* Quick actions + rate */}
+          {/* Quick actions */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
@@ -279,7 +289,6 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
-
           </motion.div>
         </div>
       </div>
