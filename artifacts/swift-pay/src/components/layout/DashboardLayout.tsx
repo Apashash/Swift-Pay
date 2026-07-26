@@ -223,8 +223,8 @@ export function DashboardLayout({ children }: Props) {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6 flex-shrink-0">
+        {/* Top bar — masqué sur la page notifications */}
+        <header className={`h-16 border-b border-border bg-card/50 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6 flex-shrink-0 ${location.startsWith('/notifications') ? 'hidden' : ''}`}>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
