@@ -151,7 +151,7 @@ function LinkCard({ link, onDelete, onEdit }: { link: PaymentLinkItem; onDelete:
           <Link2 className="w-4 h-4 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          {/* Title + badges */}
+          {/* Title + badges + delete button */}
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-sm font-bold text-foreground truncate">{link.title}</span>
             {expired && (
@@ -166,6 +166,30 @@ function LinkCard({ link, onDelete, onEdit }: { link: PaymentLinkItem; onDelete:
                 ? <><LockKeyhole className="w-2.5 h-2.5" /> Fixe</>
                 : <><Infinity className="w-2.5 h-2.5" /> Flexible</>}
             </span>
+            {/* Delete button — top right */}
+            <div className="ml-auto">
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="flex items-center justify-center w-7 h-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Supprimer ce lien ?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Le lien «&nbsp;{link.title}&nbsp;» sera définitivement supprimé.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Annuler</AlertDialogCancel>
+                    <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Supprimer
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </div>
 
           {/* Amount */}
@@ -214,29 +238,6 @@ function LinkCard({ link, onDelete, onEdit }: { link: PaymentLinkItem; onDelete:
         <button onClick={onEdit} className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors">
           <Pencil className="w-3.5 h-3.5" /> Éditer
         </button>
-        <div className="ml-auto">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors">
-                <Trash2 className="w-3.5 h-3.5" /> Supprimer
-              </button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Supprimer ce lien ?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Le lien «&nbsp;{link.title}&nbsp;» sera définitivement supprimé.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Annuler</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                  Supprimer
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
       </div>
     </motion.div>
   );
