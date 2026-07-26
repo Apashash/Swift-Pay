@@ -3,6 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <!-- Apply theme class synchronously before React renders to avoid flash of unstyled content -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('theme');
+          document.documentElement.classList.add(t === 'light' ? 'light' : 'dark');
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
     <title>SwiftPay</title>
     <meta name="description" content="SwiftPay — built on Replit. Update this description to reflect the app." />
     <meta name="robots" content="index, follow" />
