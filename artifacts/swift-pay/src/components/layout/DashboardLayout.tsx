@@ -15,6 +15,7 @@ import { useNotifications } from '@/lib/notifications';
 const NAV = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/envoyer', icon: Send, label: 'Dépense les crypto' },
+  { href: '/lien-paiement', icon: Link2, label: 'Lien de paiement' },
   { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { href: '/profil', icon: User, label: 'Profil' },
 ];
