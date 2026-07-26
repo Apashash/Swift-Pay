@@ -261,18 +261,18 @@ export default function Profile() {
             title: 'Sécurité',
             icon: Shield,
             items: [
-              { label: 'Changer le mot de passe', desc: 'Dernière modification il y a 30 jours' },
-              { label: 'Authentification à deux facteurs', desc: 'Désactivée — recommandée' },
-              { label: 'Sessions actives', desc: '1 appareil connecté' },
+              { label: 'Changer le mot de passe', desc: 'Dernière modification il y a 30 jours', href: '/profil/mot-de-passe' },
+              { label: 'Authentification à deux facteurs', desc: 'Désactivée — recommandée', href: '/profil/2fa' },
+              { label: 'Sessions actives', desc: '1 appareil connecté', href: '/profil/sessions' },
             ],
           },
           {
             title: 'Notifications',
             icon: Bell,
             items: [
-              { label: 'Notifications par email', desc: 'Transactions et alertes de sécurité' },
-              { label: 'SMS de confirmation', desc: 'Pour chaque transaction envoyée' },
-              { label: 'Alertes de taux', desc: 'Lorsque le taux USDT/FCFA change de ±2%' },
+              { label: 'Notifications par email', desc: 'Transactions et alertes de sécurité', href: null },
+              { label: 'SMS de confirmation', desc: 'Pour chaque transaction envoyée', href: null },
+              { label: 'Alertes de taux', desc: 'Lorsque le taux USDT/FCFA change de ±2%', href: null },
             ],
           },
         ].map((section, si) => (
@@ -291,6 +291,7 @@ export default function Profile() {
               {section.items.map((item) => (
                 <button
                   key={item.label}
+                  onClick={() => item.href && navigate(item.href)}
                   className="w-full flex items-center justify-between px-6 py-4 hover:bg-secondary/40 transition-colors group text-left"
                 >
                   <div>

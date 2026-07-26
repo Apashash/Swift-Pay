@@ -101,4 +101,4 @@ export async function findUserByIdentifier(identifier: string): Promise<User | n
   return rows[0] ?? null;
 }
 
-export { toPublicUser };
+export { toPublicUser, hashSessionToken };

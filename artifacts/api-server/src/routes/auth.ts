@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, or } from "drizzle-orm";
+import { and, desc, eq, gt, or } from "drizzle-orm";
 import {
   authSessionsTable,
   db,
@@ -12,6 +12,7 @@ import {
   getBearerToken,
   getUserFromToken,
   hashPassword,
+  hashSessionToken,
   normalizeEmail,
   normalizePhone,
   toPublicUser,
@@ -170,6 +171,114 @@ router.patch("/auth/me", async (req, res, next) => {
     }
 
     res.json({ user });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /auth/password — change password
+router.post("/auth/password", async (req, res, next) => {
+  try {
+    const token = getBearerToken(req.headers.authorization);
+    const user = await getUserFromToken(token);
+    if (!user) {
+      res.status(401).json({ message: "Session expirée." });
+      return;
+    }
+
+    const { currentPassword, newPassword } = req.body as Record<string, unknown>;
+    if (typeof currentPassword !== "string" || typeof newPassword !== "string") {
+      invalid("Données invalides.");
+    }
+    if (newPassword.length < 8) {
+      res.status(400).json({ message: "Le nouveau mot de passe doit contenir au moins 8 caractères." });
+      return;
+    }
+
+    const [fullUser] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, user.id))
+      .limit(1);
+
+    if (!fullUser || !(await verifyPassword(currentPassword, fullUser.passwordHash))) {
+      res.status(401).json({ message: "Mot de passe actuel incorrect." });
+      return;
+    }
+
+    await db
+      .update(usersTable)
+      .set({ passwordHash: await hashPassword(newPassword) })
+      .where(eq(usersTable.id, user.id));
+
+    res.json({ message: "Mot de passe modifié avec succès." });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /auth/sessions — list active sessions for current user
+router.get("/auth/sessions", async (req, res, next) => {
+  try {
+    const token = getBearerToken(req.headers.authorization);
+    const user = await getUserFromToken(token);
+    if (!user) {
+      res.status(401).json({ message: "Session expirée." });
+      return;
+    }
+
+    const currentHash = token ? hashSessionToken(token) : null;
+
+    const rows = await db
+      .select({
+        id: authSessionsTable.id,
+        createdAt: authSessionsTable.createdAt,
+        expiresAt: authSessionsTable.expiresAt,
+        tokenHash: authSessionsTable.tokenHash,
+      })
+      .from(authSessionsTable)
+      .where(
+        and(
+          eq(authSessionsTable.userId, user.id),
+          gt(authSessionsTable.expiresAt, new Date()),
+        ),
+      )
+      .orderBy(desc(authSessionsTable.createdAt));
+
+    res.json({
+      sessions: rows.map((s) => ({
+        id: s.id,
+        createdAt: s.createdAt,
+        expiresAt: s.expiresAt,
+        isCurrent: s.tokenHash === currentHash,
+      })),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// DELETE /auth/sessions/:id — revoke a session
+router.delete("/auth/sessions/:id", async (req, res, next) => {
+  try {
+    const token = getBearerToken(req.headers.authorization);
+    const user = await getUserFromToken(token);
+    if (!user) {
+      res.status(401).json({ message: "Session expirée." });
+      return;
+    }
+
+    const { id } = req.params;
+    await db
+      .delete(authSessionsTable)
+      .where(
+        and(
+          eq(authSessionsTable.id, id),
+          eq(authSessionsTable.userId, user.id),
+        ),
+      );
+
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

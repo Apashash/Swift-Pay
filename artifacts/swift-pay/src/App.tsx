@@ -13,6 +13,9 @@ import SendPayment from '@/pages/SendPayment';
 import Transactions from '@/pages/Transactions';
 import TransactionDetail from '@/pages/TransactionDetail';
 import Profile from '@/pages/Profile';
+import ChangePassword from '@/pages/security/ChangePassword';
+import TwoFactor from '@/pages/security/TwoFactor';
+import ActiveSessions from '@/pages/security/ActiveSessions';
 import { Notifications, NotificationDetail } from '@/pages/Notifications';
 import PaymentLink from '@/pages/PaymentLink';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
@@ -54,6 +57,15 @@ function Router() {
       </Route>
       <Route path="/profil">
         {() => <ProtectedRoute component={Profile} />}
+      </Route>
+      <Route path="/profil/mot-de-passe">
+        {() => <ProtectedRoute component={ChangePassword} />}
+      </Route>
+      <Route path="/profil/2fa">
+        {() => <ProtectedRoute component={TwoFactor} />}
+      </Route>
+      <Route path="/profil/sessions">
+        {() => <ProtectedRoute component={ActiveSessions} />}
       </Route>
       <Route path="/notifications">
         {() => <ProtectedRoute component={Notifications} />}
