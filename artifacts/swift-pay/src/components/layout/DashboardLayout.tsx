@@ -12,12 +12,21 @@ import { useTranslation, type Lang } from '@/lib/i18n';
 import swiftPayLogo from '@assets/swift-logo.png';
 import { useNotifications } from '@/lib/notifications';
 
+// Bottom nav items (mobile pill)
 const NAV = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
   { href: '/envoyer', icon: Send, label: 'Dépense les crypto' },
-  { href: '/lien-paiement', icon: Link2, label: 'Lien de paiement' },
   { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions' },
   { href: '/profil', icon: User, label: 'Profil' },
+];
+
+// Sidebar-only items (not in bottom nav)
+const SIDEBAR_NAV = [
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord', desc: 'Vue d\'ensemble' },
+  { href: '/envoyer', icon: Send, label: 'Dépense les crypto', desc: 'Nouvelle transaction' },
+  { href: '/lien-paiement', icon: Link2, label: 'Lien de paiement', desc: 'Créer & partager un lien' },
+  { href: '/transactions', icon: ArrowLeftRight, label: 'Transactions', desc: 'Historique' },
+  { href: '/profil', icon: User, label: 'Profil', desc: 'Gérer le compte' },
 ];
 
 function BottomNav({ hidden }: { hidden?: boolean }) {
@@ -142,7 +151,7 @@ export function DashboardLayout({ children }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-        {NAV.map((item) => {
+        {SIDEBAR_NAV.map((item) => {
           const active = location === item.href;
           return (
             <Link key={item.href} href={item.href}>
@@ -244,21 +253,6 @@ export function DashboardLayout({ children }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => navigate('/lien-paiement')}
-              className="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-colors"
-              aria-label="Créer un lien de paiement"
-            >
-              <Link2 className="w-3.5 h-3.5" />
-              Lien de paiement
-            </button>
-            <button
-              onClick={() => navigate('/lien-paiement')}
-              className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
-              aria-label="Lien de paiement"
-            >
-              <Link2 className="w-4 h-4" />
-            </button>
              <button
                onClick={() => navigate('/notifications')}
                className="relative w-9 h-9 flex items-center justify-center rounded-xl border border-border bg-secondary hover:bg-muted transition-colors"
