@@ -1,12 +1,11 @@
 import { defineConfig } from "drizzle-kit";
 import path from "path";
 
-const databaseUrl =
-  process.env.SUPABASE_DATABASE_URL ?? process.env.DATABASE_URL;
+const databaseUrl = process.env.SUPABASE_DATABASE_URL;
 
 if (!databaseUrl) {
   throw new Error(
-    "SUPABASE_DATABASE_URL or DATABASE_URL must be set. Ensure the database is configured.",
+    "SUPABASE_DATABASE_URL must be set. Configure the Supabase PostgreSQL connection secret.",
   );
 }
 
