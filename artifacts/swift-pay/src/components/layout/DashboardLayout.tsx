@@ -278,7 +278,7 @@ export function DashboardLayout({ children }: Props) {
       </div>
 
       {/* Floating bottom nav — mobile only, hidden when sidebar is open */}
-      <BottomNav hidden={sidebarOpen || location.startsWith('/notifications')} />
+      <BottomNav hidden={sidebarOpen || location.startsWith('/notifications') || location.startsWith('/lien-paiement')} />
     </div>
   );
 }
