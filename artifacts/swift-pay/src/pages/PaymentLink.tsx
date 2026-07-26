@@ -208,9 +208,7 @@ function LinkCard({ link, onDelete, onEdit }: { link: PaymentLinkItem; onDelete:
             <span className="text-xs font-medium text-foreground">{link.phone}</span>
           </div>
 
-          {link.description && (
-            <p className="text-xs text-muted-foreground mt-1.5 line-clamp-1">{link.description}</p>
-          )}
+
           <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
             <span>Créé le {fmtDate(link.createdAt)}</span>
             {link.expiry && <span>· Expire le {fmtDate(link.expiry)}</span>}
