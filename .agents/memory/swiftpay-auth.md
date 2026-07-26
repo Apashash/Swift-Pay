@@ -1,26 +1,24 @@
 ---
 name: SwiftPay auth pattern
-description: How auth works in the SwiftPay frontend (mock localStorage, protected routes, provider nesting).
+description: How SwiftPay authentication is persisted and where the provider belongs.
 ---
 
 # SwiftPay auth pattern
 
 ## Rule
-`AuthProvider` uses `localStorage` for persistence (no backend yet). It must be placed inside `ThemeProvider` and `LanguageProvider` but wrapping `QueryClientProvider` so all query hooks can access user state.
+SwiftPay accounts and sessions are persisted in Supabase through the API server. The browser stores only a session token and removes the old local-only account keys on startup.
 
-**Why:** `useAuth` is consumed inside `DashboardLayout` and `Navbar` which are rendered inside routes. The provider order in App.tsx is:
-`ThemeProvider → LanguageProvider → AuthProvider → QueryClientProvider → TooltipProvider → WouterRouter`
+**Why:** LocalStorage account records caused the UI to report duplicate accounts even when the Supabase database was empty.
 
-## How to apply
-- Protected routes use a `ProtectedRoute` wrapper component that calls `useAuth()` and redirects to `/connexion` if `!isAuthenticated`.
-- `Navbar` always imports `useAuth` — it is safe because `AuthProvider` is an ancestor in every render path.
-- Mock user data is stored under `swiftpay_user` (current session) and `swiftpay_users` (all registered users) keys in localStorage.
+**How to apply**
+- Keep `AuthProvider` inside `ThemeProvider` and `LanguageProvider`, wrapping `QueryClientProvider`.
+- Protected routes should wait for the provider's loading state before redirecting.
+- Authentication requests must use `/api/auth/*`; never recreate an account store in browser storage.
 
-## Pages added
+## Pages
 - `/connexion` — Login (email or phone + password)
 - `/inscription` — Register (full form with country picker, password strength, terms)
 - `/dashboard` — Protected dashboard with stats, recent transactions, quick actions
-- `/envoyer` — Protected 4-step send payment flow (recipient → amount → payment instructions → confirmation)
-- `/transactions` — Protected transaction history table with search + status filter
-- `/transactions/:id` — Protected transaction detail with timeline
-- `/profil` — Protected profile with editable info, security settings, KYC banner
+- `/envoyer` — Protected 4-step send payment flow
+- `/transactions` — Protected transaction history and detail
+- `/profil` — Protected profile with editable info and security settings

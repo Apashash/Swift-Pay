@@ -1,1 +1,1 @@
-- [SwiftPay auth pattern](swiftpay-auth.md) — localStorage-based mock auth; AuthProvider must wrap the app above QueryClientProvider.
+- [SwiftPay auth pattern](swiftpay-auth.md) — Supabase-backed auth; AuthProvider must wrap the app above QueryClientProvider.

@@ -30,8 +30,9 @@ pnpm install
 
 ## Notes
 
-- Auth is currently mock/localStorage-based in the frontend; no real backend auth yet
-- The database schema (`lib/db/src/schema/index.ts`) is a placeholder — no tables defined yet
-- API routes beyond `/api/healthz` are defined in the OpenAPI spec but not yet implemented
+- Authentication uses the Supabase PostgreSQL database through the API server
+- User accounts and sessions are stored in Supabase tables (`users` and `auth_sessions`)
+- The browser only keeps a session token; legacy local-only account keys are removed on startup
+- API routes beyond `/api/healthz` include registration, login, session, logout, and profile updates
 
 ## User preferences

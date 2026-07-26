@@ -1,24 +1,27 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useEffect, useState } from "react";
 
 export interface User {
   id: string;
   fullName: string;
   email: string;
-  phone: string;
+  phone: string | null;
   country: string;
   countryCode: string;
   verified: boolean;
   joinedAt: string;
-  avatar?: string;
+  avatar?: string | null;
 }
 
 interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (identifier: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
-  updateUser: (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone' | 'avatar'>>) => void;
+  updateUser: (
+    fields: Partial<Pick<User, "fullName" | "email" | "phone" | "avatar">>,
+  ) => void;
 }
 
 export interface RegisterData {
@@ -30,97 +33,122 @@ export interface RegisterData {
   password: string;
 }
 
+interface AuthResponse {
+  user: User;
+  token: string;
+}
+
+const SESSION_KEY = "swiftpay_session_token";
+const LEGACY_USER_KEY = "swiftpay_user";
+const LEGACY_USERS_KEY = "swiftpay_users";
+const API_BASE = `${import.meta.env.BASE_URL.replace(/\/$/, "")}/api`;
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-// Mock user store using localStorage
-const STORAGE_KEY = 'swiftpay_user';
-const USERS_KEY = 'swiftpay_users';
-
-function getUsers(): Record<string, { user: User; password: string }> {
-  try {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || '{}');
-  } catch {
-    return {};
-  }
+async function readError(response: Response): Promise<Error> {
+  const body = (await response.json().catch(() => null)) as
+    | { message?: string }
+    | null;
+  return new Error(body?.message || "Une erreur est survenue.");
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
+    // Remove the old browser-only account store. Accounts now exist only in Supabase.
+    localStorage.removeItem(LEGACY_USER_KEY);
+    localStorage.removeItem(LEGACY_USERS_KEY);
+
+    const token = localStorage.getItem(SESSION_KEY);
+    if (!token) {
+      setIsLoading(false);
+      return;
     }
-  }, [user]);
+
+    fetch(`${API_BASE}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          localStorage.removeItem(SESSION_KEY);
+          throw await readError(response);
+        }
+        return response.json() as Promise<{ user: User }>;
+      })
+      .then(({ user: currentUser }) => setUser(currentUser))
+      .catch(() => setUser(null))
+      .finally(() => setIsLoading(false));
+  }, []);
 
   const login = async (identifier: string, password: string) => {
-    await new Promise((r) => setTimeout(r, 800)); // simulate network
-    const users = getUsers();
-    const entry = Object.values(users).find(
-      (u) =>
-        (u.user.email.toLowerCase() === identifier.toLowerCase() ||
-          u.user.phone === identifier) &&
-        u.password === password,
-    );
-    if (!entry) throw new Error('Identifiants incorrects');
-    setUser(entry.user);
+    const response = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier, password }),
+    });
+    if (!response.ok) throw await readError(response);
+    const data = (await response.json()) as AuthResponse;
+    localStorage.setItem(SESSION_KEY, data.token);
+    setUser(data.user);
   };
 
   const register = async (data: RegisterData) => {
-    await new Promise((r) => setTimeout(r, 1000));
-    const users = getUsers();
-    const exists = Object.values(users).some(
-      (u) =>
-        u.user.email.toLowerCase() === data.email.toLowerCase() ||
-        u.user.phone === data.phone,
-    );
-    if (exists) throw new Error('Un compte existe déjà avec cet email ou ce numéro');
-
-    const newUser: User = {
-      id: `usr_${Date.now()}`,
-      fullName: data.fullName,
-      email: data.email,
-      phone: data.phone,
-      country: data.country,
-      countryCode: data.countryCode,
-      verified: false,
-      joinedAt: new Date().toISOString(),
-    };
-
-    users[newUser.id] = { user: newUser, password: data.password };
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-    setUser(newUser);
+    const response = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    if (!response.ok) throw await readError(response);
+    const result = (await response.json()) as AuthResponse;
+    localStorage.setItem(SESSION_KEY, result.token);
+    setUser(result.user);
   };
 
   const logout = () => {
+    const token = localStorage.getItem(SESSION_KEY);
+    localStorage.removeItem(SESSION_KEY);
     setUser(null);
+    if (token) {
+      void fetch(`${API_BASE}/auth/logout`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+    }
   };
 
-  const updateUser = (fields: Partial<Pick<User, 'fullName' | 'email' | 'phone' | 'avatar'>>) => {
-    setUser((prev) => {
-      if (!prev) return prev;
-      const updated = { ...prev, ...fields };
-      // Sync to users store
-      const users = getUsers();
-      if (users[prev.id]) {
-        users[prev.id].user = updated;
-        localStorage.setItem(USERS_KEY, JSON.stringify(users));
-      }
-      return updated;
+  const updateUser = (
+    fields: Partial<Pick<User, "fullName" | "email" | "phone" | "avatar">>,
+  ) => {
+    const token = localStorage.getItem(SESSION_KEY);
+    if (!token) return;
+    void fetch(`${API_BASE}/auth/me`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(fields),
+    }).then(async (response) => {
+      if (!response.ok) throw await readError(response);
+      const result = (await response.json()) as { user: User };
+      setUser(result.user);
     });
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, login, register, logout, updateUser }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        login,
+        register,
+        logout,
+        updateUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -128,6 +156,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth() {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used inside AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
   return ctx;
 }

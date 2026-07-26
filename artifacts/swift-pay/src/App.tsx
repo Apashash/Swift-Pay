@@ -22,9 +22,10 @@ import { AuthProvider, useAuth } from '@/lib/auth';
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   const [, navigate] = useLocation();
 
+  if (isLoading) return null;
   if (!isAuthenticated) {
     navigate('/connexion');
     return null;
@@ -69,12 +70,12 @@ function Router() {
 }
 
 function AppInner() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
   return (
     <>
       <Router />
       {/* Only show the floating support button on public pages */}
-      {!isAuthenticated && <SupportButton />}
+      {!isLoading && !isAuthenticated && <SupportButton />}
     </>
   );
 }
