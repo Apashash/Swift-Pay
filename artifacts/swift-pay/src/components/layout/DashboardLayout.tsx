@@ -4,7 +4,7 @@ import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Send, ArrowLeftRight, User, LogOut,
-  Menu, X, ChevronRight, Sun, Moon, Bell, Globe,
+  Menu, X, ChevronRight, Sun, Moon, Bell, Globe, Link2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
@@ -243,6 +243,21 @@ export function DashboardLayout({ children }: Props) {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => navigate('/lien-paiement')}
+              className="hidden sm:flex items-center gap-1.5 h-9 px-3 rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold transition-colors"
+              aria-label="Créer un lien de paiement"
+            >
+              <Link2 className="w-3.5 h-3.5" />
+              Lien de paiement
+            </button>
+            <button
+              onClick={() => navigate('/lien-paiement')}
+              className="sm:hidden w-9 h-9 flex items-center justify-center rounded-xl border border-primary/30 bg-primary/10 hover:bg-primary/20 text-primary transition-colors"
+              aria-label="Lien de paiement"
+            >
+              <Link2 className="w-4 h-4" />
+            </button>
              <button
                onClick={() => navigate('/notifications')}
                className="relative w-9 h-9 flex items-center justify-center rounded-xl border border-border bg-secondary hover:bg-muted transition-colors"

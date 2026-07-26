@@ -14,6 +14,7 @@ import Transactions from '@/pages/Transactions';
 import TransactionDetail from '@/pages/TransactionDetail';
 import Profile from '@/pages/Profile';
 import { Notifications, NotificationDetail } from '@/pages/Notifications';
+import PaymentLink from '@/pages/PaymentLink';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { LanguageProvider } from '@/lib/i18n';
 import { AuthProvider, useAuth } from '@/lib/auth';
@@ -58,6 +59,9 @@ function Router() {
       </Route>
       <Route path="/notifications/:id">
         {() => <ProtectedRoute component={NotificationDetail} />}
+      </Route>
+      <Route path="/lien-paiement">
+        {() => <ProtectedRoute component={PaymentLink} />}
       </Route>
       <Route component={NotFound} />
     </Switch>
