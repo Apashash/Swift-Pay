@@ -1,16 +1,11 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
-  Activity,
-  ArrowDownToLine,
   ArrowLeft,
   ArrowLeftRight,
-  ArrowUpFromLine,
   BadgeCheck,
   Bell,
   Calculator,
-  ChevronDown,
-  ChevronRight,
   LayoutDashboard,
   Menu,
   Settings2,
@@ -29,7 +24,6 @@ interface AdminNavItem {
   href: string;
   label: string;
   icon: React.ElementType;
-  children?: { href: string; label: string; icon: React.ElementType }[];
 }
 
 const navigation: { label: string; items: AdminNavItem[] }[] = [
@@ -42,16 +36,7 @@ const navigation: { label: string; items: AdminNavItem[] }[] = [
     items: [
       { href: '/admin/utilisateurs', label: 'Utilisateurs', icon: Users },
       { href: '/admin/kyc', label: 'Vérifications KYC', icon: BadgeCheck },
-      {
-        href: '/admin/transactions',
-        label: 'Transactions',
-        icon: ArrowLeftRight,
-        children: [
-          { href: '/admin/transactions/depots', label: 'Dépôts', icon: ArrowDownToLine },
-          { href: '/admin/transactions/retraits', label: 'Retraits', icon: ArrowUpFromLine },
-          { href: '/admin/transactions/envois', label: 'Envois', icon: Activity },
-        ],
-      },
+      { href: '/admin/transactions', label: 'Transactions', icon: ArrowLeftRight },
       { href: '/admin/paiements-en-attente', label: 'Paiements en attente', icon: WalletCards },
     ],
   },
@@ -71,7 +56,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [location, navigate] = useLocation();
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [transactionOpen, setTransactionOpen] = useState(location.startsWith('/admin/transactions'));
 
   const initials = user?.fullName
     ?.split(' ')
@@ -117,7 +101,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="space-y-1">
               {group.items.map((item) => {
                 const active = isActive(location, item.href);
-                const hasChildren = Boolean(item.children);
                 return (
                   <div key={item.href}>
                     <div className="flex items-center">
@@ -131,34 +114,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         <item.icon className="h-[17px] w-[17px] shrink-0" strokeWidth={active ? 2.3 : 1.8} />
                         <span className="truncate">{item.label}</span>
                       </Link>
-                      {hasChildren && (
-                        <button
-                          type="button"
-                          onClick={() => setTransactionOpen((open) => !open)}
-                          className={`-ml-9 mr-2 rounded p-1 ${active ? 'text-[#17211c]' : 'text-white/45 hover:text-white'}`}
-                          aria-label={transactionOpen ? 'Réduire Transactions' : 'Développer Transactions'}
-                        >
-                          {transactionOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-                        </button>
-                      )}
                     </div>
-                    {hasChildren && transactionOpen && (
-                      <div className="ml-5 mt-1 space-y-1 border-l border-white/10 pl-4">
-                        {item.children?.map((child) => (
-                          <Link
-                            key={child.href}
-                            href={child.href}
-                            onClick={() => setMobileOpen(false)}
-                            className={`flex items-center gap-2 rounded-md px-3 py-2 text-[11px] transition-colors ${
-                              location === child.href ? 'bg-white/10 font-semibold text-[#d9f9a8]' : 'text-white/45 hover:text-white'
-                            }`}
-                          >
-                            <child.icon className="h-3.5 w-3.5" />
-                            {child.label}
-                          </Link>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 );
               })}
