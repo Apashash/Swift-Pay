@@ -270,8 +270,8 @@ export default function Profile() {
             title: 'Notifications',
             icon: Bell,
             items: [
-              { label: 'Notifications par email', desc: 'Transactions et alertes de sécurité', href: null },
-              { label: 'Alertes de taux', desc: 'Lorsque le taux USDT/FCFA change de ±2%', href: null },
+              { label: 'Notifications par email', desc: 'Transactions et alertes de sécurité', href: '/profil/notifications-email' },
+              { label: 'Alertes de taux', desc: 'Lorsque le taux USDT/FCFA change de ±2%', href: '/profil/alertes-taux' },
             ],
           },
         ].map((section, si) => (

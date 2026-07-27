@@ -16,6 +16,8 @@ import Profile from '@/pages/Profile';
 import ChangePassword from '@/pages/security/ChangePassword';
 import TwoFactor from '@/pages/security/TwoFactor';
 import ActiveSessions from '@/pages/security/ActiveSessions';
+import EmailNotifications from '@/pages/settings/EmailNotifications';
+import RateAlerts from '@/pages/settings/RateAlerts';
 import { Notifications, NotificationDetail } from '@/pages/Notifications';
 import PaymentLink from '@/pages/PaymentLink';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
@@ -66,6 +68,12 @@ function Router() {
       </Route>
       <Route path="/profil/sessions">
         {() => <ProtectedRoute component={ActiveSessions} />}
+      </Route>
+      <Route path="/profil/notifications-email">
+        {() => <ProtectedRoute component={EmailNotifications} />}
+      </Route>
+      <Route path="/profil/alertes-taux">
+        {() => <ProtectedRoute component={RateAlerts} />}
       </Route>
       <Route path="/notifications">
         {() => <ProtectedRoute component={Notifications} />}
