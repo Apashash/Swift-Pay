@@ -234,7 +234,7 @@ function Toolbar({ search, setSearch, filter, setFilter, filterOptions, onExport
 }
 
 function DashboardView({ transactions, overview }: { transactions: ApiTransaction[]; overview: AdminOverview | null }) {
-  const recent = transactions.slice(0, 4);
+  const recent = transactions.slice(0, 5);
   const overviewUsers = overview?.users.total ?? 0;
   const overviewVolume = overview?.transactions.volume ?? 0;
   const overviewTransactions = overview?.transactions.total ?? transactions.length;
