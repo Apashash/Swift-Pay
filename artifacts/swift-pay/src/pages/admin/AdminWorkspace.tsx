@@ -199,8 +199,7 @@ function DashboardView({ transactions, overview }: { transactions: ApiTransactio
   const overviewPending = (overview?.transactions.pending ?? 0) + (overview?.kyc.pending ?? 0);
   return (
     <>
-      <SectionHeading eyebrow="Mardi 24 juin 2025" title="Bonjour, administrateur" description="Voici ce qui se passe sur SwiftPay aujourd’hui." action={<button type="button" className="inline-flex items-center gap-2 rounded-xl bg-[#17211c] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#29382f]"><Download className="h-3.5 w-3.5" /> Rapport du jour</button>} />
-      <div className="mb-7 rounded-2xl border border-[#d7e8c6] bg-[#eaf6df] p-4 text-xs text-[#50733a]"><strong>Données connectées.</strong> Les transactions affichées proviennent de votre activité SwiftPay. Les indicateurs de pilotage sans endpoint administrateur sont signalés comme données opérationnelles locales.</div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Volume traité" value={`${formatNumber(overviewVolume)} FCFA`} detail="Transactions complétées" icon={ArrowUpRight} />
         <StatCard label="Utilisateurs actifs" value={formatNumber(overviewUsers)} detail={`${overview?.users.verified ?? 0} comptes vérifiés`} icon={Users} accent="blue" />
