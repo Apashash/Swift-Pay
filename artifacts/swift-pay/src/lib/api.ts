@@ -21,6 +21,8 @@ export async function apiFetch<T = unknown>(
     const body = await res.json().catch(() => null) as { message?: string } | null;
     throw new Error(body?.message || "Une erreur est survenue.");
   }
+  // 204 No Content — nothing to parse
+  if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
 }
 
