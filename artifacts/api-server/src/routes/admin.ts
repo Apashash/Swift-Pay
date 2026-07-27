@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import {
   db,
   kycSubmissionsTable,
@@ -107,6 +107,29 @@ router.get("/admin/kyc", async (req, res, next) => {
       .innerJoin(usersTable, eq(kycSubmissionsTable.userId, usersTable.id))
       .orderBy(desc(kycSubmissionsTable.submittedAt));
     res.json({ submissions: rows });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/admin/transactions/:id", async (req, res, next) => {
+  try {
+    await requireAdmin(req.headers.authorization);
+    const { status } = req.body as { status?: string };
+    if (status !== "completed" && status !== "pending" && status !== "failed") {
+      res.status(400).json({ message: "Statut de transaction invalide." });
+      return;
+    }
+    const [tx] = await db
+      .update(transactionsTable)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(transactionsTable.id, req.params.id))
+      .returning();
+    if (!tx) {
+      res.status(404).json({ message: "Transaction introuvable." });
+      return;
+    }
+    res.json({ transaction: tx });
   } catch (error) {
     next(error);
   }

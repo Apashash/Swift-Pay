@@ -119,6 +119,10 @@ const navTitles: Record<string, string> = {
 
 const formatNumber = (number: number) => number.toLocaleString('fr-FR');
 const ADMIN_PAGE_SIZE = 50;
+const TX_PREFIX = 'SWIFT-Pay-63289263368';
+function txRef(id: string): string {
+  return `${TX_PREFIX}-${id.replace(/-/g, '').slice(0, 8).toUpperCase()}`;
+}
 
 function StatusPill({ status }: { status: Status }) {
   const styles: Record<Status, string> = {
@@ -642,15 +646,179 @@ async function updateKyc(id: string, status: 'approved' | 'rejected', setRows: R
   setRows((current) => current.map((row) => row.id === id ? { ...row, status } : row));
 }
 
+function AdminTransactionDetailView({
+  id,
+  transactions,
+  onStatusUpdate,
+}: {
+  id: string;
+  transactions: AdminTransaction[];
+  onStatusUpdate: (id: string, status: 'completed' | 'pending' | 'failed') => void;
+}) {
+  const [, navigate] = useLocation();
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const tx = transactions.find((t) => t.id === id);
+
+  if (!tx) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <ArrowLeftRight className="h-10 w-10 text-[#c8d8c3]" />
+        <p className="mt-3 text-sm font-semibold text-[#66756b]">Transaction introuvable</p>
+        <button type="button" onClick={() => navigate('/admin/transactions')} className="mt-4 rounded-xl border border-[#dfe6df] px-4 py-2 text-xs font-semibold hover:bg-[#f0f5ee]">
+          ← Retour aux transactions
+        </button>
+      </div>
+    );
+  }
+
+  const handleStatus = async (status: 'completed' | 'pending' | 'failed') => {
+    setUpdating(status);
+    setError(null);
+    try {
+      await apiFetch(`/admin/transactions/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+      onStatusUpdate(id, status);
+    } catch {
+      setError('La mise à jour a échoué. Réessayez.');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const statusLabel: Record<string, Status> = { completed: 'Approuvé', pending: 'En attente', failed: 'Refusé' };
+  const currentStatus = statusLabel[tx.status] ?? 'En attente';
+  const fmt = (n: number) => n.toLocaleString('fr-FR');
+
+  const fields: [string, string, boolean?][] = [
+    ['Référence', txRef(tx.id)],
+    ['ID interne', tx.id, true],
+    ['Client', tx.customer],
+    ['Date', new Date(tx.createdAt).toLocaleString('fr-FR')],
+    ['Dernière mise à jour', new Date(tx.updatedAt).toLocaleString('fr-FR')],
+    ['Destinataire', tx.recipient],
+    ['Numéro destinataire', tx.recipientPhone, true],
+    ['Réseau', `${tx.networkFlag} ${tx.network}`],
+    ['Pays', tx.countryName],
+    ['Montant FCFA', `${fmt(tx.amountFcfa)} FCFA`],
+    ['Crypto envoyé', `${tx.cryptoCurrency === 'BTC' ? tx.amountCrypto.toFixed(6) : tx.amountCrypto.toFixed(2)} ${tx.cryptoCurrency}`, true],
+    ['Taux appliqué', `1 ${tx.cryptoCurrency} = ${fmt(tx.rate)} FCFA`],
+    ['Frais', `${tx.cryptoCurrency === 'BTC' ? tx.fee.toFixed(6) : tx.fee.toFixed(4)} ${tx.cryptoCurrency}`, true],
+    ...(tx.paymentAddress ? [['Adresse de paiement', tx.paymentAddress, true] as [string, string, boolean]] : []),
+    ...(tx.txHash ? [['Hash blockchain', tx.txHash, true] as [string, string, boolean]] : []),
+  ];
+
+  return (
+    <>
+      <div className="mb-5 flex items-center gap-3">
+        <button type="button" onClick={() => navigate('/admin/transactions')} className="flex items-center gap-1.5 rounded-xl border border-[#dfe6df] bg-white px-3 py-2 text-xs font-semibold text-[#819087] hover:bg-[#f0f5ee]">
+          <ChevronLeft className="h-3.5 w-3.5" /> Transactions
+        </button>
+        <h2 className="text-base font-semibold">{txRef(tx.id)}</h2>
+        <StatusPill status={currentStatus} />
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[1fr_340px]">
+        {/* Details card */}
+        <div className="rounded-2xl border border-[#dfe6df] bg-white overflow-hidden">
+          <div className="border-b border-[#edf0ed] px-6 py-4">
+            <h3 className="text-sm font-semibold">Détails de la transaction</h3>
+          </div>
+          <div className="divide-y divide-[#edf0ed]">
+            {fields.map(([label, value, mono]) => (
+              <div key={label} className="flex items-center justify-between px-6 py-3.5 text-xs">
+                <span className="text-[#819087]">{label}</span>
+                <span className={`max-w-[55%] break-all text-right font-medium ${mono ? 'font-mono text-[10px]' : ''}`}>{value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Action panel */}
+        <div className="space-y-4">
+          <div className="rounded-2xl border border-[#dfe6df] bg-white p-6">
+            <h3 className="mb-1 text-sm font-semibold">Statut actuel</h3>
+            <p className="mb-5 text-[11px] text-[#819087]">Modifiez le statut de cette transaction. L'action est immédiate.</p>
+            <div className="space-y-2.5">
+              <button
+                type="button"
+                disabled={!!updating || tx.status === 'completed'}
+                onClick={() => void handleStatus('completed')}
+                className="flex w-full items-center gap-3 rounded-xl border border-[#d4ecc3] bg-[#edf8e3] px-4 py-3 text-left text-xs font-semibold text-[#4e812c] transition hover:bg-[#dff0cc] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Check className="h-4 w-4 shrink-0" />
+                <div>
+                  <p>Confirmer</p>
+                  <p className="mt-0.5 text-[10px] font-normal text-[#6aa63c]">Marquer comme complétée</p>
+                </div>
+                {tx.status === 'completed' && <BadgeCheck className="ml-auto h-4 w-4" />}
+                {updating === 'completed' && <RefreshCw className="ml-auto h-3.5 w-3.5 animate-spin" />}
+              </button>
+              <button
+                type="button"
+                disabled={!!updating || tx.status === 'pending'}
+                onClick={() => void handleStatus('pending')}
+                className="flex w-full items-center gap-3 rounded-xl border border-[#f0dfc3] bg-[#fff8ee] px-4 py-3 text-left text-xs font-semibold text-[#a96823] transition hover:bg-[#fdecd6] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Clock3 className="h-4 w-4 shrink-0" />
+                <div>
+                  <p>Laisser en attente</p>
+                  <p className="mt-0.5 text-[10px] font-normal text-[#c4883b]">Aucun changement de fond</p>
+                </div>
+                {tx.status === 'pending' && <BadgeCheck className="ml-auto h-4 w-4" />}
+                {updating === 'pending' && <RefreshCw className="ml-auto h-3.5 w-3.5 animate-spin" />}
+              </button>
+              <button
+                type="button"
+                disabled={!!updating || tx.status === 'failed'}
+                onClick={() => void handleStatus('failed')}
+                className="flex w-full items-center gap-3 rounded-xl border border-[#f5d0ce] bg-[#fdf2f1] px-4 py-3 text-left text-xs font-semibold text-[#b74c47] transition hover:bg-[#fae4e3] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <X className="h-4 w-4 shrink-0" />
+                <div>
+                  <p>Rejeter</p>
+                  <p className="mt-0.5 text-[10px] font-normal text-[#c05a55]">Marquer comme échouée</p>
+                </div>
+                {tx.status === 'failed' && <BadgeCheck className="ml-auto h-4 w-4" />}
+                {updating === 'failed' && <RefreshCw className="ml-auto h-3.5 w-3.5 animate-spin" />}
+              </button>
+            </div>
+            {error && <p className="mt-3 rounded-lg bg-[#fdf2f1] px-3 py-2 text-[11px] text-[#b74c47]">{error}</p>}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 function TransactionsView({ transactions: sourceTransactions }: { transactions: AdminTransaction[] }) {
+  const [, navigate] = useLocation();
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Tous les statuts');
   const [page, setPage] = useState(1);
   const rows = sourceTransactions
     .map((row) => ({ id: row.id, customer: row.customer, channel: `${row.network} · ${row.cryptoCurrency}`, amount: `${formatNumber(row.amountFcfa)} FCFA`, status: row.status === 'completed' ? 'Approuvé' as Status : row.status === 'pending' ? 'En attente' as Status : 'Refusé' as Status, time: new Date(row.createdAt).toLocaleString('fr-FR') }))
-    .filter((row) => `${row.id} ${row.customer} ${row.channel}`.toLowerCase().includes(search.toLowerCase()) && (filter === 'Tous les statuts' || row.status === filter));
+    .filter((row) => `${txRef(row.id)} ${row.customer} ${row.channel}`.toLowerCase().includes(search.toLowerCase()) && (filter === 'Tous les statuts' || row.status === filter));
   const pagedRows = rows.slice((page - 1) * ADMIN_PAGE_SIZE, page * ADMIN_PAGE_SIZE);
-  return <><SectionHeading eyebrow="Exploitation · Données de suivi local" title="Transactions" action={<button type="button" onClick={() => window.alert('Export prêt à être connecté à l’endpoint administrateur.')} className="inline-flex items-center gap-2 rounded-xl border border-[#dfe6df] bg-white px-4 py-2.5 text-xs font-semibold"><Download className="h-3.5 w-3.5" /> Exporter CSV</button>} /><Toolbar search={search} setSearch={(value) => { setSearch(value); setPage(1); }} filter={filter} setFilter={(value) => { setFilter(value); setPage(1); }} filterOptions={['Tous les statuts', 'Approuvé', 'En attente', 'Refusé']} /><DataTable headers={['Référence', 'Client', 'Canal', 'Montant', 'Date', 'Statut', '']}>{pagedRows.map((row) => <tr key={row.id} className="text-xs hover:bg-[#fbfcfb]"><td className="px-5 py-4 font-mono text-[10px] text-[#819087]">{row.id}</td><td className="px-5 py-4 font-semibold">{row.customer}</td><td className="px-5 py-4 text-[#66756b]">{row.channel}</td><td className="px-5 py-4 font-semibold">{row.amount}</td><td className="px-5 py-4 text-[#66756b]">{row.time}</td><td className="px-5 py-4"><StatusPill status={row.status} /></td><td className="px-5 py-4 text-right"><button type="button" className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#f0f5ee]" title="Voir le détail"><ChevronRight className="h-4 w-4" /></button></td></tr>)}</DataTable><PaginationControls page={page} total={rows.length} setPage={setPage} /></>;
+  return (
+    <>
+      <SectionHeading eyebrow="Exploitation · Données de suivi local" title="Transactions" />
+      <Toolbar search={search} setSearch={(value) => { setSearch(value); setPage(1); }} filter={filter} setFilter={(value) => { setFilter(value); setPage(1); }} filterOptions={['Tous les statuts', 'Approuvé', 'En attente', 'Refusé']} />
+      <DataTable headers={['Référence', 'Client', 'Canal', 'Montant', 'Date', 'Statut', '']}>
+        {pagedRows.map((row) => (
+          <tr key={row.id} className="cursor-pointer text-xs hover:bg-[#fbfcfb]" onClick={() => navigate(`/admin/transactions/${row.id}`)}>
+            <td className="px-5 py-4 font-mono text-[10px] text-[#819087]">{txRef(row.id)}</td>
+            <td className="px-5 py-4 font-semibold">{row.customer}</td>
+            <td className="px-5 py-4 text-[#66756b]">{row.channel}</td>
+            <td className="px-5 py-4 font-semibold">{row.amount}</td>
+            <td className="px-5 py-4 text-[#66756b]">{row.time}</td>
+            <td className="px-5 py-4"><StatusPill status={row.status} /></td>
+            <td className="px-5 py-4 text-right"><ChevronRight className="ml-auto h-4 w-4 text-[#9aa79e]" /></td>
+          </tr>
+        ))}
+      </DataTable>
+      <PaginationControls page={page} total={rows.length} setPage={setPage} />
+    </>
+  );
 }
 
 function ConfigurationView({ type }: { type: string }) {
@@ -735,13 +903,20 @@ export default function AdminWorkspace() {
     return () => { mounted = false; };
   }, []);
 
+  const handleTxStatusUpdate = (id: string, status: 'completed' | 'pending' | 'failed') => {
+    setAdminTransactions((current) =>
+      current.map((tx) => (tx.id === id ? { ...tx, status } : tx))
+    );
+  };
+
   const segment = location.split('/')[2] || '';
-  const page = location.split('/')[3] || '';
+  const txDetailId = location.split('/')[3] || '';
   let content: React.ReactNode;
   if (loading && location === '/admin') content = <div className="admin-skeleton-grid">{[1, 2, 3, 4].map((item) => <div key={item} className="h-28 animate-pulse rounded-2xl bg-[#e5ece3]" />)}</div>;
   else if (location === '/admin') content = <DashboardView transactions={transactions} overview={overview} />;
   else if (segment === 'utilisateurs') content = <UsersView users={users} loading={adminLoading} allTransactions={adminTransactions} allSubmissions={submissions} />;
   else if (segment === 'kyc') content = <KycView submissions={submissions} loading={adminLoading} />;
+  else if (segment === 'transactions' && txDetailId) content = <AdminTransactionDetailView id={txDetailId} transactions={adminTransactions} onStatusUpdate={handleTxStatusUpdate} />;
   else if (segment === 'transactions') content = <TransactionsView transactions={adminTransactions} />;
   else if (segment === 'paiements-en-attente') content = <PendingView />;
   else if (segment === 'numeros-retrait') content = <WithdrawalNumbersView />;
