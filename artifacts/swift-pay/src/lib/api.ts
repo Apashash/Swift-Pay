@@ -32,7 +32,7 @@ export type TxStatus = "completed" | "pending" | "failed";
 
 export interface ApiTransaction {
   id: string;
-  userId: string;
+  userId: string | null;
   recipient: string;
   recipientPhone: string;
   countryCode: string;

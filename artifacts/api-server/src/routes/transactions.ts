@@ -129,7 +129,15 @@ router.get("/transactions/:id", async (req, res, next) => {
 
 router.post("/transactions", async (req, res, next) => {
   try {
-    const user = await requireUser(req.headers.authorization);
+    // Guest-friendly: attach user if logged in, but don't require it
+    let userId: string | null = null;
+    try {
+      const token = getBearerToken(req.headers.authorization);
+      const user = await getUserFromToken(token);
+      if (user) userId = user.id;
+    } catch {
+      // no valid session — proceed as guest
+    }
 
     const {
       recipient,
@@ -166,7 +174,7 @@ router.post("/transactions", async (req, res, next) => {
     const [tx] = await db
       .insert(transactionsTable)
       .values({
-        userId: user.id,
+        userId: userId ?? undefined,
         recipient: recipient.trim(),
         recipientPhone: recipientPhone.trim(),
         countryCode: countryCode.trim(),
@@ -190,17 +198,19 @@ router.post("/transactions", async (req, res, next) => {
       .where(eq(transactionsTable.id, tx.id))
       .returning();
 
-    // Auto-create a notification for the new transaction
-    await db.insert(notificationsTable).values({
-      userId: user.id,
-      type: "transaction",
-      title: `Transfert vers ${updated.recipient}`,
-      message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA est en cours de traitement.`,
-      details: `Vous avez envoyé ${updated.amountCrypto} ${updated.cryptoCurrency} via ${updated.network} en ${updated.countryName}. Nous vous notifierons dès que le paiement sera confirmé.`,
-      read: false,
-      actionLabel: "Suivre le transfert",
-      actionHref: `/transactions/${updated.id}`,
-    });
+    // Auto-create a notification only for authenticated users
+    if (userId) {
+      await db.insert(notificationsTable).values({
+        userId,
+        type: "transaction",
+        title: `Transfert vers ${updated.recipient}`,
+        message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA est en cours de traitement.`,
+        details: `Vous avez envoyé ${updated.amountCrypto} ${updated.cryptoCurrency} via ${updated.network} en ${updated.countryName}. Nous vous notifierons dès que le paiement sera confirmé.`,
+        read: false,
+        actionLabel: "Suivre le transfert",
+        actionHref: `/transactions/${updated.id}`,
+      });
+    }
 
     res.status(201).json({ transaction: updated });
   } catch (error) {

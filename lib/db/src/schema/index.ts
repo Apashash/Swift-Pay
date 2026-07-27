@@ -56,8 +56,7 @@ export const transactionsTable = pgTable(
   {
     id: uuid("id").defaultRandom().primaryKey(),
     userId: uuid("user_id")
-      .notNull()
-      .references(() => usersTable.id, { onDelete: "cascade" }),
+      .references(() => usersTable.id, { onDelete: "set null" }),
     recipient: text("recipient").notNull(),
     recipientPhone: text("recipient_phone").notNull(),
     countryCode: text("country_code").notNull(),

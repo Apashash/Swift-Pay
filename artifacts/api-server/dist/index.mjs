@@ -42257,7 +42257,7 @@ var init_schema2 = __esm({
       "transactions",
       {
         id: uuid("id").defaultRandom().primaryKey(),
-        userId: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+        userId: uuid("user_id").references(() => usersTable.id, { onDelete: "set null" }),
         recipient: text("recipient").notNull(),
         recipientPhone: text("recipient_phone").notNull(),
         countryCode: text("country_code").notNull(),
@@ -46681,7 +46681,13 @@ router3.get("/transactions/:id", async (req, res, next) => {
 });
 router3.post("/transactions", async (req, res, next) => {
   try {
-    const user = await requireUser(req.headers.authorization);
+    let userId = null;
+    try {
+      const token = getBearerToken(req.headers.authorization);
+      const user = await getUserFromToken(token);
+      if (user) userId = user.id;
+    } catch {
+    }
     const {
       recipient,
       recipientPhone,
@@ -46700,7 +46706,7 @@ router3.post("/transactions", async (req, res, next) => {
       return;
     }
     const [tx] = await db.insert(transactionsTable).values({
-      userId: user.id,
+      userId: userId ?? void 0,
       recipient: recipient.trim(),
       recipientPhone: recipientPhone.trim(),
       countryCode: countryCode.trim(),
@@ -46716,16 +46722,18 @@ router3.post("/transactions", async (req, res, next) => {
     }).returning();
     const paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
     const [updated] = await db.update(transactionsTable).set({ paymentAddress }).where(eq(transactionsTable.id, tx.id)).returning();
-    await db.insert(notificationsTable).values({
-      userId: user.id,
-      type: "transaction",
-      title: `Transfert vers ${updated.recipient}`,
-      message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA est en cours de traitement.`,
-      details: `Vous avez envoy\xE9 ${updated.amountCrypto} ${updated.cryptoCurrency} via ${updated.network} en ${updated.countryName}. Nous vous notifierons d\xE8s que le paiement sera confirm\xE9.`,
-      read: false,
-      actionLabel: "Suivre le transfert",
-      actionHref: `/transactions/${updated.id}`
-    });
+    if (userId) {
+      await db.insert(notificationsTable).values({
+        userId,
+        type: "transaction",
+        title: `Transfert vers ${updated.recipient}`,
+        message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA est en cours de traitement.`,
+        details: `Vous avez envoy\xE9 ${updated.amountCrypto} ${updated.cryptoCurrency} via ${updated.network} en ${updated.countryName}. Nous vous notifierons d\xE8s que le paiement sera confirm\xE9.`,
+        read: false,
+        actionLabel: "Suivre le transfert",
+        actionHref: `/transactions/${updated.id}`
+      });
+    }
     res.status(201).json({ transaction: updated });
   } catch (error) {
     next(error);
