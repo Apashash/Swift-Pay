@@ -582,7 +582,7 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
             ) : (
               <>
                 <div className="rounded-xl border border-[#f2dcb8] bg-[#fff8ea] p-4 text-xs leading-5 text-[#93642f]">
-                  Un utilisateur bloqué ne peut plus effectuer de transactions (envois, retraits, dépôts). Cette action est réversible.
+                  Un utilisateur bloqué ne peut plus effectuer d'opérations d'échange sur la plateforme. Cette action est réversible.
                 </div>
                 <label className="block">
                   <span className="mb-2 block text-xs font-semibold">Raison du blocage <span className="text-[#b74c47]">*</span></span>
