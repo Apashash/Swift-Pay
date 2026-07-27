@@ -166,7 +166,11 @@ export default function Profile() {
                 Débloquez les montants illimités, l'accès API et toutes les fonctionnalités avancées.
               </p>
             </div>
-            <Button size="sm" className="bg-orange-500 text-white hover:bg-orange-600 shrink-0 text-xs font-semibold">
+            <Button
+              size="sm"
+              onClick={() => navigate('/profil/kyc')}
+              className="bg-orange-500 text-white hover:bg-orange-600 shrink-0 text-xs font-semibold"
+            >
               Vérifier
             </Button>
           </motion.div>

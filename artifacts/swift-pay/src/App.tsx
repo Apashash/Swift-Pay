@@ -18,6 +18,7 @@ import TwoFactor from '@/pages/security/TwoFactor';
 import ActiveSessions from '@/pages/security/ActiveSessions';
 import EmailNotifications from '@/pages/settings/EmailNotifications';
 import RateAlerts from '@/pages/settings/RateAlerts';
+import KYCVerification from '@/pages/kyc/KYCVerification';
 import { Notifications, NotificationDetail } from '@/pages/Notifications';
 import PaymentLink from '@/pages/PaymentLink';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
@@ -74,6 +75,9 @@ function Router() {
       </Route>
       <Route path="/profil/alertes-taux">
         {() => <ProtectedRoute component={RateAlerts} />}
+      </Route>
+      <Route path="/profil/kyc">
+        {() => <ProtectedRoute component={KYCVerification} />}
       </Route>
       <Route path="/notifications">
         {() => <ProtectedRoute component={Notifications} />}

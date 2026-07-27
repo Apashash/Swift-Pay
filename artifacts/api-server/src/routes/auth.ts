@@ -3,6 +3,7 @@ import { and, desc, eq, gt, or } from "drizzle-orm";
 import {
   authSessionsTable,
   db,
+  kycSubmissionsTable,
   usersTable,
 } from "@workspace/db";
 import {
@@ -279,6 +280,83 @@ router.delete("/auth/sessions/:id", async (req, res, next) => {
       );
 
     res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// POST /auth/kyc — submit a KYC verification dossier
+router.post("/auth/kyc", async (req, res, next) => {
+  try {
+    const token = getBearerToken(req.headers.authorization);
+    const user = await getUserFromToken(token);
+    if (!user) {
+      res.status(401).json({ message: "Session expirée." });
+      return;
+    }
+
+    const { frontPhoto, backPhoto, selfiePhoto, description } = req.body as Record<string, unknown>;
+
+    if (
+      typeof frontPhoto !== "string" ||
+      typeof backPhoto !== "string" ||
+      typeof selfiePhoto !== "string" ||
+      typeof description !== "string" ||
+      description.trim().length < 20
+    ) {
+      res.status(400).json({ message: "Données incomplètes ou invalides." });
+      return;
+    }
+
+    // Check if a pending submission already exists
+    const existing = await db
+      .select({ id: kycSubmissionsTable.id, status: kycSubmissionsTable.status })
+      .from(kycSubmissionsTable)
+      .where(eq(kycSubmissionsTable.userId, user.id))
+      .limit(1);
+
+    if (existing.length > 0 && existing[0].status === "pending") {
+      res.status(409).json({ message: "Un dossier KYC est déjà en cours de vérification." });
+      return;
+    }
+
+    await db.insert(kycSubmissionsTable).values({
+      userId: user.id,
+      frontPhoto,
+      backPhoto,
+      selfiePhoto,
+      description: description.trim(),
+      status: "pending",
+    });
+
+    res.status(201).json({ message: "Dossier KYC soumis avec succès. Vérification sous 24–48 h." });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /auth/kyc — get current user's KYC submission status
+router.get("/auth/kyc", async (req, res, next) => {
+  try {
+    const token = getBearerToken(req.headers.authorization);
+    const user = await getUserFromToken(token);
+    if (!user) {
+      res.status(401).json({ message: "Session expirée." });
+      return;
+    }
+
+    const [submission] = await db
+      .select({
+        id: kycSubmissionsTable.id,
+        status: kycSubmissionsTable.status,
+        submittedAt: kycSubmissionsTable.submittedAt,
+      })
+      .from(kycSubmissionsTable)
+      .where(eq(kycSubmissionsTable.userId, user.id))
+      .orderBy(desc(kycSubmissionsTable.submittedAt))
+      .limit(1);
+
+    res.json({ submission: submission ?? null });
   } catch (error) {
     next(error);
   }

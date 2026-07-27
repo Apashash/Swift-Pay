@@ -110,8 +110,31 @@ export const notificationsTable = pgTable(
   }),
 );
 
+export const kycSubmissionsTable = pgTable(
+  "kyc_submissions",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    frontPhoto: text("front_photo").notNull(),
+    backPhoto: text("back_photo").notNull(),
+    selfiePhoto: text("selfie_photo").notNull(),
+    description: text("description").notNull(),
+    status: text("status").notNull().default("pending"), // 'pending' | 'approved' | 'rejected'
+    submittedAt: timestamp("submitted_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    userIdIdx: index("kyc_submissions_user_id_idx").on(table.userId),
+    statusIdx: index("kyc_submissions_status_idx").on(table.status),
+  }),
+);
+
 export type User = typeof usersTable.$inferSelect;
 export type Transaction = typeof transactionsTable.$inferSelect;
 export type NewTransaction = typeof transactionsTable.$inferInsert;
 export type Notification = typeof notificationsTable.$inferSelect;
 export type NewNotification = typeof notificationsTable.$inferInsert;
+export type KycSubmission = typeof kycSubmissionsTable.$inferSelect;
