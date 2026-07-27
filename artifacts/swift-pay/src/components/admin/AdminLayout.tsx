@@ -146,6 +146,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       <div className="border-t border-white/10 p-3">
         <button
           type="button"
+          onClick={() => { setMobileOpen(false); navigate('/admin/conversions'); }}
+          className={`mb-1 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium transition-colors ${
+            isActive(location, '/admin/conversions') ? 'bg-[#b8f26d] text-[#17211c]' : 'text-white/60 hover:bg-white/[0.07] hover:text-white'
+          }`}
+        >
+          <Settings2 className="h-4 w-4 shrink-0" />
+          Paramètres
+        </button>
+        <button
+          type="button"
           onClick={() => { setMobileOpen(false); navigate('/dashboard'); }}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium text-white/60 hover:bg-white/[0.07] hover:text-white"
         >
