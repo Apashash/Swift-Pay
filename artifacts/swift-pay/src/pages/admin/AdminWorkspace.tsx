@@ -67,23 +67,26 @@ interface AdminOverview {
   kyc: { pending: number; approved: number };
 }
 
+type KycStatus = 'Approuvé' | 'En attente' | 'Refusé' | 'Non soumis';
+
 interface DemoUser {
   id: string;
   name: string;
   email: string;
   country: string;
   joined: string;
-  volume: string;
-  status: Status;
+  kycStatus: KycStatus;
+  blocked: boolean;
+  blockReason?: string;
   avatar?: string | null;
 }
 
 const demoUsers: DemoUser[] = [
-  { id: 'USR-2048', name: 'Aminata Diop', email: 'aminata.diop@example.com', country: 'Sénégal', joined: '24 juin 2025', volume: '1 248 500 FCFA', status: 'Actif' },
-  { id: 'USR-1934', name: 'Koffi Mensah', email: 'koffi.mensah@example.com', country: 'Côte d’Ivoire', joined: '19 juin 2025', volume: '824 000 FCFA', status: 'En attente' },
-  { id: 'USR-1871', name: 'Nadia Kouassi', email: 'nadia.kouassi@example.com', country: 'Côte d’Ivoire', joined: '17 juin 2025', volume: '3 610 200 FCFA', status: 'Actif' },
-  { id: 'USR-1760', name: 'Moussa Traoré', email: 'moussa.traore@example.com', country: 'Mali', joined: '12 juin 2025', volume: '245 900 FCFA', status: 'Suspendu' },
-  { id: 'USR-1682', name: 'Chantal N’Guessan', email: 'chantal.nguessan@example.com', country: 'Cameroun', joined: '04 juin 2025', volume: '972 300 FCFA', status: 'Actif' },
+  { id: 'USR-2048', name: 'Aminata Diop', email: 'aminata.diop@example.com', country: 'Sénégal', joined: '24 juin 2025', kycStatus: 'Approuvé', blocked: false },
+  { id: 'USR-1934', name: 'Koffi Mensah', email: 'koffi.mensah@example.com', country: "Côte d'Ivoire", joined: '19 juin 2025', kycStatus: 'En attente', blocked: false },
+  { id: 'USR-1871', name: 'Nadia Kouassi', email: 'nadia.kouassi@example.com', country: "Côte d'Ivoire", joined: '17 juin 2025', kycStatus: 'Approuvé', blocked: false },
+  { id: 'USR-1760', name: 'Moussa Traoré', email: 'moussa.traore@example.com', country: 'Mali', joined: '12 juin 2025', kycStatus: 'Refusé', blocked: true, blockReason: 'Documents frauduleux détectés' },
+  { id: 'USR-1682', name: "Chantal N'Guessan", email: 'chantal.nguessan@example.com', country: 'Cameroun', joined: '04 juin 2025', kycStatus: 'Non soumis', blocked: false },
 ];
 
 const demoKyc = [
@@ -124,6 +127,16 @@ function StatusPill({ status }: { status: Status }) {
     Suspendu: 'bg-[#fbe6e5] text-[#b74c47]',
     Approuvé: 'bg-[#e7f5dc] text-[#4e812c]',
     Refusé: 'bg-[#fbe6e5] text-[#b74c47]',
+  };
+  return <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${styles[status]}`}>{status}</span>;
+}
+
+function KycPill({ status }: { status: KycStatus }) {
+  const styles: Record<KycStatus, string> = {
+    'Approuvé': 'bg-[#e7f5dc] text-[#4e812c]',
+    'En attente': 'bg-[#fff1dc] text-[#a96823]',
+    'Refusé': 'bg-[#fbe6e5] text-[#b74c47]',
+    'Non soumis': 'bg-[#f0f2f0] text-[#819087]',
   };
   return <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-semibold ${styles[status]}`}>{status}</span>;
 }
@@ -270,26 +283,281 @@ function DashboardView({ transactions, overview }: { transactions: ApiTransactio
   );
 }
 
+type UserPanel = 'transactions' | 'kyc' | 'block' | null;
+
 function UsersView({ users: sourceUsers, loading }: { users: AdminUser[]; loading: boolean }) {
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('Tous les statuts');
+  const [filter, setFilter] = useState('Tous les KYC');
   const [page, setPage] = useState(1);
-  const [users, setUsers] = useState<DemoUser[]>([]);
+  const [users, setUsers] = useState<DemoUser[]>(demoUsers);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [selectedUser, setSelectedUser] = useState<DemoUser | null>(null);
+  const [panel, setPanel] = useState<UserPanel>(null);
+  const [blockReason, setBlockReason] = useState('');
+  const [txPage, setTxPage] = useState(1);
+
   useEffect(() => {
-    setUsers(sourceUsers.map((user) => ({
-      id: user.id,
-      name: user.fullName,
-      email: user.email,
-      country: user.country,
-      joined: new Date(user.joinedAt).toLocaleDateString('fr-FR'),
-      volume: '—',
-      status: user.verified ? 'Actif' : 'En attente',
-      avatar: user.avatar,
-    })));
+    if (sourceUsers.length > 0) {
+      setUsers(sourceUsers.map((user) => ({
+        id: user.id,
+        name: user.fullName,
+        email: user.email,
+        country: user.country,
+        joined: new Date(user.joinedAt).toLocaleDateString('fr-FR'),
+        kycStatus: user.verified ? 'Approuvé' : 'En attente',
+        blocked: false,
+        avatar: user.avatar,
+      })));
+    }
   }, [sourceUsers]);
-  const filtered = useMemo(() => users.filter((user) => (`${user.name} ${user.email} ${user.country}`).toLowerCase().includes(search.toLowerCase()) && (filter === 'Tous les statuts' || user.status === filter)), [users, search, filter]);
+
+  const filtered = useMemo(
+    () => users.filter((user) =>
+      `${user.name} ${user.email} ${user.country}`.toLowerCase().includes(search.toLowerCase()) &&
+      (filter === 'Tous les KYC' || user.kycStatus === filter)
+    ),
+    [users, search, filter]
+  );
   const pagedUsers = filtered.slice((page - 1) * ADMIN_PAGE_SIZE, page * ADMIN_PAGE_SIZE);
-  return <><SectionHeading title="Utilisateurs" /><Toolbar search={search} setSearch={(value) => { setSearch(value); setPage(1); }} filter={filter} setFilter={(value) => { setFilter(value); setPage(1); }} filterOptions={['Tous les statuts', 'Actif', 'En attente', 'Suspendu']} onExport={() => window.alert('Export des utilisateurs prêt.')} /><DataTable headers={['Utilisateur', 'Pays', 'Inscription', 'Volume traité', 'Statut', '']}>{loading ? <tr><td colSpan={6} className="px-5 py-12 text-center text-xs text-[#819087]">Chargement des utilisateurs…</td></tr> : pagedUsers.map((user) => <tr key={user.id} className="text-xs hover:bg-[#fbfcfb]"><td className="px-5 py-4"><div className="flex items-center gap-3"><div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#dcebd2] text-[10px] font-bold text-[#41602b]">{user.avatar ? <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" /> : user.name.split(' ').map((part) => part[0]).join('').slice(0, 2)}</div><div><p className="font-semibold">{user.name}</p><p className="mt-0.5 text-[10px] text-[#819087]">{user.email}</p></div></div></td><td className="px-5 py-4 text-[#66756b]">{user.country}</td><td className="px-5 py-4 text-[#66756b]">{user.joined}</td><td className="px-5 py-4 font-semibold">{user.volume}</td><td className="px-5 py-4"><StatusPill status={user.status} /></td><td className="px-5 py-4 text-right"><button type="button" onClick={() => setUsers((current) => current.map((item) => item.id === user.id ? { ...item, status: item.status === 'Suspendu' ? 'Actif' : 'Suspendu' } : item))} className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#edf6e7] hover:text-[#4e812c]" title="Changer le statut"><MoreHorizontal className="h-4 w-4" /></button></td></tr>)}</DataTable>{!loading && filtered.length === 0 && <div className="rounded-b-2xl border border-t-0 border-[#dfe6df] bg-white p-10 text-center text-xs text-[#819087]">Aucun utilisateur ne correspond à votre recherche.</div>}{!loading && <PaginationControls page={page} total={filtered.length} setPage={setPage} />}</>;
+
+  const openPanel = (user: DemoUser, action: UserPanel) => {
+    setSelectedUser(user);
+    setPanel(action);
+    setOpenMenuId(null);
+    setBlockReason(user.blockReason || '');
+    setTxPage(1);
+  };
+
+  const closePanel = () => { setPanel(null); setSelectedUser(null); };
+
+  const handleBlock = () => {
+    if (!selectedUser) return;
+    setUsers((current) => current.map((u) =>
+      u.id === selectedUser.id
+        ? { ...u, blocked: !u.blocked, blockReason: !u.blocked ? blockReason : undefined }
+        : u
+    ));
+    closePanel();
+  };
+
+  // Mock per-user transactions (demo)
+  const userTransactions = demoTransfers;
+  const txPaged = userTransactions.slice((txPage - 1) * ADMIN_PAGE_SIZE, txPage * ADMIN_PAGE_SIZE);
+
+  // Find matching KYC entry for selected user (demo)
+  const userKyc = selectedUser
+    ? (demoKyc.find((k) => k.name === selectedUser.name) ?? demoKyc[0])
+    : null;
+
+  return (
+    <>
+      <SectionHeading title="Utilisateurs" />
+      <Toolbar
+        search={search}
+        setSearch={(v) => { setSearch(v); setPage(1); }}
+        filter={filter}
+        setFilter={(v) => { setFilter(v); setPage(1); }}
+        filterOptions={['Tous les KYC', 'Approuvé', 'En attente', 'Refusé', 'Non soumis']}
+        onExport={() => window.alert('Export des utilisateurs prêt.')}
+      />
+      <DataTable headers={['Utilisateur', 'Pays', 'Inscription', 'KYC', 'Statut', '']}>
+        {loading
+          ? <tr><td colSpan={6} className="px-5 py-12 text-center text-xs text-[#819087]">Chargement des utilisateurs…</td></tr>
+          : pagedUsers.map((user) => (
+            <tr key={user.id} className="text-xs hover:bg-[#fbfcfb]">
+              <td className="px-5 py-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-[#dcebd2] text-[10px] font-bold text-[#41602b]">
+                    {user.avatar ? <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" /> : user.name.split(' ').map((p) => p[0]).join('').slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{user.name}</p>
+                    <p className="mt-0.5 text-[10px] text-[#819087]">{user.email}</p>
+                  </div>
+                </div>
+              </td>
+              <td className="px-5 py-4 text-[#66756b]">{user.country}</td>
+              <td className="px-5 py-4 text-[#66756b]">{user.joined}</td>
+              <td className="px-5 py-4"><KycPill status={user.kycStatus} /></td>
+              <td className="px-5 py-4">
+                {user.blocked
+                  ? <span className="inline-flex rounded-full bg-[#fbe6e5] px-2.5 py-1 text-[10px] font-semibold text-[#b74c47]">Bloqué</span>
+                  : <span className="inline-flex rounded-full bg-[#e7f5dc] px-2.5 py-1 text-[10px] font-semibold text-[#4e812c]">Actif</span>
+                }
+              </td>
+              <td className="relative px-5 py-4 text-right">
+                <button
+                  type="button"
+                  onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
+                  className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#edf6e7] hover:text-[#4e812c]"
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+                {openMenuId === user.id && (
+                  <div className="absolute right-4 top-12 z-50 w-52 overflow-hidden rounded-xl border border-[#dfe6df] bg-white shadow-lg">
+                    <button type="button" onClick={() => openPanel(user, 'transactions')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4]">
+                      <ArrowLeftRight className="h-4 w-4 text-[#5f8c3d]" />
+                      <span className="font-semibold">Transactions</span>
+                    </button>
+                    <button type="button" onClick={() => openPanel(user, 'kyc')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4]">
+                      <BadgeCheck className="h-4 w-4 text-[#5f8c3d]" />
+                      <span className="font-semibold">KYC</span>
+                    </button>
+                    <div className="h-px bg-[#edf0ed]" />
+                    <button type="button" onClick={() => openPanel(user, 'block')} className={`flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4] ${user.blocked ? 'text-[#61943a]' : 'text-[#b74c47]'}`}>
+                      <ShieldAlert className="h-4 w-4" />
+                      <span className="font-semibold">{user.blocked ? 'Débloquer' : 'Bloquer'}</span>
+                    </button>
+                  </div>
+                )}
+              </td>
+            </tr>
+          ))
+        }
+      </DataTable>
+      {!loading && filtered.length === 0 && (
+        <div className="rounded-b-2xl border border-t-0 border-[#dfe6df] bg-white p-10 text-center text-xs text-[#819087]">Aucun utilisateur ne correspond à votre recherche.</div>
+      )}
+      {!loading && <PaginationControls page={page} total={filtered.length} setPage={setPage} />}
+
+      {/* Dropdown backdrop */}
+      {openMenuId && <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />}
+
+      {/* Panel backdrop */}
+      {panel && <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" onClick={closePanel} />}
+
+      {/* ── Transactions slide-over ── */}
+      {panel === 'transactions' && selectedUser && (
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col bg-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[#edf0ed] px-6 py-4">
+            <div>
+              <h3 className="text-sm font-semibold">Transactions — {selectedUser.name}</h3>
+              <p className="mt-0.5 text-[11px] text-[#819087]">{selectedUser.email}</p>
+            </div>
+            <button type="button" onClick={closePanel} className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#f0f5ee]"><X className="h-4 w-4" /></button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-6">
+            {txPaged.length === 0
+              ? <p className="py-16 text-center text-xs text-[#819087]">Aucune transaction enregistrée pour cet utilisateur.</p>
+              : (
+                <DataTable headers={['Réf.', 'Type', 'Canal', 'Montant', 'Statut', 'Date']}>
+                  {txPaged.map((row) => (
+                    <tr key={row.id} className="text-xs hover:bg-[#fbfcfb]">
+                      <td className="px-4 py-3 font-mono text-[10px] text-[#819087]">{row.id}</td>
+                      <td className="px-4 py-3 text-[#66756b]">{row.kind}</td>
+                      <td className="px-4 py-3 text-[#66756b]">{row.channel}</td>
+                      <td className="px-4 py-3 font-semibold">{row.amount}</td>
+                      <td className="px-4 py-3"><StatusPill status={row.status} /></td>
+                      <td className="px-4 py-3 text-[#66756b]">{row.time}</td>
+                    </tr>
+                  ))}
+                </DataTable>
+              )
+            }
+            <PaginationControls page={txPage} total={userTransactions.length} setPage={setTxPage} />
+          </div>
+        </div>
+      )}
+
+      {/* ── KYC slide-over ── */}
+      {panel === 'kyc' && selectedUser && userKyc && (
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col bg-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[#edf0ed] px-6 py-4">
+            <div>
+              <h3 className="text-sm font-semibold">Dossier KYC — {selectedUser.name}</h3>
+              <p className="mt-0.5 text-[11px] text-[#819087]">{selectedUser.email}</p>
+            </div>
+            <button type="button" onClick={closePanel} className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#f0f5ee]"><X className="h-4 w-4" /></button>
+          </div>
+          <div className="flex-1 overflow-y-auto space-y-5 p-6">
+            <div className="rounded-xl border border-[#dfe6df] p-5 space-y-3">
+              <h4 className="text-[10px] font-semibold uppercase tracking-widest text-[#97a39b]">Informations</h4>
+              {([['Nom complet', userKyc.name], ['E-mail', userKyc.email], ['Pays', userKyc.country], ['Type de document', userKyc.type], ['Référence', userKyc.id], ['Soumis', userKyc.submitted]] as [string, string][]).map(([label, value]) => (
+                <div key={label} className="flex justify-between text-xs">
+                  <span className="text-[#819087]">{label}</span>
+                  <span className="font-semibold">{value}</span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between pt-1 text-xs">
+                <span className="text-[#819087]">Statut KYC</span>
+                <StatusPill status={userKyc.status} />
+              </div>
+            </div>
+            <div className="rounded-xl border border-[#dfe6df] p-5">
+              <h4 className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#97a39b]">Documents soumis</h4>
+              <div className="grid grid-cols-2 gap-3">
+                {['Recto', 'Verso'].map((label) => (
+                  <div key={label} className="rounded-xl border-2 border-dashed border-[#d5e5cb] bg-[#f7faf6] p-6 text-center">
+                    <FileText className="mx-auto h-8 w-8 text-[#adc89a]" />
+                    <p className="mt-2 text-[10px] font-semibold text-[#66756b]">{label} du document</p>
+                    <p className="mt-1 text-[10px] text-[#9aa79e]">Document.jpg</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {userKyc.status === 'En attente' && (
+              <div className="flex gap-3">
+                <button type="button" className="flex-1 rounded-xl bg-[#e7f5dc] py-2.5 text-xs font-semibold text-[#4e812c] hover:bg-[#d6eec5]">
+                  <Check className="mr-1.5 inline h-3.5 w-3.5" />Approuver
+                </button>
+                <button type="button" className="flex-1 rounded-xl bg-[#fbe6e5] py-2.5 text-xs font-semibold text-[#b74c47] hover:bg-[#f5d1d0]">
+                  <X className="mr-1.5 inline h-3.5 w-3.5" />Refuser
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Block / Unblock slide-over ── */}
+      {panel === 'block' && selectedUser && (
+        <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col bg-white shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[#edf0ed] px-6 py-4">
+            <div>
+              <h3 className="text-sm font-semibold">{selectedUser.blocked ? 'Débloquer' : 'Bloquer'} — {selectedUser.name}</h3>
+              <p className="mt-0.5 text-[11px] text-[#819087]">{selectedUser.email}</p>
+            </div>
+            <button type="button" onClick={closePanel} className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#f0f5ee]"><X className="h-4 w-4" /></button>
+          </div>
+          <div className="flex-1 space-y-5 p-6">
+            {selectedUser.blocked ? (
+              <div className="rounded-xl border border-[#d7e8c6] bg-[#edf8e3] p-4 text-xs leading-5 text-[#50733a]">
+                <strong>Cet utilisateur est actuellement bloqué.</strong>
+                {selectedUser.blockReason && <p className="mt-1">Raison : {selectedUser.blockReason}</p>}
+                <p className="mt-2">Le débloquer lui permettra de reprendre ses transactions.</p>
+              </div>
+            ) : (
+              <>
+                <div className="rounded-xl border border-[#f2dcb8] bg-[#fff8ea] p-4 text-xs leading-5 text-[#93642f]">
+                  Un utilisateur bloqué ne peut plus effectuer de transactions (envois, retraits, dépôts). Cette action est réversible.
+                </div>
+                <label className="block">
+                  <span className="mb-2 block text-xs font-semibold">Raison du blocage <span className="text-[#b74c47]">*</span></span>
+                  <textarea
+                    value={blockReason}
+                    onChange={(e) => setBlockReason(e.target.value)}
+                    placeholder="Ex : Documents frauduleux, activité suspecte, fraude détectée…"
+                    className="h-28 w-full resize-none rounded-xl border border-[#dfe6df] p-3 text-xs outline-none focus:border-[#8fb85e] focus:ring-2 focus:ring-[#b8f26d]/30"
+                  />
+                </label>
+              </>
+            )}
+          </div>
+          <div className="flex gap-3 border-t border-[#edf0ed] px-6 py-4">
+            <button type="button" onClick={closePanel} className="flex-1 rounded-xl border border-[#dfe6df] py-2.5 text-xs font-semibold text-[#819087] hover:bg-[#f0f5ee]">Annuler</button>
+            <button
+              type="button"
+              onClick={handleBlock}
+              disabled={!selectedUser.blocked && !blockReason.trim()}
+              className={`flex-1 rounded-xl py-2.5 text-xs font-semibold text-white disabled:opacity-40 ${selectedUser.blocked ? 'bg-[#4e812c] hover:bg-[#41602b]' : 'bg-[#b74c47] hover:bg-[#953b37]'}`}
+            >
+              {selectedUser.blocked ? 'Débloquer l\'utilisateur' : 'Bloquer l\'utilisateur'}
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 function KycView({ submissions, loading }: { submissions: AdminKyc[]; loading: boolean }) {
