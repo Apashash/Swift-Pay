@@ -271,7 +271,6 @@ export default function Profile() {
             icon: Bell,
             items: [
               { label: 'Notifications par email', desc: 'Transactions et alertes de sécurité', href: null },
-              { label: 'SMS de confirmation', desc: 'Pour chaque transaction envoyée', href: null },
               { label: 'Alertes de taux', desc: 'Lorsque le taux USDT/FCFA change de ±2%', href: null },
             ],
           },
