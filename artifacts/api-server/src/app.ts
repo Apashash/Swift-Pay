@@ -1,6 +1,8 @@
 import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import router from "./routes";
 import { logger } from "./lib/logger";
 
@@ -30,6 +32,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", router);
+
+// Serve the built React frontend for all non-API routes (production / Plesk deployment).
+// In development the Vite dev server handles the frontend separately.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const frontendDist = path.resolve(__dirname, "../../swift-pay/dist/public");
+app.use(express.static(frontendDist));
+app.get(/^(?!\/api).*$/, (_req: Request, res: Response) => {
+  res.sendFile(path.join(frontendDist, "index.html"));
+});
 
 // Global JSON error handler — must have 4 params for Express to recognise it as an error handler.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
