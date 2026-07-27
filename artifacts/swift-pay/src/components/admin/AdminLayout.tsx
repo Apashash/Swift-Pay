@@ -178,7 +178,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </>
       )}
 
-      <div className="min-h-[100dvh] lg:ml-[260px]">
+      <div className="min-h-[100dvh] bg-[#f5f7f5] lg:ml-[260px]">
         <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-[#dfe6df] bg-[#f5f7f5]/95 px-4 backdrop-blur md:px-8">
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => setMobileOpen(true)} className="rounded-lg border border-[#dfe6df] bg-white p-2 lg:hidden" aria-label="Ouvrir le menu">
