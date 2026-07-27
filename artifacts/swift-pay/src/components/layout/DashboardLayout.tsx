@@ -4,7 +4,7 @@ import { Link, useLocation } from 'wouter';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard, Send, ArrowLeftRight, User, LogOut,
-  Menu, X, ChevronRight, Sun, Moon, Bell, Globe, Link2,
+  Menu, X, ChevronRight, Sun, Moon, Bell, Globe, Link2, ShieldCheck,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import { useTheme } from '@/lib/theme';
@@ -104,7 +104,7 @@ interface Props {
 
 export function DashboardLayout({ children }: Props) {
   const [location] = useLocation();
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { lang, setLang } = useTranslation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -153,6 +153,22 @@ export function DashboardLayout({ children }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+        {isAdmin && (
+          <Link href="/admin">
+            <a
+              onClick={() => setSidebarOpen(false)}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all group mb-3 ${
+                location.startsWith('/admin')
+                  ? 'bg-primary/10 text-primary border border-primary/20'
+                  : 'text-primary hover:bg-primary/10 border border-primary/10'
+              }`}
+            >
+              <ShieldCheck className="w-4 h-4" />
+              Espace Admin
+              <ChevronRight className="w-3 h-3 ml-auto" />
+            </a>
+          </Link>
+        )}
         {SIDEBAR_NAV.map((item) => {
           const active = location === item.href;
           return (

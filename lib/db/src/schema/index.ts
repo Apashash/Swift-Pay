@@ -19,6 +19,7 @@ export const usersTable = pgTable(
     country: text("country").notNull(),
     countryCode: text("country_code").notNull(),
     passwordHash: text("password_hash").notNull(),
+    role: text("role").notNull().default("user"), // 'user' | 'admin'
     verified: boolean("verified").notNull().default(false),
     avatar: text("avatar"),
     joinedAt: timestamp("joined_at", { withTimezone: true })

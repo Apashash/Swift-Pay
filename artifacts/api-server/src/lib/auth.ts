@@ -8,6 +8,27 @@ const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30;
 
 export type PublicUser = Omit<User, "passwordHash">;
 
+export function isAdmin(user: PublicUser | null): boolean {
+  return user?.role === "admin";
+}
+
+export async function requireAdmin(
+  authorization: string | undefined,
+): Promise<PublicUser> {
+  const user = await getUserFromToken(getBearerToken(authorization));
+  if (!user) {
+    const error = new Error("Session expirée.") as Error & { statusCode: number };
+    error.statusCode = 401;
+    throw error;
+  }
+  if (!isAdmin(user)) {
+    const error = new Error("Accès administrateur requis.") as Error & { statusCode: number };
+    error.statusCode = 403;
+    throw error;
+  }
+  return user;
+}
+
 function toPublicUser(user: User): PublicUser {
   const { passwordHash: _passwordHash, ...publicUser } = user;
   return publicUser;

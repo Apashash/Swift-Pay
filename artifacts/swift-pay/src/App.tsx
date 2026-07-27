@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from '@/lib/theme';
 import { Toaster } from '@/components/ui/toaster';
@@ -24,18 +25,25 @@ import PaymentLink from '@/pages/PaymentLink';
 import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { LanguageProvider } from '@/lib/i18n';
 import { AuthProvider, useAuth } from '@/lib/auth';
+import AdminWorkspace from '@/pages/admin/AdminWorkspace';
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
-  const { isAuthenticated, isLoading } = useAuth();
+function ProtectedRoute({ component: Component, adminOnly = false }: { component: React.ComponentType; adminOnly?: boolean }) {
+  const { isAuthenticated, isLoading, isAdmin } = useAuth();
   const [, navigate] = useLocation();
 
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      navigate('/connexion');
+    } else if (adminOnly && !isAdmin) {
+      navigate('/dashboard');
+    }
+  }, [adminOnly, isAdmin, isAuthenticated, isLoading, navigate]);
+
   if (isLoading) return null;
-  if (!isAuthenticated) {
-    navigate('/connexion');
-    return null;
-  }
+  if (!isAuthenticated || (adminOnly && !isAdmin)) return null;
   return <Component />;
 }
 
@@ -48,6 +56,15 @@ function Router() {
       <Route path="/inscription" component={Register} />
       <Route path="/dashboard">
         {() => <ProtectedRoute component={Dashboard} />}
+      </Route>
+      <Route path="/admin">
+        {() => <ProtectedRoute component={AdminWorkspace} adminOnly />}
+      </Route>
+      <Route path="/admin/:section">
+        {() => <ProtectedRoute component={AdminWorkspace} adminOnly />}
+      </Route>
+      <Route path="/admin/:section/:subsection">
+        {() => <ProtectedRoute component={AdminWorkspace} adminOnly />}
       </Route>
       <Route path="/envoyer">
         {() => <ProtectedRoute component={SendPayment} />}

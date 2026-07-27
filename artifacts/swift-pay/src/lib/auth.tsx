@@ -8,6 +8,7 @@ export interface User {
   country: string;
   countryCode: string;
   verified: boolean;
+  role: "user" | "admin";
   joinedAt: string;
   avatar?: string | null;
 }
@@ -16,11 +17,12 @@ interface AuthContextValue {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isAdmin: boolean;
   login: (identifier: string, password: string) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
   updateUser: (
-    fields: Partial<Pick<User, "fullName" | "email" | "phone" | "avatar">>,
+    fields: Partial<Pick<User, "fullName" | "email" | "phone" | "avatar" | "verified">>,
   ) => void;
 }
 
@@ -119,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateUser = (
-    fields: Partial<Pick<User, "fullName" | "email" | "phone" | "avatar">>,
+    fields: Partial<Pick<User, "fullName" | "email" | "phone" | "avatar" | "verified">>,
   ) => {
     const token = localStorage.getItem(SESSION_KEY);
     if (!token) return;
@@ -143,6 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: !!user,
         isLoading,
+        isAdmin: user?.role === "admin",
         login,
         register,
         logout,

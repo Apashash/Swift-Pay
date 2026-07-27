@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import transactionsRouter from "./transactions";
 import ratesRouter from "./rates";
 import notificationsRouter from "./notifications";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(authRouter);
 router.use(transactionsRouter);
 router.use(ratesRouter);
 router.use(notificationsRouter);
+router.use(adminRouter);
 
 export default router;

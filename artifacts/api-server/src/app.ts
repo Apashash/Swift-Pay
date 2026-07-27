@@ -41,7 +41,14 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
   const message =
     err instanceof Error ? err.message : "Une erreur interne est survenue.";
   logger.error({ err }, "Unhandled error");
-  res.status(500).json({ message });
+  const statusCode =
+    typeof err === "object" &&
+    err !== null &&
+    "statusCode" in err &&
+    typeof err.statusCode === "number"
+      ? err.statusCode
+      : 500;
+  res.status(statusCode).json({ message });
 });
 
 export default app;
