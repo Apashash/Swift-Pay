@@ -470,11 +470,11 @@ export function PaymentForm() {
             <div className="bg-secondary/60 border border-border rounded-xl p-4 space-y-3 text-left">
               <div className="space-y-1">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Adresse {crypto}</p>
-                <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2 justify-between">
-                  <code className="text-[11px] text-foreground font-mono truncate">{createdTx.paymentAddress}</code>
+                <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2 justify-between min-w-0">
+                  <code className="text-[11px] text-foreground font-mono truncate min-w-0 flex-1">{createdTx.paymentAddress}</code>
                   <button
                     onClick={handleCopyAddress}
-                    className="text-[10px] text-primary font-semibold hover:underline flex-shrink-0 flex items-center gap-1"
+                    className="text-[10px] text-primary font-semibold hover:underline shrink-0 flex items-center gap-1"
                   >
                     {copiedAddress ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                     {copiedAddress ? 'Copié' : 'Copier'}

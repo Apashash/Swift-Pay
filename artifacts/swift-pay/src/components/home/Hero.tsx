@@ -100,14 +100,14 @@ export function Hero() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35 }}
-              className="mb-3 flex justify-end"
+              className="mb-3 flex justify-end overflow-hidden"
             >
               <button
                 onClick={() => navigate('/verifier')}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-orange-500 hover:bg-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.4)] hover:shadow-[0_0_30px_rgba(249,115,22,0.6)] transition-all max-w-full truncate"
               >
-                <Search className="w-3.5 h-3.5" />
-                Vérifier ma transaction
+                <Search className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Vérifier ma transaction</span>
               </button>
             </motion.div>
             <div className="relative">
