@@ -53,9 +53,10 @@ Both secrets must be set as Replit Secrets before the API server will start:
 ## Replit setup status
 
 - [x] `pnpm install` — dependencies installed
-- [x] `SUPABASE_DATABASE_URL` — secret configured
+- [ ] `SUPABASE_DATABASE_URL` — **not yet set** (API server will not start without this)
 - [x] `SESSION_SECRET` — secret configured
-- [x] Both workflows running and healthy
+- [x] SwiftPay web workflow running (frontend only — API calls will fail without the DB secret)
+- [ ] API Server workflow — blocked by missing `SUPABASE_DATABASE_URL`
 - [ ] Database schema pushed — run `pnpm --filter @workspace/db run push` once to create tables
 
 ## Database schema
