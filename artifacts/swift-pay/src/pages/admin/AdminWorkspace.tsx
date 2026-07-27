@@ -341,19 +341,17 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
     closePanel();
   };
 
-  // Real transactions filtered by selected user, fallback to demo if none found
+  // Real transactions for selected user only — no demo fallback
   const userTransactions = useMemo(() => {
     if (!selectedUser) return [];
-    const real = allTransactions.filter((t) => t.customer === selectedUser.name);
-    return real.length > 0 ? real : demoTransfers;
+    return allTransactions.filter((t) => t.userId === selectedUser.id);
   }, [selectedUser, allTransactions]);
   const txPaged = userTransactions.slice((txPage - 1) * ADMIN_PAGE_SIZE, txPage * ADMIN_PAGE_SIZE);
 
-  // Real KYC entry for selected user, fallback to demo if none found
+  // Real KYC entry for selected user only — no demo fallback
   const userKyc = useMemo(() => {
     if (!selectedUser) return null;
-    const real = allSubmissions.find((k) => k.email === selectedUser.email || k.name === selectedUser.name);
-    return real ?? (demoKyc.find((k) => k.name === selectedUser.name) ?? demoKyc[0]);
+    return allSubmissions.find((k) => k.userId === selectedUser.id) ?? null;
   }, [selectedUser, allSubmissions]);
 
   return (
@@ -459,29 +457,38 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
           </div>
           <div className="flex-1 overflow-y-auto p-6">
             {txPaged.length === 0
-              ? <p className="py-16 text-center text-xs text-[#819087]">Aucune transaction enregistrée pour cet utilisateur.</p>
+              ? (
+                <div className="flex flex-col items-center py-16 text-center">
+                  <ArrowLeftRight className="h-10 w-10 text-[#c8d8c3]" />
+                  <p className="mt-3 text-sm font-semibold text-[#66756b]">Aucune transaction</p>
+                  <p className="mt-1 text-xs text-[#9aa79e]">Cet utilisateur n'a effectué aucune transaction pour le moment.</p>
+                </div>
+              )
               : (
-                <DataTable headers={['Réf.', 'Type', 'Canal', 'Montant', 'Statut', 'Date']}>
-                  {txPaged.map((row) => (
-                    <tr key={row.id} className="text-xs hover:bg-[#fbfcfb]">
-                      <td className="px-4 py-3 font-mono text-[10px] text-[#819087]">{row.id}</td>
-                      <td className="px-4 py-3 text-[#66756b]">{row.kind}</td>
-                      <td className="px-4 py-3 text-[#66756b]">{row.channel}</td>
-                      <td className="px-4 py-3 font-semibold">{row.amount}</td>
-                      <td className="px-4 py-3"><StatusPill status={row.status} /></td>
-                      <td className="px-4 py-3 text-[#66756b]">{row.time}</td>
-                    </tr>
-                  ))}
+                <DataTable headers={['Réf.', 'Réseau', 'Crypto', 'Montant', 'Statut', 'Date']}>
+                  {txPaged.map((row) => {
+                    const txStatus: Status = row.status === 'completed' ? 'Approuvé' : row.status === 'pending' ? 'En attente' : 'Refusé';
+                    return (
+                      <tr key={row.id} className="text-xs hover:bg-[#fbfcfb]">
+                        <td className="px-4 py-3 font-mono text-[10px] text-[#819087]">{row.id.slice(0, 8)}…</td>
+                        <td className="px-4 py-3 text-[#66756b]">{row.network}</td>
+                        <td className="px-4 py-3 text-[#66756b]">{row.cryptoCurrency}</td>
+                        <td className="px-4 py-3 font-semibold">{formatNumber(row.amountFcfa)} FCFA</td>
+                        <td className="px-4 py-3"><StatusPill status={txStatus} /></td>
+                        <td className="px-4 py-3 text-[#66756b]">{new Date(row.createdAt).toLocaleDateString('fr-FR')}</td>
+                      </tr>
+                    );
+                  })}
                 </DataTable>
               )
             }
-            <PaginationControls page={txPage} total={userTransactions.length} setPage={setTxPage} />
+            {txPaged.length > 0 && <PaginationControls page={txPage} total={userTransactions.length} setPage={setTxPage} />}
           </div>
         </div>
       )}
 
       {/* ── KYC slide-over ── */}
-      {panel === 'kyc' && selectedUser && userKyc && (
+      {panel === 'kyc' && selectedUser && (
         <div className="fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col bg-white shadow-2xl">
           <div className="flex items-center justify-between border-b border-[#edf0ed] px-6 py-4">
             <div>
@@ -491,40 +498,65 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
             <button type="button" onClick={closePanel} className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#f0f5ee]"><X className="h-4 w-4" /></button>
           </div>
           <div className="flex-1 overflow-y-auto space-y-5 p-6">
-            <div className="rounded-xl border border-[#dfe6df] p-5 space-y-3">
-              <h4 className="text-[10px] font-semibold uppercase tracking-widest text-[#97a39b]">Informations</h4>
-              {([['Nom complet', userKyc.name], ['E-mail', userKyc.email], ['Pays', userKyc.country], ['Type de document', userKyc.type], ['Référence', userKyc.id], ['Soumis', userKyc.submitted]] as [string, string][]).map(([label, value]) => (
-                <div key={label} className="flex justify-between text-xs">
-                  <span className="text-[#819087]">{label}</span>
-                  <span className="font-semibold">{value}</span>
-                </div>
-              ))}
-              <div className="flex items-center justify-between pt-1 text-xs">
-                <span className="text-[#819087]">Statut KYC</span>
-                <StatusPill status={userKyc.status} />
+            {!userKyc ? (
+              <div className="flex flex-col items-center py-16 text-center">
+                <FileText className="h-10 w-10 text-[#c8d8c3]" />
+                <p className="mt-3 text-sm font-semibold text-[#66756b]">Aucun dossier KYC</p>
+                <p className="mt-1 text-xs text-[#9aa79e]">Cet utilisateur n'a pas encore soumis de documents d'identité.</p>
               </div>
-            </div>
-            <div className="rounded-xl border border-[#dfe6df] p-5">
-              <h4 className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#97a39b]">Documents soumis</h4>
-              <div className="grid grid-cols-2 gap-3">
-                {['Recto', 'Verso'].map((label) => (
-                  <div key={label} className="rounded-xl border-2 border-dashed border-[#d5e5cb] bg-[#f7faf6] p-6 text-center">
-                    <FileText className="mx-auto h-8 w-8 text-[#adc89a]" />
-                    <p className="mt-2 text-[10px] font-semibold text-[#66756b]">{label} du document</p>
-                    <p className="mt-1 text-[10px] text-[#9aa79e]">Document.jpg</p>
+            ) : (
+              <>
+                <div className="rounded-xl border border-[#dfe6df] p-5 space-y-3">
+                  <h4 className="text-[10px] font-semibold uppercase tracking-widest text-[#97a39b]">Informations</h4>
+                  {([
+                    ['Nom complet', userKyc.name],
+                    ['E-mail', userKyc.email],
+                    ['Pays', userKyc.country],
+                    ['Référence', userKyc.id],
+                    ['Soumis le', new Date(userKyc.submittedAt).toLocaleString('fr-FR')],
+                    ['Description', userKyc.description || '—'],
+                  ] as [string, string][]).map(([label, value]) => (
+                    <div key={label} className="flex justify-between gap-4 text-xs">
+                      <span className="shrink-0 text-[#819087]">{label}</span>
+                      <span className="text-right font-semibold">{value}</span>
+                    </div>
+                  ))}
+                  <div className="flex items-center justify-between pt-1 text-xs">
+                    <span className="text-[#819087]">Statut</span>
+                    <StatusPill status={userKyc.status === 'approved' ? 'Approuvé' : userKyc.status === 'rejected' ? 'Refusé' : 'En attente'} />
                   </div>
-                ))}
-              </div>
-            </div>
-            {userKyc.status === 'En attente' && (
-              <div className="flex gap-3">
-                <button type="button" className="flex-1 rounded-xl bg-[#e7f5dc] py-2.5 text-xs font-semibold text-[#4e812c] hover:bg-[#d6eec5]">
-                  <Check className="mr-1.5 inline h-3.5 w-3.5" />Approuver
-                </button>
-                <button type="button" className="flex-1 rounded-xl bg-[#fbe6e5] py-2.5 text-xs font-semibold text-[#b74c47] hover:bg-[#f5d1d0]">
-                  <X className="mr-1.5 inline h-3.5 w-3.5" />Refuser
-                </button>
-              </div>
+                </div>
+                <div className="rounded-xl border border-[#dfe6df] p-5">
+                  <h4 className="mb-4 text-[10px] font-semibold uppercase tracking-widest text-[#97a39b]">Documents soumis</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {['Recto', 'Verso'].map((label) => (
+                      <div key={label} className="rounded-xl border-2 border-dashed border-[#d5e5cb] bg-[#f7faf6] p-6 text-center">
+                        <FileText className="mx-auto h-8 w-8 text-[#adc89a]" />
+                        <p className="mt-2 text-[10px] font-semibold text-[#66756b]">{label} du document</p>
+                        <p className="mt-1 text-[10px] text-[#9aa79e]">Document.jpg</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {userKyc.status === 'pending' && (
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => updateKyc(userKyc.id, 'approved', (rows) => { void rows; })}
+                      className="flex-1 rounded-xl bg-[#e7f5dc] py-2.5 text-xs font-semibold text-[#4e812c] hover:bg-[#d6eec5]"
+                    >
+                      <Check className="mr-1.5 inline h-3.5 w-3.5" />Approuver
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => updateKyc(userKyc.id, 'rejected', (rows) => { void rows; })}
+                      className="flex-1 rounded-xl bg-[#fbe6e5] py-2.5 text-xs font-semibold text-[#b74c47] hover:bg-[#f5d1d0]"
+                    >
+                      <X className="mr-1.5 inline h-3.5 w-3.5" />Refuser
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
