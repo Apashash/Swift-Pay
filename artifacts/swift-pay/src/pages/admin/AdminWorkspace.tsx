@@ -285,7 +285,7 @@ function DashboardView({ transactions, overview }: { transactions: ApiTransactio
 
 type UserPanel = 'transactions' | 'kyc' | 'block' | null;
 
-function UsersView({ users: sourceUsers, loading, allTransactions }: { users: AdminUser[]; loading: boolean; allTransactions: AdminTransaction[] }) {
+function UsersView({ users: sourceUsers, loading, allTransactions, allSubmissions }: { users: AdminUser[]; loading: boolean; allTransactions: AdminTransaction[]; allSubmissions: AdminKyc[] }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('Tous les KYC');
   const [page, setPage] = useState(1);
@@ -349,10 +349,12 @@ function UsersView({ users: sourceUsers, loading, allTransactions }: { users: Ad
   }, [selectedUser, allTransactions]);
   const txPaged = userTransactions.slice((txPage - 1) * ADMIN_PAGE_SIZE, txPage * ADMIN_PAGE_SIZE);
 
-  // Find matching KYC entry for selected user (demo)
-  const userKyc = selectedUser
-    ? (demoKyc.find((k) => k.name === selectedUser.name) ?? demoKyc[0])
-    : null;
+  // Real KYC entry for selected user, fallback to demo if none found
+  const userKyc = useMemo(() => {
+    if (!selectedUser) return null;
+    const real = allSubmissions.find((k) => k.email === selectedUser.email || k.name === selectedUser.name);
+    return real ?? (demoKyc.find((k) => k.name === selectedUser.name) ?? demoKyc[0]);
+  }, [selectedUser, allSubmissions]);
 
   return (
     <>
@@ -693,7 +695,7 @@ export default function AdminWorkspace() {
   let content: React.ReactNode;
   if (loading && location === '/admin') content = <div className="admin-skeleton-grid">{[1, 2, 3, 4].map((item) => <div key={item} className="h-28 animate-pulse rounded-2xl bg-[#e5ece3]" />)}</div>;
   else if (location === '/admin') content = <DashboardView transactions={transactions} overview={overview} />;
-  else if (segment === 'utilisateurs') content = <UsersView users={users} loading={adminLoading} allTransactions={adminTransactions} />;
+  else if (segment === 'utilisateurs') content = <UsersView users={users} loading={adminLoading} allTransactions={adminTransactions} allSubmissions={submissions} />;
   else if (segment === 'kyc') content = <KycView submissions={submissions} loading={adminLoading} />;
   else if (segment === 'transactions') content = <TransactionsView transactions={adminTransactions} />;
   else if (segment === 'paiements-en-attente') content = <PendingView />;
