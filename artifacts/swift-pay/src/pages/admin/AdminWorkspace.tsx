@@ -291,6 +291,7 @@ function UsersView({ users: sourceUsers, loading }: { users: AdminUser[]; loadin
   const [page, setPage] = useState(1);
   const [users, setUsers] = useState<DemoUser[]>(demoUsers);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
   const [selectedUser, setSelectedUser] = useState<DemoUser | null>(null);
   const [panel, setPanel] = useState<UserPanel>(null);
   const [blockReason, setBlockReason] = useState('');
@@ -385,31 +386,19 @@ function UsersView({ users: sourceUsers, loading }: { users: AdminUser[]; loadin
                   : <span className="inline-flex rounded-full bg-[#e7f5dc] px-2.5 py-1 text-[10px] font-semibold text-[#4e812c]">Actif</span>
                 }
               </td>
-              <td className="relative px-5 py-4 text-right">
+              <td className="px-5 py-4 text-right">
                 <button
                   type="button"
-                  onClick={() => setOpenMenuId(openMenuId === user.id ? null : user.id)}
+                  onClick={(e) => {
+                    if (openMenuId === user.id) { setOpenMenuId(null); setMenuPos(null); return; }
+                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+                    setMenuPos({ top: rect.bottom + 6, right: window.innerWidth - rect.right });
+                    setOpenMenuId(user.id);
+                  }}
                   className="rounded-lg p-2 text-[#9aa79e] hover:bg-[#edf6e7] hover:text-[#4e812c]"
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </button>
-                {openMenuId === user.id && (
-                  <div className="absolute right-4 top-12 z-50 w-52 overflow-hidden rounded-xl border border-[#dfe6df] bg-white shadow-lg">
-                    <button type="button" onClick={() => openPanel(user, 'transactions')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4]">
-                      <ArrowLeftRight className="h-4 w-4 text-[#5f8c3d]" />
-                      <span className="font-semibold">Transactions</span>
-                    </button>
-                    <button type="button" onClick={() => openPanel(user, 'kyc')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4]">
-                      <BadgeCheck className="h-4 w-4 text-[#5f8c3d]" />
-                      <span className="font-semibold">KYC</span>
-                    </button>
-                    <div className="h-px bg-[#edf0ed]" />
-                    <button type="button" onClick={() => openPanel(user, 'block')} className={`flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4] ${user.blocked ? 'text-[#61943a]' : 'text-[#b74c47]'}`}>
-                      <ShieldAlert className="h-4 w-4" />
-                      <span className="font-semibold">{user.blocked ? 'Débloquer' : 'Bloquer'}</span>
-                    </button>
-                  </div>
-                )}
               </td>
             </tr>
           ))
@@ -420,8 +409,34 @@ function UsersView({ users: sourceUsers, loading }: { users: AdminUser[]; loadin
       )}
       {!loading && <PaginationControls page={page} total={filtered.length} setPage={setPage} />}
 
-      {/* Dropdown backdrop */}
-      {openMenuId && <div className="fixed inset-0 z-40" onClick={() => setOpenMenuId(null)} />}
+      {/* Dropdown backdrop + menu rendered outside the table so overflow:hidden doesn't clip it */}
+      {openMenuId && menuPos && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => { setOpenMenuId(null); setMenuPos(null); }} />
+          <div
+            className="fixed z-50 w-52 overflow-hidden rounded-xl border border-[#dfe6df] bg-white shadow-xl"
+            style={{ top: menuPos.top, right: menuPos.right }}
+          >
+            {pagedUsers.filter((u) => u.id === openMenuId).map((user) => (
+              <div key={user.id}>
+                <button type="button" onClick={() => openPanel(user, 'transactions')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4]">
+                  <ArrowLeftRight className="h-4 w-4 text-[#5f8c3d]" />
+                  <span className="font-semibold">Transactions</span>
+                </button>
+                <button type="button" onClick={() => openPanel(user, 'kyc')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4]">
+                  <BadgeCheck className="h-4 w-4 text-[#5f8c3d]" />
+                  <span className="font-semibold">KYC</span>
+                </button>
+                <div className="h-px bg-[#edf0ed]" />
+                <button type="button" onClick={() => openPanel(user, 'block')} className={`flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4] ${user.blocked ? 'text-[#61943a]' : 'text-[#b74c47]'}`}>
+                  <ShieldAlert className="h-4 w-4" />
+                  <span className="font-semibold">{user.blocked ? 'Débloquer' : 'Bloquer'}</span>
+                </button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {/* Panel backdrop */}
       {panel && <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[1px]" onClick={closePanel} />}
