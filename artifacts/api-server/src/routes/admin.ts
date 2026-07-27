@@ -135,6 +135,29 @@ router.patch("/admin/transactions/:id", async (req, res, next) => {
   }
 });
 
+router.patch("/admin/users/:id/role", async (req, res, next) => {
+  try {
+    await requireAdmin(req.headers.authorization);
+    const { role } = req.body as { role?: string };
+    if (role !== "admin" && role !== "user") {
+      res.status(400).json({ message: "Rôle invalide. Valeurs acceptées : 'admin' ou 'user'." });
+      return;
+    }
+    const [updated] = await db
+      .update(usersTable)
+      .set({ role })
+      .where(eq(usersTable.id, req.params.id))
+      .returning();
+    if (!updated) {
+      res.status(404).json({ message: "Utilisateur introuvable." });
+      return;
+    }
+    res.json({ user: toPublicUser(updated) });
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.patch("/admin/kyc/:id", async (req, res, next) => {
   try {
     await requireAdmin(req.headers.authorization);

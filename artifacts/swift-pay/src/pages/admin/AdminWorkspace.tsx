@@ -79,14 +79,15 @@ interface DemoUser {
   blocked: boolean;
   blockReason?: string;
   avatar?: string | null;
+  role: 'user' | 'admin';
 }
 
 const demoUsers: DemoUser[] = [
-  { id: 'USR-2048', name: 'Aminata Diop', email: 'aminata.diop@example.com', country: 'Sénégal', joined: '24 juin 2025', kycStatus: 'Approuvé', blocked: false },
-  { id: 'USR-1934', name: 'Koffi Mensah', email: 'koffi.mensah@example.com', country: "Côte d'Ivoire", joined: '19 juin 2025', kycStatus: 'En attente', blocked: false },
-  { id: 'USR-1871', name: 'Nadia Kouassi', email: 'nadia.kouassi@example.com', country: "Côte d'Ivoire", joined: '17 juin 2025', kycStatus: 'Approuvé', blocked: false },
-  { id: 'USR-1760', name: 'Moussa Traoré', email: 'moussa.traore@example.com', country: 'Mali', joined: '12 juin 2025', kycStatus: 'Refusé', blocked: true, blockReason: 'Documents frauduleux détectés' },
-  { id: 'USR-1682', name: "Chantal N'Guessan", email: 'chantal.nguessan@example.com', country: 'Cameroun', joined: '04 juin 2025', kycStatus: 'Non soumis', blocked: false },
+  { id: 'USR-2048', name: 'Aminata Diop', email: 'aminata.diop@example.com', country: 'Sénégal', joined: '24 juin 2025', kycStatus: 'Approuvé', blocked: false, role: 'user' },
+  { id: 'USR-1934', name: 'Koffi Mensah', email: 'koffi.mensah@example.com', country: "Côte d'Ivoire", joined: '19 juin 2025', kycStatus: 'En attente', blocked: false, role: 'user' },
+  { id: 'USR-1871', name: 'Nadia Kouassi', email: 'nadia.kouassi@example.com', country: "Côte d'Ivoire", joined: '17 juin 2025', kycStatus: 'Approuvé', blocked: false, role: 'user' },
+  { id: 'USR-1760', name: 'Moussa Traoré', email: 'moussa.traore@example.com', country: 'Mali', joined: '12 juin 2025', kycStatus: 'Refusé', blocked: true, blockReason: 'Documents frauduleux détectés', role: 'user' },
+  { id: 'USR-1682', name: "Chantal N'Guessan", email: 'chantal.nguessan@example.com', country: 'Cameroun', joined: '04 juin 2025', kycStatus: 'Non soumis', blocked: false, role: 'user' },
 ];
 
 const demoKyc = [
@@ -324,6 +325,7 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
           kycStatus,
           blocked: false,
           avatar: user.avatar,
+          role: user.role,
         };
       }));
     }
@@ -356,6 +358,16 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
         : u
     ));
     closePanel();
+  };
+
+  const handleToggleAdmin = async (user: DemoUser) => {
+    const newRole = user.role === 'admin' ? 'user' : 'admin';
+    try {
+      await apiFetch(`/admin/users/${user.id}/role`, { method: 'PATCH', body: JSON.stringify({ role: newRole }) });
+    } catch {
+      // If API fails (e.g. no DB), update locally anyway for demo
+    }
+    setUsers((current) => current.map((u) => u.id === user.id ? { ...u, role: newRole } : u));
   };
 
   // Real transactions for selected user only — no demo fallback
@@ -402,10 +414,17 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
               <td className="px-5 py-4 text-[#66756b]">{user.joined}</td>
               <td className="px-5 py-4"><KycPill status={user.kycStatus} /></td>
               <td className="px-5 py-4">
-                {user.blocked
-                  ? <span className="inline-flex rounded-full bg-[#fbe6e5] px-2.5 py-1 text-[10px] font-semibold text-[#b74c47]">Bloqué</span>
-                  : <span className="inline-flex rounded-full bg-[#e7f5dc] px-2.5 py-1 text-[10px] font-semibold text-[#4e812c]">Actif</span>
-                }
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {user.blocked
+                    ? <span className="inline-flex rounded-full bg-[#fbe6e5] px-2.5 py-1 text-[10px] font-semibold text-[#b74c47]">Bloqué</span>
+                    : <span className="inline-flex rounded-full bg-[#e7f5dc] px-2.5 py-1 text-[10px] font-semibold text-[#4e812c]">Actif</span>
+                  }
+                  {user.role === 'admin' && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#e7f1f8] px-2.5 py-1 text-[10px] font-semibold text-[#507b9b]">
+                      <KeyRound className="h-2.5 w-2.5" />Admin
+                    </span>
+                  )}
+                </div>
               </td>
               <td className="px-5 py-4 text-right">
                 <button
@@ -447,6 +466,10 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
                 <button type="button" onClick={() => openPanel(user, 'kyc')} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4]">
                   <BadgeCheck className="h-4 w-4 text-[#5f8c3d]" />
                   <span className="font-semibold">KYC</span>
+                </button>
+                <button type="button" onClick={() => { void handleToggleAdmin(user); setOpenMenuId(null); setMenuPos(null); }} className="flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4] text-[#507b9b]">
+                  <KeyRound className="h-4 w-4" />
+                  <span className="font-semibold">{user.role === 'admin' ? 'Retirer admin' : 'Nommer admin'}</span>
                 </button>
                 <div className="h-px bg-[#edf0ed]" />
                 <button type="button" onClick={() => openPanel(user, 'block')} className={`flex w-full items-center gap-3 px-4 py-3 text-left text-xs hover:bg-[#f5f9f4] ${user.blocked ? 'text-[#61943a]' : 'text-[#b74c47]'}`}>

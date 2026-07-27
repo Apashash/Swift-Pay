@@ -46961,6 +46961,24 @@ router6.patch("/admin/transactions/:id", async (req, res, next) => {
     next(error);
   }
 });
+router6.patch("/admin/users/:id/role", async (req, res, next) => {
+  try {
+    await requireAdmin(req.headers.authorization);
+    const { role } = req.body;
+    if (role !== "admin" && role !== "user") {
+      res.status(400).json({ message: "R\xF4le invalide. Valeurs accept\xE9es : 'admin' ou 'user'." });
+      return;
+    }
+    const [updated] = await db.update(usersTable).set({ role }).where(eq(usersTable.id, req.params.id)).returning();
+    if (!updated) {
+      res.status(404).json({ message: "Utilisateur introuvable." });
+      return;
+    }
+    res.json({ user: toPublicUser(updated) });
+  } catch (error) {
+    next(error);
+  }
+});
 router6.patch("/admin/kyc/:id", async (req, res, next) => {
   try {
     await requireAdmin(req.headers.authorization);
