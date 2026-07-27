@@ -30,7 +30,7 @@ A full-stack fintech/payment application (UI in French) with a React/Vite fronte
 ## Running the project
 
 ```bash
-pnpm install         # Install all dependencies (already done)
+pnpm install         # Install all dependencies
 ```
 
 Both workflows start automatically:
@@ -41,10 +41,22 @@ API health check: `GET /api/healthz` → `{"status":"ok"}`
 
 ## Required secrets
 
+Both secrets must be set as Replit Secrets before the API server will start:
+
 | Secret | Description |
 |--------|-------------|
-| `SUPABASE_DATABASE_URL` | PostgreSQL connection string (URI format) from Supabase → Settings → Database → Connection string. Port 6543 (pooler) with SSL. |
-| `SESSION_SECRET` | Secret for signing sessions |
+| `SUPABASE_DATABASE_URL` | PostgreSQL connection string (URI format) from Supabase → Settings → Database → Connection string. Use port **6543** (PgBouncer pooler) with SSL. Example: `postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres` |
+| `SESSION_SECRET` | Arbitrary random string used to sign session tokens |
+
+> **Note:** Without `SUPABASE_DATABASE_URL`, the API server will exit immediately with `Error: SUPABASE_DATABASE_URL must be set`. The frontend (SwiftPay web) will still start but API calls will fail.
+
+## Replit setup status
+
+- [x] `pnpm install` — dependencies installed
+- [x] `SUPABASE_DATABASE_URL` — secret configured
+- [x] `SESSION_SECRET` — secret configured
+- [x] Both workflows running and healthy
+- [ ] Database schema pushed — run `pnpm --filter @workspace/db run push` once to create tables
 
 ## Database schema
 
