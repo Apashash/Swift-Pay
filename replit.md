@@ -1,49 +1,58 @@
 # SwiftPay
 
-A full-stack payment application with a React/Vite frontend and Express API backend.
+A full-stack fintech/payment application (UI in French) with a React/Vite frontend and Express API backend.
 
 ## Stack
 
 - **Frontend**: React 19, Vite, TailwindCSS 4, Wouter (routing), TanStack Query
-- **Backend**: Express, TypeScript, Pino (logging)
-- **Database**: PostgreSQL via Drizzle ORM (requires Supabase)
-- **Auth**: Custom JWT-based sessions (Bearer token in `Authorization` header)
+- **Backend**: Express 5, TypeScript, Pino (logging)
+- **Database**: PostgreSQL via Drizzle ORM (Supabase)
+- **Auth**: Custom session tokens (Bearer token in `Authorization` header), scrypt password hashing
 - **Monorepo**: pnpm workspace
 
 ## Artifacts
 
-| Artifact | Path | Description |
-|----------|------|-------------|
-| SwiftPay (web) | `artifacts/swift-pay` | React frontend |
-| API Server | `artifacts/api-server` | Express REST API |
-| Canvas | `artifacts/mockup-sandbox` | Design sandbox |
+| Artifact | Directory | Port | Description |
+|----------|-----------|------|-------------|
+| SwiftPay (web) | `artifacts/swift-pay` | 22199 | React frontend |
+| API Server | `artifacts/api-server` | 8080 | Express REST API |
+| Canvas | `artifacts/mockup-sandbox` | — | Design sandbox |
 
 ## Shared libraries
 
-- `lib/db` — Drizzle ORM schema + database client (requires `SUPABASE_DATABASE_URL`)
-- `lib/api-spec` — Shared API type definitions
-- `lib/api-zod` — Zod schemas for API validation
-- `lib/api-client-react` — React hooks for API calls
+| Library | Description |
+|---------|-------------|
+| `lib/db` | Drizzle ORM schema + database client — requires `SUPABASE_DATABASE_URL` |
+| `lib/api-spec` | Shared API type definitions |
+| `lib/api-zod` | Zod schemas for API validation |
+| `lib/api-client-react` | React Query hooks for API calls |
 
 ## Running the project
 
 ```bash
-pnpm install         # Install all dependencies
+pnpm install         # Install all dependencies (already done)
 ```
 
-Workflows start automatically. The frontend runs on port 22199, the API on port 8080.
+Both workflows start automatically:
+- **`artifacts/swift-pay: web`** — Vite dev server on port 22199
+- **`artifacts/api-server: API Server`** — Express on port 8080
+
+API health check: `GET /api/healthz` → `{"status":"ok"}`
 
 ## Required secrets
 
 | Secret | Description |
 |--------|-------------|
-| `SUPABASE_DATABASE_URL` | PostgreSQL connection string from your Supabase project |
+| `SUPABASE_DATABASE_URL` | PostgreSQL connection string (URI format) from Supabase → Settings → Database → Connection string. Port 6543 (pooler) with SSL. |
 | `SESSION_SECRET` | Secret for signing sessions |
 
-The API server **will not start** without `SUPABASE_DATABASE_URL`. After adding it, also run the database migration:
+## Database schema
 
+Push schema to Supabase:
 ```bash
-pnpm --filter @workspace/db run db:push
+pnpm --filter @workspace/db run push
 ```
+
+The `lib/db` package uses `ssl: { rejectUnauthorized: false }` to connect via Supabase's PgBouncer pooler (port 6543).
 
 ## User preferences

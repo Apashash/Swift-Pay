@@ -90,15 +90,15 @@ const demoUsers: DemoUser[] = [
 ];
 
 const demoKyc = [
-  { id: 'KYC-0084', name: 'Koffi Mensah', type: 'Carte nationale', country: 'Côte d’Ivoire', submitted: 'Il y a 18 min', status: 'En attente' as Status },
+  { id: 'KYC-0084', name: 'Koffi Mensah', type: 'Carte nationale', country: "Côte d'Ivoire", submitted: 'Il y a 18 min', status: 'En attente' as Status },
   { id: 'KYC-0083', name: 'Mariama Bah', type: 'Passeport', country: 'Guinée', submitted: 'Il y a 42 min', status: 'En attente' as Status },
-  { id: 'KYC-0082', name: 'Yao N’Dri', type: 'Carte nationale', country: 'Côte d’Ivoire', submitted: 'Hier, 18:21', status: 'Approuvé' as Status },
+  { id: 'KYC-0082', name: "Yao N'Dri", type: 'Carte nationale', country: "Côte d'Ivoire", submitted: 'Hier, 18:21', status: 'Approuvé' as Status },
   { id: 'KYC-0081', name: 'Aïcha Koné', type: 'Permis de conduire', country: 'Sénégal', submitted: 'Hier, 16:04', status: 'Refusé' as Status },
 ];
 
 const demoTransfers = [
-  { id: 'SP-4F82A1', kind: 'Échange', customer: 'Nadia Kouassi', channel: 'USDT → FCFA', amount: '450 000 FCFA', status: 'Approuvé' as Status, time: 'Aujourd'hui, 09:42' },
-  { id: 'SP-4F81C9', kind: 'Conversion', customer: 'Aminata Diop', channel: 'Wave Sénégal', amount: '125 000 FCFA', status: 'En attente' as Status, time: 'Aujourd'hui, 09:37' },
+  { id: 'SP-4F82A1', kind: 'Échange', customer: 'Nadia Kouassi', channel: 'USDT → FCFA', amount: '450 000 FCFA', status: 'Approuvé' as Status, time: "Aujourd'hui, 09:42" },
+  { id: 'SP-4F81C9', kind: 'Conversion', customer: 'Aminata Diop', channel: 'Wave Sénégal', amount: '125 000 FCFA', status: 'En attente' as Status, time: "Aujourd'hui, 09:37" },
   { id: 'SP-4F80B2', kind: 'Échange', customer: "Chantal N'Guessan", channel: 'MTN Mobile Money', amount: '88 500 FCFA', status: 'Approuvé' as Status, time: 'Aujourd'hui, 09:11' },
   { id: 'SP-4F7E14', kind: 'Conversion', customer: 'Moussa Traoré', channel: 'Orange Money Mali', amount: '64 000 FCFA', status: 'Refusé' as Status, time: 'Hier, 22:19' },
   { id: 'SP-4F7D80', kind: 'Échange', customer: 'Koffi Mensah', channel: 'BTC → FCFA', amount: '310 000 FCFA', status: 'En attente' as Status, time: 'Hier, 21:54' },
