@@ -299,18 +299,31 @@ function UsersView({ users: sourceUsers, loading, allTransactions, allSubmission
 
   useEffect(() => {
     if (sourceUsers.length > 0) {
-      setUsers(sourceUsers.map((user) => ({
-        id: user.id,
-        name: user.fullName,
-        email: user.email,
-        country: user.country,
-        joined: new Date(user.joinedAt).toLocaleDateString('fr-FR'),
-        kycStatus: user.verified ? 'Approuvé' : 'En attente',
-        blocked: false,
-        avatar: user.avatar,
-      })));
+      setUsers(sourceUsers.map((user) => {
+        const submission = allSubmissions.find((s) => s.userId === user.id);
+        let kycStatus: KycStatus;
+        if (user.verified) {
+          kycStatus = 'Approuvé';
+        } else if (!submission) {
+          kycStatus = 'Non soumis';
+        } else if (submission.status === 'rejected') {
+          kycStatus = 'Refusé';
+        } else {
+          kycStatus = 'En attente';
+        }
+        return {
+          id: user.id,
+          name: user.fullName,
+          email: user.email,
+          country: user.country,
+          joined: new Date(user.joinedAt).toLocaleDateString('fr-FR'),
+          kycStatus,
+          blocked: false,
+          avatar: user.avatar,
+        };
+      }));
     }
-  }, [sourceUsers]);
+  }, [sourceUsers, allSubmissions]);
 
   const filtered = useMemo(
     () => users.filter((user) =>
