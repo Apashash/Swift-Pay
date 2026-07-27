@@ -202,7 +202,7 @@ function DashboardView({ transactions, overview }: { transactions: ApiTransactio
   return (
     <>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard label="Volume traité" value={`${formatNumber(overviewVolume)} FCFA`} detail="Transactions complétées" icon={ArrowUpRight} />
         <StatCard label="Utilisateurs actifs" value={formatNumber(overviewUsers)} detail={`${overview?.users.verified ?? 0} comptes vérifiés`} icon={Users} accent="blue" />
         <StatCard label="Transactions" value={formatNumber(overviewTransactions)} detail="Toutes les opérations enregistrées" icon={ArrowLeftRight} accent="orange" />
