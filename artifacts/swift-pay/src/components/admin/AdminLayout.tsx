@@ -3,11 +3,11 @@ import { Link, useLocation } from 'wouter';
 import {
   Activity,
   ArrowDownToLine,
+  ArrowLeft,
   ArrowLeftRight,
   ArrowUpFromLine,
   BadgeCheck,
   Bell,
-  BookOpen,
   Calculator,
   ChevronDown,
   ChevronRight,
@@ -16,8 +16,6 @@ import {
   KeyRound,
   LayoutDashboard,
   Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
   Settings2,
   ShieldCheck,
   Smartphone,
@@ -83,7 +81,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [location, navigate] = useLocation();
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
   const [transactionOpen, setTransactionOpen] = useState(location.startsWith('/admin/transactions'));
 
   const initials = user?.fullName
@@ -95,10 +92,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const sidebar = (
     <div className="flex h-full flex-col bg-[#11191a] text-white">
-      <div className={`flex h-[76px] items-center border-b border-white/10 ${collapsed ? 'justify-center px-3' : 'gap-3 px-5'}`}>
+      <div className="flex h-[76px] items-center gap-3 border-b border-white/10 px-5">
         <Link href="/admin" className="flex items-center gap-2.5">
           <img src={swiftPayLogo} alt="SwiftPay" className="h-9 w-9 object-contain" />
-          {!collapsed && <span className="text-lg font-semibold tracking-tight">Swift<span className="text-[#b8f26d]">Pay</span></span>}
+          <span className="text-lg font-semibold tracking-tight">Swift<span className="text-[#b8f26d]">Pay</span></span>
         </Link>
         <button
           type="button"
@@ -110,25 +107,23 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </button>
       </div>
 
-      <div className={`border-b border-white/10 py-4 ${collapsed ? 'px-3' : 'px-4'}`}>
-        <div className={`flex items-center rounded-xl bg-white/[0.07] ${collapsed ? 'justify-center p-2' : 'gap-3 p-3'}`}>
+      <div className="border-b border-white/10 px-4 py-4">
+        <div className="flex items-center gap-3 rounded-xl bg-white/[0.07] p-3">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#b8f26d] text-xs font-bold text-[#17211c]">
             {initials}
           </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <p className="truncate text-xs font-semibold">{user?.fullName || 'Administrateur'}</p>
-              <p className="truncate text-[10px] text-white/45">{user?.email || 'Espace sécurisé'}</p>
-            </div>
-          )}
-          {!collapsed && <span className="ml-auto h-2 w-2 rounded-full bg-[#b8f26d]" title="En ligne" />}
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold">{user?.fullName || 'Administrateur'}</p>
+            <p className="truncate text-[10px] text-white/45">{user?.email || 'Espace sécurisé'}</p>
+          </div>
+          <span className="ml-auto h-2 w-2 rounded-full bg-[#b8f26d]" title="En ligne" />
         </div>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-5">
         {navigation.map((group) => (
           <div key={group.label} className="mb-6">
-            {!collapsed && <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">{group.label}</p>}
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-white/35">{group.label}</p>
             <div className="space-y-1">
               {group.items.map((item) => {
                 const active = isActive(location, item.href);
@@ -141,13 +136,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         onClick={() => setMobileOpen(false)}
                         className={`group flex min-w-0 flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium transition-colors ${
                           active ? 'bg-[#b8f26d] text-[#17211c]' : 'text-white/62 hover:bg-white/[0.07] hover:text-white'
-                        } ${collapsed ? 'justify-center px-2' : ''}`}
-                        title={collapsed ? item.label : undefined}
+                        }`}
                       >
                         <item.icon className="h-[17px] w-[17px] shrink-0" strokeWidth={active ? 2.3 : 1.8} />
-                        {!collapsed && <span className="truncate">{item.label}</span>}
+                        <span className="truncate">{item.label}</span>
                       </Link>
-                      {hasChildren && !collapsed && (
+                      {hasChildren && (
                         <button
                           type="button"
                           onClick={() => setTransactionOpen((open) => !open)}
@@ -158,7 +152,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                         </button>
                       )}
                     </div>
-                    {hasChildren && transactionOpen && !collapsed && (
+                    {hasChildren && transactionOpen && (
                       <div className="ml-5 mt-1 space-y-1 border-l border-white/10 pl-4">
                         {item.children?.map((child) => (
                           <Link
@@ -183,15 +177,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         ))}
       </nav>
 
-      <div className={`border-t border-white/10 p-3 ${collapsed ? 'flex justify-center' : ''}`}>
+      <div className="border-t border-white/10 p-3">
         <button
           type="button"
-          onClick={() => setCollapsed((value) => !value)}
-          className="flex items-center gap-3 rounded-lg px-3 py-2 text-[11px] text-white/45 hover:bg-white/[0.07] hover:text-white"
-          title={collapsed ? 'Agrandir le menu' : 'Réduire le menu'}
+          onClick={() => { setMobileOpen(false); navigate('/dashboard'); }}
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[12px] font-medium text-white/60 hover:bg-white/[0.07] hover:text-white"
         >
-          {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
-          {!collapsed && 'Réduire le menu'}
+          <ArrowLeft className="h-4 w-4 shrink-0" />
+          Retour côté utilisateur
         </button>
       </div>
     </div>
@@ -199,7 +192,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="admin-shell min-h-[100dvh] bg-[#f5f7f5] text-[#17211c]">
-      <aside className={`fixed inset-y-0 left-0 z-40 hidden transition-[width] duration-200 lg:block ${collapsed ? 'w-[78px]' : 'w-[260px]'}`}>
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-[260px] lg:block">
         {sidebar}
       </aside>
       {mobileOpen && (
@@ -209,7 +202,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </>
       )}
 
-      <div className={`min-h-[100dvh] transition-[margin] duration-200 ${collapsed ? 'lg:ml-[78px]' : 'lg:ml-[260px]'}`}>
+      <div className="min-h-[100dvh] lg:ml-[260px]">
         <header className="sticky top-0 z-30 flex h-[76px] items-center justify-between border-b border-[#dfe6df] bg-[#f5f7f5]/95 px-4 backdrop-blur md:px-8">
           <div className="flex items-center gap-3">
             <button type="button" onClick={() => setMobileOpen(true)} className="rounded-lg border border-[#dfe6df] bg-white p-2 lg:hidden" aria-label="Ouvrir le menu">
