@@ -1,38 +1,49 @@
 # SwiftPay
 
-A French-localized crypto payment platform targeting West Africa. Users send crypto from anywhere; recipients receive FCFA via Mobile Money (Orange Money, MTN, Wave, Moov Money) in seconds.
+A full-stack payment application with a React/Vite frontend and Express API backend.
 
 ## Stack
 
-- **Frontend**: React + Vite + Wouter + TailwindCSS (artifact: `artifacts/swift-pay`)
-- **API Server**: Express 5 + Drizzle ORM + PostgreSQL (artifact: `artifacts/api-server`)
-- **Shared libs**: `lib/api-spec` (OpenAPI), `lib/api-zod` (Zod schemas), `lib/api-client-react` (TanStack Query client), `lib/db` (Drizzle schema + connection)
-- **Package manager**: pnpm workspaces
+- **Frontend**: React 19, Vite, TailwindCSS 4, Wouter (routing), TanStack Query
+- **Backend**: Express, TypeScript, Pino (logging)
+- **Database**: PostgreSQL via Drizzle ORM (requires Supabase)
+- **Auth**: Custom JWT-based sessions (Bearer token in `Authorization` header)
+- **Monorepo**: pnpm workspace
+
+## Artifacts
+
+| Artifact | Path | Description |
+|----------|------|-------------|
+| SwiftPay (web) | `artifacts/swift-pay` | React frontend |
+| API Server | `artifacts/api-server` | Express REST API |
+| Canvas | `artifacts/mockup-sandbox` | Design sandbox |
+
+## Shared libraries
+
+- `lib/db` — Drizzle ORM schema + database client (requires `SUPABASE_DATABASE_URL`)
+- `lib/api-spec` — Shared API type definitions
+- `lib/api-zod` — Zod schemas for API validation
+- `lib/api-client-react` — React hooks for API calls
 
 ## Running the project
 
-Both services start automatically via the **Project** run button:
-
-| Service | Command | Port |
-|---|---|---|
-| SwiftPay frontend | `pnpm --filter @workspace/swift-pay run dev` | 22199 |
-| API Server | `pnpm --filter @workspace/api-server run dev` | 8080 |
-
-Install dependencies first if `node_modules` is missing:
-```
-pnpm install
+```bash
+pnpm install         # Install all dependencies
 ```
 
-## Environment
+Workflows start automatically. The frontend runs on port 22199, the API on port 8080.
 
-- `SUPABASE_DATABASE_URL` — required Replit Secret; the API and Drizzle use Supabase PostgreSQL exclusively
-- `SESSION_SECRET` — stored as a Replit Secret
+## Required secrets
 
-## Notes
+| Secret | Description |
+|--------|-------------|
+| `SUPABASE_DATABASE_URL` | PostgreSQL connection string from your Supabase project |
+| `SESSION_SECRET` | Secret for signing sessions |
 
-- Authentication uses the Supabase PostgreSQL database through the API server
-- User accounts and sessions are stored in Supabase tables (`users` and `auth_sessions`)
-- The browser only keeps a session token; legacy local-only account keys are removed on startup
-- API routes beyond `/api/healthz` include registration, login, session, logout, and profile updates
+The API server **will not start** without `SUPABASE_DATABASE_URL`. After adding it, also run the database migration:
+
+```bash
+pnpm --filter @workspace/db run db:push
+```
 
 ## User preferences
