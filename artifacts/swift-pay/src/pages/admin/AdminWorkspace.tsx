@@ -99,7 +99,7 @@ const demoKyc = [
 const demoTransfers = [
   { id: 'SP-4F82A1', kind: 'Échange', customer: 'Nadia Kouassi', channel: 'USDT → FCFA', amount: '450 000 FCFA', status: 'Approuvé' as Status, time: "Aujourd'hui, 09:42" },
   { id: 'SP-4F81C9', kind: 'Conversion', customer: 'Aminata Diop', channel: 'Wave Sénégal', amount: '125 000 FCFA', status: 'En attente' as Status, time: "Aujourd'hui, 09:37" },
-  { id: 'SP-4F80B2', kind: 'Échange', customer: "Chantal N'Guessan", channel: 'MTN Mobile Money', amount: '88 500 FCFA', status: 'Approuvé' as Status, time: 'Aujourd'hui, 09:11' },
+  { id: 'SP-4F80B2', kind: 'Échange', customer: "Chantal N'Guessan", channel: 'MTN Mobile Money', amount: '88 500 FCFA', status: 'Approuvé' as Status, time: "Aujourd'hui, 09:11" },
   { id: 'SP-4F7E14', kind: 'Conversion', customer: 'Moussa Traoré', channel: 'Orange Money Mali', amount: '64 000 FCFA', status: 'Refusé' as Status, time: 'Hier, 22:19' },
   { id: 'SP-4F7D80', kind: 'Échange', customer: 'Koffi Mensah', channel: 'BTC → FCFA', amount: '310 000 FCFA', status: 'En attente' as Status, time: 'Hier, 21:54' },
 ];
