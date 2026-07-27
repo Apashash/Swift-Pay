@@ -69,9 +69,9 @@ export function Navbar() {
                 </Button>
                 <button
                   onClick={() => navigate('/dashboard')}
-                  className="hidden sm:flex w-9 h-9 rounded-full bg-primary items-center justify-center text-primary-foreground text-sm font-bold"
+                  className="hidden sm:flex w-9 h-9 rounded-full bg-primary items-center justify-center text-primary-foreground text-sm font-bold overflow-hidden"
                 >
-                  {initials}
+                  {user?.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : initials}
                 </button>
               </>
             ) : (
@@ -197,8 +197,8 @@ export function Navbar() {
 
               {isAuthenticated && user && (
                 <div className="mx-4 mt-4 p-3 bg-secondary/60 rounded-xl flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold flex-shrink-0">
-                    {initials}
+                  <div className="w-9 h-9 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-bold flex-shrink-0 overflow-hidden">
+                    {user?.avatar ? <img src={user.avatar} alt="Avatar" className="w-full h-full object-cover" /> : initials}
                   </div>
                   <div className="min-w-0">
                     <div className="text-sm font-semibold text-foreground truncate">{user.fullName}</div>

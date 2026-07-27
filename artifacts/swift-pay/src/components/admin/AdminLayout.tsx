@@ -109,8 +109,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
       <div className="border-b border-white/10 px-4 py-4">
         <div className="flex items-center gap-3 rounded-xl bg-white/[0.07] p-3">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#b8f26d] text-xs font-bold text-[#17211c]">
-            {initials}
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#b8f26d] text-xs font-bold text-[#17211c]">
+            {user?.avatar ? <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" /> : initials}
           </div>
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold">{user?.fullName || 'Administrateur'}</p>
@@ -224,7 +224,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </button>
             <div className="hidden h-8 w-px bg-[#dfe6df] sm:block" />
             <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#dcebd2] text-xs font-bold text-[#41602b]">{initials}</div>
+              <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#dcebd2] text-xs font-bold text-[#41602b]">{user?.avatar ? <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" /> : initials}</div>
               <div className="hidden sm:block">
                 <p className="text-xs font-semibold">{user?.fullName || 'Administrateur'}</p>
                 <p className="text-[10px] text-[#819087]">Super admin</p>
