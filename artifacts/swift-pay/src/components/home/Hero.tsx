@@ -89,10 +89,9 @@ export function Hero() {
 
           {/* Right — Interactive Payment Form */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, rotateY: -10 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            style={{ perspective: 1000 }}
             className="relative lg:ml-auto w-full max-w-md"
           >
             <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />

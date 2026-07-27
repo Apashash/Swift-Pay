@@ -9,7 +9,7 @@ import { ForBusinesses } from '@/components/home/ForBusinesses';
 
 export default function Home() {
   return (
-    <div className="bg-background selection:bg-primary/30 selection:text-white">
+    <div className="bg-background selection:bg-primary/30 selection:text-white overflow-x-hidden">
       <Navbar />
       <main>
         <Hero />

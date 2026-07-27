@@ -482,16 +482,16 @@ export function PaymentForm() {
                 </div>
               </div>
 
-              <div className="flex justify-between text-xs pt-1 border-t border-border">
-                <span className="text-muted-foreground">Destinataire</span>
-                <span className="text-foreground font-medium">{phone} · {OPERATORS[operator]?.name || operator}</span>
+              <div className="flex justify-between gap-2 text-xs pt-1 border-t border-border">
+                <span className="text-muted-foreground shrink-0">Destinataire</span>
+                <span className="text-foreground font-medium text-right truncate min-w-0">{phone} · {OPERATORS[operator]?.name || operator}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Recevra</span>
+              <div className="flex justify-between gap-2 text-xs">
+                <span className="text-muted-foreground shrink-0">Recevra</span>
                 <span className="text-primary font-semibold font-mono">{formatFcfa(rawAmount)} {country.currency}</span>
               </div>
-              <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Réf. transaction</span>
+              <div className="flex justify-between gap-2 text-xs">
+                <span className="text-muted-foreground shrink-0">Réf. transaction</span>
                 <span className="text-foreground font-mono text-[10px]">{createdTx.id.slice(0, 12)}…</span>
               </div>
             </div>
