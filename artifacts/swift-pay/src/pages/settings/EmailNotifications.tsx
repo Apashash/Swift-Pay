@@ -62,7 +62,7 @@ export default function EmailNotifications() {
       key: 'transactions',
       icon: ArrowRightLeft,
       label: 'Transactions',
-      desc: 'Confirmation d\'envoi, réception et échec de paiement.',
+      desc: 'Confirmation d\'échange, réception et échec de transaction.',
     },
     {
       key: 'security',
