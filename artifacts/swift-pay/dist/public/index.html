@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <!-- Apply theme class synchronously before React renders to avoid flash of unstyled content -->
+    <script>
+      (function() {
+        try {
+          var t = localStorage.getItem('theme');
+          document.documentElement.classList.add(t === 'light' ? 'light' : 'dark');
+        } catch (e) {
+          document.documentElement.classList.add('dark');
+        }
+      })();
+    </script>
+    <title>SwiftPay</title>
+    <meta name="description" content="SwiftPay — built on Replit. Update this description to reflect the app." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="SwiftPay" />
+    <meta property="og:description" content="SwiftPay — built on Replit. Update this description to reflect the app." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="SwiftPay" />
+    <meta name="twitter:description" content="SwiftPay — built on Replit. Update this description to reflect the app." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+    <script type="module" crossorigin src="/assets/index-BwxIRpC0.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-DCIXyuZS.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>

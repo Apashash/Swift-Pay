@@ -1,7 +1,11 @@
 # See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
 
 # compiled output
-dist
+dist/
+!artifacts/api-server/dist/
+!artifacts/api-server/dist/**
+!artifacts/swift-pay/dist/
+!artifacts/swift-pay/dist/**
 tmp
 out-tsc
 *.tsbuildinfo
