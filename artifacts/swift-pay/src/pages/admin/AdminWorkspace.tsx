@@ -27,7 +27,6 @@ import {
   ToggleLeft,
   ToggleRight,
   Users,
-  WalletCards,
   X,
 } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
@@ -109,7 +108,6 @@ const navTitles: Record<string, string> = {
   utilisateurs: 'Utilisateurs',
   kyc: 'Vérifications KYC',
   transactions: 'Transactions',
-  'paiements-en-attente': 'Paiements en attente',
   'numeros-retrait': 'Numéros Mobile Money',
   frais: 'Frais',
   conversions: 'Conversions',
@@ -1044,12 +1042,6 @@ function ConfigurationView({ type }: { type: string }) {
   </>;
 }
 
-function PendingView() {
-  const [rows, setRows] = useState(demoTransfers.filter((row) => row.status === 'En attente'));
-  const [page, setPage] = useState(1);
-  const pagedRows = rows.slice((page - 1) * ADMIN_PAGE_SIZE, page * ADMIN_PAGE_SIZE);
-  return <><SectionHeading eyebrow="Exploitation · Données de suivi local" title="Paiements en attente" description="Une file de travail courte pour traiter les opérations qui nécessitent une intervention." /><div className="mb-5 rounded-2xl border border-[#f2dcb8] bg-[#fff8ea] p-4 text-xs text-[#93642f]"><strong>37 opérations</strong> sont actuellement en attente. Les actions ci-dessous mettent à jour la file locale de démonstration.</div><div className="grid gap-4 sm:grid-cols-2">{pagedRows.map((row) => <div key={row.id} className="rounded-2xl border border-[#dfe6df] bg-white p-5"><div className="flex items-start justify-between"><div><span className="rounded-full bg-[#fff1dc] px-2 py-1 text-[10px] font-semibold text-[#a96823]">{row.kind}</span><h3 className="mt-3 text-sm font-semibold">{row.customer}</h3><p className="mt-1 text-[11px] text-[#819087]">{row.channel} · {row.id}</p></div><p className="text-sm font-semibold">{row.amount}</p></div><div className="mt-5 flex items-center justify-between border-t border-[#edf0ed] pt-4"><span className="text-[10px] text-[#819087]">{row.time}</span><button type="button" onClick={() => setRows((current) => current.filter((item) => item.id !== row.id))} className="rounded-lg bg-[#e7f5dc] px-3 py-2 text-[10px] font-semibold text-[#4e812c]">Marquer traité</button></div></div>)}</div>{rows.length === 0 && <div className="rounded-2xl border border-dashed border-[#cfdcc9] bg-[#fbfdf9] p-12 text-center"><CheckCircle2 className="mx-auto h-8 w-8 text-[#80b64d]" /><p className="mt-3 text-sm font-semibold">File traitée</p><p className="mt-1 text-xs text-[#819087]">Aucun paiement local ne nécessite votre attention.</p></div>}{rows.length > 0 && <PaginationControls page={page} total={rows.length} setPage={setPage} />}</>;
-}
 
 function WithdrawalNumbersView() {
   const [numbers, setNumbers] = useState([{ number: '+221 77 402 18 62', operator: 'Wave Sénégal', owner: 'Aminata Diop', status: 'Actif' }, { number: '+225 05 84 12 90 11', operator: 'MTN Côte d’Ivoire', owner: 'Nadia Kouassi', status: 'Actif' }, { number: '+223 76 44 20 08', operator: 'Orange Mali', owner: 'Moussa Traoré', status: 'Suspendu' }]);
@@ -1106,7 +1098,6 @@ export default function AdminWorkspace() {
   else if (segment === 'kyc') content = <KycView submissions={submissions} loading={adminLoading} />;
   else if (segment === 'transactions' && txDetailId) content = <AdminTransactionDetailView id={txDetailId} transactions={adminTransactions} onStatusUpdate={handleTxStatusUpdate} />;
   else if (segment === 'transactions') content = <TransactionsView transactions={adminTransactions} />;
-  else if (segment === 'paiements-en-attente') content = <PendingView />;
   else if (segment === 'numeros-retrait') content = <WithdrawalNumbersView />;
   else content = <ConfigurationView type={segment} />;
   return <AdminLayout>{content}</AdminLayout>;

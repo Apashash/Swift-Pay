@@ -10,7 +10,6 @@ import {
   Menu,
   Settings2,
   Users,
-  WalletCards,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
@@ -38,7 +37,6 @@ const navigation: { label: string; items: AdminNavItem[] }[] = [
       { href: '/admin/utilisateurs', label: 'Utilisateurs', icon: Users },
       { href: '/admin/kyc', label: 'Vérifications KYC', icon: BadgeCheck },
       { href: '/admin/transactions', label: 'Transactions', icon: ArrowLeftRight },
-      { href: '/admin/paiements-en-attente', label: 'Paiements en attente', icon: WalletCards },
     ],
   },
   {
