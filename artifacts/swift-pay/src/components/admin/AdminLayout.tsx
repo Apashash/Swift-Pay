@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { useNotifications } from '@/lib/notifications';
+import { useAdminNotifications } from '@/lib/adminNotifications';
 import swiftPayLogo from '@assets/swift-logo.png';
 
 interface AdminLayoutProps {
@@ -57,7 +57,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [location, navigate] = useLocation();
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { unreadCount } = useNotifications(user?.id);
+  const { unreadCount } = useAdminNotifications();
 
   const initials = user?.fullName
     ?.split(' ')

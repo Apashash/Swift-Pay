@@ -1,8 +1,9 @@
 import { Router, type IRouter } from "express";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import {
   db,
   kycSubmissionsTable,
+  notificationsTable,
   transactionsTable,
   usersTable,
 } from "@workspace/db";
@@ -180,6 +181,80 @@ router.patch("/admin/kyc/:id", async (req, res, next) => {
       .set({ verified: status === "approved" })
       .where(eq(usersTable.id, submission.userId));
     res.json({ submission });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── GET /admin/notifications — all users' notifications ───────────────────────
+router.get("/admin/notifications", async (req, res, next) => {
+  try {
+    await requireAdmin(req.headers.authorization);
+    const rows = await db
+      .select({
+        id: notificationsTable.id,
+        userId: notificationsTable.userId,
+        type: notificationsTable.type,
+        title: notificationsTable.title,
+        message: notificationsTable.message,
+        details: notificationsTable.details,
+        read: notificationsTable.read,
+        actionLabel: notificationsTable.actionLabel,
+        actionHref: notificationsTable.actionHref,
+        createdAt: notificationsTable.createdAt,
+        userFullName: usersTable.fullName,
+        userEmail: usersTable.email,
+        userAvatar: usersTable.avatar,
+      })
+      .from(notificationsTable)
+      .innerJoin(usersTable, eq(notificationsTable.userId, usersTable.id))
+      .orderBy(desc(notificationsTable.createdAt));
+
+    const notifications = rows.map((r) => ({
+      id: r.id,
+      userId: r.userId,
+      type: r.type,
+      title: r.title,
+      message: r.message,
+      details: r.details,
+      read: r.read,
+      actionLabel: r.actionLabel,
+      actionHref: r.actionHref,
+      createdAt: r.createdAt,
+      user: { id: r.userId, fullName: r.userFullName, email: r.userEmail, avatar: r.userAvatar },
+    }));
+
+    res.json({ notifications });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── DELETE /admin/notifications/all ──────────────────────────────────────────
+router.delete("/admin/notifications/all", async (req, res, next) => {
+  try {
+    await requireAdmin(req.headers.authorization);
+    await db.delete(notificationsTable);
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── DELETE /admin/notifications/:id ──────────────────────────────────────────
+router.delete("/admin/notifications/:id", async (req, res, next) => {
+  try {
+    await requireAdmin(req.headers.authorization);
+    const { id } = req.params;
+    const [deleted] = await db
+      .delete(notificationsTable)
+      .where(eq(notificationsTable.id, id))
+      .returning();
+    if (!deleted) {
+      res.status(404).json({ message: "Notification introuvable." });
+      return;
+    }
+    res.json({ ok: true });
   } catch (error) {
     next(error);
   }
