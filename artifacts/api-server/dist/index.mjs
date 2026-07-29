@@ -29380,10 +29380,10 @@ var init_subquery = __esm({
     init_entity();
     Subquery = class {
       static [entityKind] = "Subquery";
-      constructor(sql3, fields, alias, isWith = false, usedTables = []) {
+      constructor(sql2, fields, alias, isWith = false, usedTables = []) {
         this._ = {
           brand: "Subquery",
-          sql: sql3,
+          sql: sql2,
           selectedFields: fields,
           alias,
           isWith,
@@ -29832,19 +29832,19 @@ var init_sql = __esm({
         return new SQL([this]);
       }
     };
-    ((sql22) => {
+    ((sql2) => {
       function empty() {
         return new SQL([]);
       }
-      sql22.empty = empty;
+      sql2.empty = empty;
       function fromList(list) {
         return new SQL(list);
       }
-      sql22.fromList = fromList;
+      sql2.fromList = fromList;
       function raw(str) {
         return new SQL([new StringChunk(str)]);
       }
-      sql22.raw = raw;
+      sql2.raw = raw;
       function join(chunks, separator) {
         const result = [];
         for (const [i, chunk] of chunks.entries()) {
@@ -29855,24 +29855,24 @@ var init_sql = __esm({
         }
         return new SQL(result);
       }
-      sql22.join = join;
+      sql2.join = join;
       function identifier(value) {
         return new Name(value);
       }
-      sql22.identifier = identifier;
+      sql2.identifier = identifier;
       function placeholder2(name2) {
         return new Placeholder(name2);
       }
-      sql22.placeholder = placeholder2;
+      sql2.placeholder = placeholder2;
       function param2(value, encoder) {
         return new Param(value, encoder);
       }
-      sql22.param = param2;
+      sql2.param = param2;
     })(sql || (sql = {}));
     ((SQL2) => {
       class Aliased {
-        constructor(sql22, fieldAlias) {
-          this.sql = sql22;
+        constructor(sql2, fieldAlias) {
+          this.sql = sql2;
           this.fieldAlias = fieldAlias;
         }
         static [entityKind] = "SQL.Aliased";
@@ -38465,8 +38465,8 @@ var init_dialect = __esm({
           return "none";
         }
       }
-      sqlToQuery(sql22, invokeSource) {
-        return sql22.toQuery({
+      sqlToQuery(sql2, invokeSource) {
+        return sql2.toQuery({
           casing: this.casing,
           escapeName: this.escapeName,
           escapeParam: this.escapeParam,
@@ -41208,10 +41208,10 @@ var init_raw = __esm({
     init_entity();
     init_query_promise();
     PgRaw = class extends QueryPromise {
-      constructor(execute, sql3, query, mapBatchResult) {
+      constructor(execute, sql2, query, mapBatchResult) {
         super();
         this.execute = execute;
-        this.sql = sql3;
+        this.sql = sql2;
         this.query = query;
         this.mapBatchResult = mapBatchResult;
       }
@@ -41531,8 +41531,8 @@ var init_db = __esm({
 });
 
 // ../../node_modules/.pnpm/drizzle-orm@0.45.2_@types+pg@8.20.0_pg@8.22.0/node_modules/drizzle-orm/cache/core/cache.js
-async function hashQuery(sql3, params) {
-  const dataToHash = `${sql3}-${JSON.stringify(params)}`;
+async function hashQuery(sql2, params) {
+  const dataToHash = `${sql2}-${JSON.stringify(params)}`;
   const encoder = new TextEncoder();
   const data = encoder.encode(dataToHash);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
@@ -41803,8 +41803,8 @@ var init_session = __esm({
         ).all();
       }
       /** @internal */
-      async count(sql22, token) {
-        const res = await this.execute(sql22, token);
+      async count(sql2, token) {
+        const res = await this.execute(sql2, token);
         return Number(
           res[0]["count"]
         );
@@ -42080,8 +42080,8 @@ var init_session2 = __esm({
           if (isPool) session.client.release();
         }
       }
-      async count(sql22) {
-        const res = await this.execute(sql22);
+      async count(sql2) {
+        const res = await this.execute(sql2);
         return Number(
           res["rows"][0]["count"]
         );
@@ -46636,10 +46636,10 @@ router3.get("/transactions/search", async (req, res, next) => {
       return;
     }
     let condition;
-    const refMatch = q.match(/swift-[^-]+-([0-9a-f]{8})$/i);
+    const refMatch = q.match(/swift-[^-]+-([0-9a-f]{8})/i);
     if (refMatch) {
       const prefix = refMatch[1].toLowerCase();
-      condition = like(transactionsTable.id, `${prefix}%`);
+      condition = sql`${transactionsTable.id}::text like ${prefix + "%"}`;
     } else {
       const digits = q.replace(/[\s.\-]/g, "");
       condition = or(

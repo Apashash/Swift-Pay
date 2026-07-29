@@ -63,10 +63,11 @@ router.get("/transactions/search", async (req, res, next) => {
     let condition;
 
     // Reference format: swift-XXXXXXXX-YYYYYYYY where YYYYYYYY = tx.id.slice(0,8)
-    const refMatch = q.match(/swift-[^-]+-([0-9a-f]{8})$/i);
+    const refMatch = q.match(/swift-[^-]+-([0-9a-f]{8})/i);
     if (refMatch) {
       const prefix = refMatch[1].toLowerCase();
-      condition = like(transactionsTable.id, `${prefix}%`);
+      // UUID column — must cast to text before LIKE
+      condition = sql`${transactionsTable.id}::text like ${prefix + '%'}`;
     } else {
       // Search by phone — strip spaces/dots for loose matching
       const digits = q.replace(/[\s.\-]/g, "");

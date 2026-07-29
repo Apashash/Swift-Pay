@@ -565,16 +565,17 @@ export function PaymentForm() {
                 Le destinataire sera notifié automatiquement par SMS.
               </p>
 
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   variant="outline"
                   onClick={() => navigate(`/transactions/${createdTx.id}`)}
-                  className="flex-1 rounded-xl h-11 gap-2"
+                  className="w-full rounded-xl h-11 gap-1.5 text-sm px-2"
                 >
-                  <ExternalLink className="w-4 h-4" /> Voir la transaction
+                  <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">Voir la transaction</span>
                 </Button>
-                <Button variant="outline" onClick={handleReset} className="flex-1 rounded-xl h-11">
-                  Nouveau paiement
+                <Button variant="outline" onClick={handleReset} className="w-full rounded-xl h-11 text-sm px-2">
+                  <span className="truncate">Nouveau paiement</span>
                 </Button>
               </div>
             </motion.div>
