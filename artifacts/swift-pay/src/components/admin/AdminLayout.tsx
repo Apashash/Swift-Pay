@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
-import { type Notification, useNotifications } from '@/lib/notifications';
+import { useNotifications } from '@/lib/notifications';
 import swiftPayLogo from '@assets/swift-logo.png';
 
 interface AdminLayoutProps {
@@ -53,29 +53,11 @@ function isActive(path: string, href: string) {
   return href === '/admin' ? path === href : path === href || path.startsWith(`${href}/`);
 }
 
-function formatNotificationDate(date: string) {
-  const diff = Date.now() - new Date(date).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return 'À l’instant';
-  if (minutes < 60) return `Il y a ${minutes} min`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `Il y a ${hours} h`;
-  const days = Math.floor(hours / 24);
-  return days < 7 ? `Il y a ${days} j` : new Intl.DateTimeFormat('fr-FR', { day: 'numeric', month: 'short' }).format(new Date(date));
-}
-
-function notificationTone(notification: Notification) {
-  if (notification.type === 'security') return 'bg-orange-100 text-orange-600';
-  if (notification.type === 'transaction') return 'bg-[#edf8e3] text-[#5c8b35]';
-  return 'bg-blue-100 text-blue-600';
-}
-
 export function AdminLayout({ children }: AdminLayoutProps) {
   const [location, navigate] = useLocation();
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const { notifications, unreadCount, loading, markAsRead } = useNotifications(user?.id);
+  const { unreadCount } = useNotifications(user?.id);
 
   const initials = user?.fullName
     ?.split(' ')
@@ -194,74 +176,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <span className="h-2 w-2 rounded-full bg-[#8acb43]" />
               Systèmes opérationnels
             </div>
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setNotificationsOpen((open) => !open)}
-                className="relative rounded-lg border border-[#dfe6df] bg-white p-2.5 text-[#718078] hover:text-[#17211c]"
-                aria-label={unreadCount > 0 ? `${unreadCount} notifications non lues` : 'Notifications'}
-                aria-expanded={notificationsOpen}
-              >
-                <Bell className="h-4 w-4" />
-                {unreadCount > 0 && (
-                  <span className="absolute -right-1 -top-1 flex min-w-4 h-4 items-center justify-center rounded-full border-2 border-[#f5f7f5] bg-[#e38b4d] px-1 text-[9px] font-bold text-white">
-                    {unreadCount > 9 ? '9+' : unreadCount}
-                  </span>
-                )}
-              </button>
-              {notificationsOpen && (
-                <div className="absolute right-0 top-12 z-50 w-[min(360px,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-[#dfe6df] bg-white shadow-[0_16px_40px_rgba(23,33,28,0.16)]">
-                  <div className="flex items-center justify-between border-b border-[#edf0ed] px-4 py-3">
-                    <div>
-                      <p className="text-sm font-semibold text-[#17211c]">Notifications</p>
-                      <p className="mt-0.5 text-[10px] text-[#819087]">
-                        {unreadCount > 0 ? `${unreadCount} non lue${unreadCount > 1 ? 's' : ''}` : 'Tout est à jour'}
-                      </p>
-                    </div>
-                    <button type="button" onClick={() => { setNotificationsOpen(false); navigate('/notifications'); }} className="text-[10px] font-semibold text-[#6e9b3d] hover:text-[#4e812c]">
-                      Voir tout
-                    </button>
-                  </div>
-                  <div className="max-h-[360px] overflow-y-auto">
-                    {loading ? (
-                      <div className="px-4 py-8 text-center text-xs text-[#819087]">Chargement…</div>
-                    ) : notifications.length === 0 ? (
-                      <div className="px-4 py-8 text-center text-xs text-[#819087]">Aucune notification</div>
-                    ) : (
-                      notifications.slice(0, 5).map((notification) => (
-                        <button
-                          type="button"
-                          key={notification.id}
-                          onClick={() => {
-                            void markAsRead(notification.id);
-                            setNotificationsOpen(false);
-                            navigate(notification.actionHref || `/notifications/${notification.id}`);
-                          }}
-                          className={`flex w-full items-start gap-3 border-b border-[#edf0ed] px-4 py-3 text-left transition-colors last:border-0 hover:bg-[#f7faf6] ${notification.read ? 'bg-white' : 'bg-[#fbfdf8]'}`}
-                        >
-                          <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${notificationTone(notification)}`}>
-                            <Bell className="h-3.5 w-3.5" />
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="flex items-center gap-2">
-                              <span className={`truncate text-xs font-semibold ${notification.read ? 'text-[#17211c]' : 'text-[#4e812c]'}`}>{notification.title}</span>
-                              {!notification.read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#83b84d]" />}
-                            </span>
-                            <span className="mt-1 block line-clamp-2 text-[11px] leading-4 text-[#819087]">{notification.message}</span>
-                            <span className="mt-1.5 block text-[10px] text-[#a1aca4]">{formatNotificationDate(notification.createdAt)}</span>
-                          </span>
-                        </button>
-                      ))
-                    )}
-                  </div>
-                  {notifications.length > 5 && (
-                    <button type="button" onClick={() => { setNotificationsOpen(false); navigate('/notifications'); }} className="w-full border-t border-[#edf0ed] px-4 py-3 text-center text-[10px] font-semibold text-[#6e9b3d] hover:bg-[#f7faf6]">
-                      Voir les {notifications.length} notifications
-                    </button>
-                  )}
-                </div>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/notifications')}
+              className="relative rounded-lg border border-[#dfe6df] bg-white p-2.5 text-[#718078] hover:text-[#17211c] transition-colors"
+              aria-label={unreadCount > 0 ? `${unreadCount} notifications non lues` : 'Notifications'}
+            >
+              <Bell className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex min-w-4 h-4 items-center justify-center rounded-full border-2 border-[#f5f7f5] bg-[#e38b4d] px-1 text-[9px] font-bold text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
               )}
-            </div>
+            </button>
             <div className="hidden h-8 w-px bg-[#dfe6df] sm:block" />
             <div className="flex items-center gap-2">
               <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-[#dcebd2] text-xs font-bold text-[#41602b]">{user?.avatar ? <img src={user.avatar} alt="Avatar" className="h-full w-full object-cover" /> : initials}</div>

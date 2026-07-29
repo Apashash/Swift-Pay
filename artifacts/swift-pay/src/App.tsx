@@ -26,6 +26,8 @@ import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import { LanguageProvider } from '@/lib/i18n';
 import { AuthProvider, useAuth } from '@/lib/auth';
 import AdminWorkspace from '@/pages/admin/AdminWorkspace';
+import AdminNotifications from '@/pages/admin/AdminNotifications';
+import AdminNotificationDetail from '@/pages/admin/AdminNotificationDetail';
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,12 @@ function Router() {
       </Route>
       <Route path="/admin">
         {() => <ProtectedRoute component={AdminWorkspace} adminOnly />}
+      </Route>
+      <Route path="/admin/notifications">
+        {() => <ProtectedRoute component={AdminNotifications} adminOnly />}
+      </Route>
+      <Route path="/admin/notifications/:id">
+        {() => <ProtectedRoute component={AdminNotificationDetail} adminOnly />}
       </Route>
       <Route path="/admin/:section">
         {() => <ProtectedRoute component={AdminWorkspace} adminOnly />}
