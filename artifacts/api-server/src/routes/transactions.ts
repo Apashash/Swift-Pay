@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
 import { db, transactionsTable, notificationsTable, usersTable, authSessionsTable } from "@workspace/db";
 import { getBearerToken, getUserFromToken } from "../lib/auth";
 
@@ -43,6 +43,81 @@ router.get("/transactions/status/:id", async (req, res, next) => {
       return;
     }
     res.json({ status: tx.status });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── GET /api/transactions/search?q=  (public — no auth) ──────────────────────
+// Accepts: phone number OR reference in the form swift-XXXXXXXX-YYYYYYYY
+// Returns sanitized data (phone masked, no userId exposed)
+
+router.get("/transactions/search", async (req, res, next) => {
+  try {
+    const q = (req.query.q as string | undefined)?.trim() ?? "";
+    if (!q) {
+      res.status(400).json({ message: "Paramètre q requis." });
+      return;
+    }
+
+    let condition;
+
+    // Reference format: swift-XXXXXXXX-YYYYYYYY where YYYYYYYY = tx.id.slice(0,8)
+    const refMatch = q.match(/swift-[^-]+-([0-9a-f]{8})$/i);
+    if (refMatch) {
+      const prefix = refMatch[1].toLowerCase();
+      condition = like(transactionsTable.id, `${prefix}%`);
+    } else {
+      // Search by phone — strip spaces/dots for loose matching
+      const digits = q.replace(/[\s.\-]/g, "");
+      condition = or(
+        ilike(transactionsTable.recipientPhone, `%${q}%`),
+        ilike(transactionsTable.recipientPhone, `%${digits}%`),
+      );
+    }
+
+    const rows = await db
+      .select({
+        id: transactionsTable.id,
+        status: transactionsTable.status,
+        recipientPhone: transactionsTable.recipientPhone,
+        network: transactionsTable.network,
+        networkFlag: transactionsTable.networkFlag,
+        countryName: transactionsTable.countryName,
+        amountFcfa: transactionsTable.amountFcfa,
+        amountCrypto: transactionsTable.amountCrypto,
+        cryptoCurrency: transactionsTable.cryptoCurrency,
+        createdAt: transactionsTable.createdAt,
+      })
+      .from(transactionsTable)
+      .where(condition)
+      .orderBy(desc(transactionsTable.createdAt))
+      .limit(5);
+
+    const transactions = rows.map((tx) => {
+      // Mask phone: show first 3 and last 2 digits, hide the rest
+      const p = tx.recipientPhone.replace(/\s/g, "");
+      const masked =
+        p.length > 5
+          ? `${p.slice(0, 3)}${"*".repeat(p.length - 5)}${p.slice(-2)}`
+          : tx.recipientPhone;
+
+      return {
+        id: tx.id,
+        ref: `swift-0283729-${tx.id.slice(0, 8)}`,
+        status: tx.status,
+        phone: masked,
+        network: tx.network,
+        networkFlag: tx.networkFlag,
+        countryName: tx.countryName,
+        amountFcfa: tx.amountFcfa,
+        amountCrypto: tx.amountCrypto,
+        cryptoCurrency: tx.cryptoCurrency,
+        createdAt: tx.createdAt,
+      };
+    });
+
+    res.json({ transactions });
   } catch (error) {
     next(error);
   }

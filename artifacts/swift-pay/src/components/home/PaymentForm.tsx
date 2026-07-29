@@ -235,7 +235,7 @@ export function PaymentForm() {
   };
 
   return (
-    <div className="relative bg-card border border-border rounded-2xl shadow-2xl overflow-hidden backdrop-blur-sm p-4 sm:p-6 w-full min-w-0">
+    <div className="relative bg-card border border-border rounded-2xl shadow-2xl backdrop-blur-sm p-4 sm:p-6 w-full min-w-0">
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <AnimatePresence mode="wait">

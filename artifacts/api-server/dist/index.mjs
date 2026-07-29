@@ -46628,6 +46628,59 @@ router3.get("/transactions/status/:id", async (req, res, next) => {
     next(error);
   }
 });
+router3.get("/transactions/search", async (req, res, next) => {
+  try {
+    const q = req.query.q?.trim() ?? "";
+    if (!q) {
+      res.status(400).json({ message: "Param\xE8tre q requis." });
+      return;
+    }
+    let condition;
+    const refMatch = q.match(/swift-[^-]+-([0-9a-f]{8})$/i);
+    if (refMatch) {
+      const prefix = refMatch[1].toLowerCase();
+      condition = like(transactionsTable.id, `${prefix}%`);
+    } else {
+      const digits = q.replace(/[\s.\-]/g, "");
+      condition = or(
+        ilike(transactionsTable.recipientPhone, `%${q}%`),
+        ilike(transactionsTable.recipientPhone, `%${digits}%`)
+      );
+    }
+    const rows = await db.select({
+      id: transactionsTable.id,
+      status: transactionsTable.status,
+      recipientPhone: transactionsTable.recipientPhone,
+      network: transactionsTable.network,
+      networkFlag: transactionsTable.networkFlag,
+      countryName: transactionsTable.countryName,
+      amountFcfa: transactionsTable.amountFcfa,
+      amountCrypto: transactionsTable.amountCrypto,
+      cryptoCurrency: transactionsTable.cryptoCurrency,
+      createdAt: transactionsTable.createdAt
+    }).from(transactionsTable).where(condition).orderBy(desc(transactionsTable.createdAt)).limit(5);
+    const transactions = rows.map((tx) => {
+      const p = tx.recipientPhone.replace(/\s/g, "");
+      const masked = p.length > 5 ? `${p.slice(0, 3)}${"*".repeat(p.length - 5)}${p.slice(-2)}` : tx.recipientPhone;
+      return {
+        id: tx.id,
+        ref: `swift-0283729-${tx.id.slice(0, 8)}`,
+        status: tx.status,
+        phone: masked,
+        network: tx.network,
+        networkFlag: tx.networkFlag,
+        countryName: tx.countryName,
+        amountFcfa: tx.amountFcfa,
+        amountCrypto: tx.amountCrypto,
+        cryptoCurrency: tx.cryptoCurrency,
+        createdAt: tx.createdAt
+      };
+    });
+    res.json({ transactions });
+  } catch (error) {
+    next(error);
+  }
+});
 router3.get("/transactions", async (req, res, next) => {
   try {
     const user = await requireUser(req.headers.authorization);
