@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
 import {
   db,
   kycSubmissionsTable,
@@ -181,6 +181,63 @@ router.patch("/admin/kyc/:id", async (req, res, next) => {
       .set({ verified: status === "approved" })
       .where(eq(usersTable.id, submission.userId));
     res.json({ submission });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ── GET /admin/charts?period=30 — real chart data ────────────────────────────
+router.get("/admin/charts", async (req, res, next) => {
+  try {
+    await requireAdmin(req.headers.authorization);
+
+    const period = Math.min(Math.max(Number(req.query.period) || 30, 1), 365);
+    const since = new Date(Date.now() - period * 24 * 60 * 60 * 1000);
+
+    // Daily volume (completed transactions only)
+    const volumeRows = await db
+      .select({
+        date: sql<string>`date_trunc('day', ${transactionsTable.createdAt})::date`,
+        volume: sql<number>`coalesce(sum(${transactionsTable.amountFcfa}), 0)::int`,
+      })
+      .from(transactionsTable)
+      .where(
+        and(
+          gte(transactionsTable.createdAt, since),
+          eq(transactionsTable.status, "completed"),
+        ),
+      )
+      .groupBy(sql`date_trunc('day', ${transactionsTable.createdAt})`)
+      .orderBy(sql`date_trunc('day', ${transactionsTable.createdAt})`);
+
+    // Breakdown by network (all statuses)
+    const breakdownRows = await db
+      .select({
+        network: transactionsTable.network,
+        volume: sql<number>`coalesce(sum(${transactionsTable.amountFcfa}), 0)::int`,
+        count: sql<number>`count(*)::int`,
+      })
+      .from(transactionsTable)
+      .where(gte(transactionsTable.createdAt, since))
+      .groupBy(transactionsTable.network)
+      .orderBy(sql`sum(${transactionsTable.amountFcfa}) desc`);
+
+    // Total completed volume in period
+    const [{ total }] = await db
+      .select({ total: sql<number>`coalesce(sum(${transactionsTable.amountFcfa}), 0)::int` })
+      .from(transactionsTable)
+      .where(
+        and(
+          gte(transactionsTable.createdAt, since),
+          eq(transactionsTable.status, "completed"),
+        ),
+      );
+
+    res.json({
+      volumeByDay: volumeRows,
+      operationBreakdown: breakdownRows,
+      totalVolume: total,
+    });
   } catch (error) {
     next(error);
   }

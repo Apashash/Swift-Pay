@@ -251,38 +251,203 @@ function Toolbar({ search, setSearch, filter, setFilter, filterOptions, onExport
   );
 }
 
+interface AdminCharts {
+  volumeByDay: { date: string; volume: number }[];
+  operationBreakdown: { network: string; volume: number; count: number }[];
+  totalVolume: number;
+}
+
+const DONUT_COLORS = ['#83b84d', '#efad59', '#78a5bf', '#d9e3d7'];
+
+function buildBars(volumeByDay: { date: string; volume: number }[], period: number) {
+  const days: { date: Date; volume: number }[] = [];
+  const now = new Date();
+  for (let i = period - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const found = volumeByDay.find((r) => r.date.slice(0, 10) === key);
+    days.push({ date: d, volume: found?.volume ?? 0 });
+  }
+  const maxVol = Math.max(...days.map((d) => d.volume), 1);
+  return days.map((d, i) => ({
+    date: d.date,
+    volume: d.volume,
+    height: d.volume > 0 ? Math.max(Math.round((d.volume / maxVol) * 92), 5) : 2,
+    isLast: i === days.length - 1,
+  }));
+}
+
+function buildDonut(breakdown: { network: string; volume: number; count: number }[]) {
+  const total = breakdown.reduce((s, r) => s + r.volume, 0);
+  if (total === 0) return null;
+  const top3 = breakdown.slice(0, 3);
+  const otherVol = breakdown.slice(3).reduce((s, r) => s + r.volume, 0);
+  const segments = [
+    ...top3.map((r, i) => ({ label: r.network, volume: r.volume, color: DONUT_COLORS[i] ?? '#d9e3d7' })),
+    ...(otherVol > 0 ? [{ label: 'Autres', volume: otherVol, color: DONUT_COLORS[3] }] : []),
+  ];
+  let cum = 0;
+  const gradient = `conic-gradient(${segments.map((s) => {
+    const pct = (s.volume / total) * 100;
+    const start = cum; cum += pct;
+    return `${s.color} ${start.toFixed(1)}% ${cum.toFixed(1)}%`;
+  }).join(', ')})`;
+  return { segments, total, gradient };
+}
+
+function periodLabels(period: number): string[] {
+  const now = new Date();
+  const step = Math.floor((period - 1) / 4);
+  const fmt = (d: Date) => d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }).replace('.', '');
+  return [
+    fmt(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (period - 1))),
+    fmt(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (period - 1 - step))),
+    fmt(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (period - 1 - 2 * step))),
+    fmt(new Date(now.getFullYear(), now.getMonth(), now.getDate() - (period - 1 - 3 * step))),
+    "Aujourd'hui",
+  ];
+}
+
+function fmtVolume(v: number): string {
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${Math.round(v / 1_000)}k`;
+  return `${v}`;
+}
+
 function DashboardView({ transactions, overview }: { transactions: ApiTransaction[]; overview: AdminOverview | null }) {
   const recent = transactions.slice(0, 5);
   const overviewUsers = overview?.users.total ?? 0;
   const overviewVolume = overview?.transactions.volume ?? 0;
   const overviewTransactions = overview?.transactions.total ?? transactions.length;
   const overviewPending = (overview?.transactions.pending ?? 0) + (overview?.kyc.pending ?? 0);
+
+  const [period, setPeriod] = useState(30);
+  const [charts, setCharts] = useState<AdminCharts | null>(null);
+  const [chartsLoading, setChartsLoading] = useState(true);
+
+  useEffect(() => {
+    setChartsLoading(true);
+    apiFetch<AdminCharts>(`/admin/charts?period=${period}`)
+      .then(setCharts)
+      .catch(() => setCharts(null))
+      .finally(() => setChartsLoading(false));
+  }, [period]);
+
+  const bars = charts ? buildBars(charts.volumeByDay, period) : [];
+  const donut = charts ? buildDonut(charts.operationBreakdown) : null;
+  const dateLabels = periodLabels(period);
+  const totalFcfaLabel = fmtVolume(charts?.totalVolume ?? overviewVolume);
+  const periodLabel = period === 365 ? '12 derniers mois' : `${period} derniers jours`;
+
   return (
     <>
-
       <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
         <StatCard label="Volume traité" value={`${formatNumber(overviewVolume)} FCFA`} detail="Transactions complétées" icon={ArrowUpRight} />
         <StatCard label="Utilisateurs actifs" value={formatNumber(overviewUsers)} detail={`${overview?.users.verified ?? 0} comptes vérifiés`} icon={Users} accent="blue" />
         <StatCard label="Transactions" value={formatNumber(overviewTransactions)} detail="Toutes les opérations enregistrées" icon={ArrowLeftRight} accent="orange" />
         <StatCard label="En attente" value={formatNumber(overviewPending)} detail={`${overview?.kyc.pending ?? 0} KYC · ${overview?.transactions.pending ?? 0} paiements`} icon={Clock3} accent="red" />
       </div>
+
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.6fr_1fr]">
+        {/* ── Volume bar chart ── */}
         <div className="rounded-2xl border border-[#dfe6df] bg-white p-5 md:p-6">
-          <div className="flex items-start justify-between"><div><h3 className="text-sm font-semibold">Volume des transactions</h3><p className="mt-1 text-[11px] text-[#819087]">Évolution des flux en FCFA · 30 derniers jours</p></div><select className="rounded-lg border border-[#dfe6df] bg-white px-2 py-1.5 text-[10px] text-[#718078]"><option>30 jours</option><option>7 jours</option><option>12 mois</option></select></div>
-          <div className="mt-8 flex h-48 items-end gap-1.5 border-b border-l border-[#edf0ed] px-3 pb-0 pt-4 sm:gap-3">
-            {[38, 52, 44, 67, 55, 72, 61, 84, 73, 92, 78, 88, 68, 76, 96, 82, 90, 74, 87, 99, 81, 93, 77, 89].map((height, index) => <div key={`${height}-${index}`} className={`group relative flex-1 rounded-t-md transition-all hover:bg-[#8fb85e] ${index === 19 ? 'bg-[#83b84d]' : 'bg-[#dceecb]'}`} style={{ height: `${height}%` }}><span className="absolute -top-6 left-1/2 hidden -translate-x-1/2 rounded bg-[#17211c] px-1.5 py-1 text-[9px] text-white group-hover:block">{Math.round(height * 8)}k</span></div>)}
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Volume des transactions</h3>
+              <p className="mt-1 text-[11px] text-[#819087]">Évolution des flux en FCFA · {periodLabel}</p>
+            </div>
+            <select
+              value={period}
+              onChange={(e) => setPeriod(Number(e.target.value))}
+              className="rounded-lg border border-[#dfe6df] bg-white px-2 py-1.5 text-[10px] text-[#718078] outline-none"
+            >
+              <option value={30}>30 jours</option>
+              <option value={7}>7 jours</option>
+              <option value={365}>12 mois</option>
+            </select>
           </div>
-          <div className="mt-3 flex justify-between pl-3 text-[10px] text-[#a1aca4]"><span>01 juin</span><span>08 juin</span><span>15 juin</span><span>22 juin</span><span>Aujourd’hui</span></div>
+          <div className="mt-8 flex h-48 items-end gap-[3px] border-b border-l border-[#edf0ed] px-3 pb-0 pt-4">
+            {chartsLoading
+              ? Array.from({ length: Math.min(period, 30) }).map((_, i) => (
+                  <div key={i} className="flex-1 animate-pulse rounded-t-[3px] bg-[#edf0ed]" style={{ height: `${25 + (i % 5) * 12}%` }} />
+                ))
+              : bars.map((bar, i) => (
+                  <div
+                    key={i}
+                    className={`group relative flex-1 rounded-t-[3px] transition-colors hover:bg-[#8fb85e] ${bar.isLast ? 'bg-[#83b84d]' : 'bg-[#dceecb]'}`}
+                    style={{ height: `${bar.height}%` }}
+                  >
+                    {bar.volume > 0 && (
+                      <span className="absolute -top-6 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded bg-[#17211c] px-1.5 py-1 text-[9px] text-white group-hover:block">
+                        {formatNumber(bar.volume)} F
+                      </span>
+                    )}
+                  </div>
+                ))}
+          </div>
+          <div className="mt-3 flex justify-between pl-3 text-[10px] text-[#a1aca4]">
+            {dateLabels.map((label, i) => <span key={i}>{label}</span>)}
+          </div>
         </div>
+
+        {/* ── Donut chart ── */}
         <div className="rounded-2xl border border-[#dfe6df] bg-white p-5 md:p-6">
-          <div className="flex items-start justify-between"><div><h3 className="text-sm font-semibold">Répartition des opérations</h3><p className="mt-1 text-[11px] text-[#819087]">Sur les 30 derniers jours</p></div><button type="button" className="rounded-lg p-1.5 text-[#9aa79e] hover:bg-[#f0f5ee]"><MoreHorizontal className="h-4 w-4" /></button></div>
-          <div className="mx-auto mt-7 flex h-36 w-36 items-center justify-center rounded-full" style={{ background: 'conic-gradient(#83b84d 0 48%, #efad59 48% 73%, #78a5bf 73% 91%, #d9e3d7 91% 100%)' }}><div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white"><strong className="text-xl">18,4M</strong><span className="text-[10px] text-[#819087]">FCFA</span></div></div>
-          <div className="mt-7 grid grid-cols-2 gap-3 text-[10px]">{[['#83b84d', 'Échanges', '48%'], ['#efad59', 'Conversions', '25%'], ['#78a5bf', 'FCFA → Crypto', '18%'], ['#d9e3d7', 'Autres', '9%']].map(([color, label, value]) => <div key={label} className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} /><span className="text-[#718078]">{label}</span><strong className="ml-auto">{value}</strong></div>)}</div>
+          <div className="flex items-start justify-between">
+            <div>
+              <h3 className="text-sm font-semibold">Répartition des opérations</h3>
+              <p className="mt-1 text-[11px] text-[#819087]">Sur les {periodLabel}</p>
+            </div>
+            <button type="button" className="rounded-lg p-1.5 text-[#9aa79e] hover:bg-[#f0f5ee]"><MoreHorizontal className="h-4 w-4" /></button>
+          </div>
+          {chartsLoading ? (
+            <div className="mx-auto mt-7 h-36 w-36 animate-pulse rounded-full bg-[#edf0ed]" />
+          ) : !donut ? (
+            <div className="flex flex-col items-center justify-center py-10 text-xs text-[#9ba8a1]">Aucune donnée</div>
+          ) : (
+            <>
+              <div className="mx-auto mt-7 flex h-36 w-36 items-center justify-center rounded-full" style={{ background: donut.gradient }}>
+                <div className="flex h-24 w-24 flex-col items-center justify-center rounded-full bg-white">
+                  <strong className="text-xl">{totalFcfaLabel}</strong>
+                  <span className="text-[10px] text-[#819087]">FCFA</span>
+                </div>
+              </div>
+              <div className="mt-7 grid grid-cols-2 gap-3 text-[10px]">
+                {donut.segments.map((seg) => (
+                  <div key={seg.label} className="flex items-center gap-2">
+                    <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: seg.color }} />
+                    <span className="truncate text-[#718078]">{seg.label}</span>
+                    <strong className="ml-auto">{Math.round((seg.volume / donut.total) * 100)}%</strong>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
+
       <div className="mt-5 rounded-2xl border border-[#dfe6df] bg-white">
-        <div className="flex items-center justify-between border-b border-[#edf0ed] px-5 py-4"><div><h3 className="text-sm font-semibold">Activité récente</h3><p className="mt-1 text-[11px] text-[#819087]">Dernières opérations enregistrées</p></div><Link href="/admin/transactions" className="flex items-center gap-1 text-[11px] font-semibold text-[#6e9b3d] hover:text-[#4e812c]">Voir tout <ChevronRight className="h-3.5 w-3.5" /></Link></div>
-         <div className="divide-y divide-[#edf0ed]">{recent.length === 0 ? <div className="px-5 py-12 text-center text-xs text-[#819087]">Aucune activité enregistrée pour le moment.</div> : recent.map((item, index) => <div key={item.id} className="flex items-center gap-3 px-5 py-3.5"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#edf6e7] text-[#61943a]"><ArrowUpFromLine className="h-4 w-4" /></span><div className="min-w-0 flex-1"><p className="truncate text-xs font-semibold">{item.recipient}</p><p className="text-[10px] text-[#819087]">{item.network}</p></div><div className="text-right"><p className="text-xs font-semibold">{formatNumber(item.amountFcfa)} FCFA</p><p className="text-[10px] text-[#819087]">{new Date(item.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p></div><CheckCircle2 className="h-4 w-4 text-[#82b64e]" /></div>)}</div>
+        <div className="flex items-center justify-between border-b border-[#edf0ed] px-5 py-4">
+          <div><h3 className="text-sm font-semibold">Activité récente</h3><p className="mt-1 text-[11px] text-[#819087]">Dernières opérations enregistrées</p></div>
+          <Link href="/admin/transactions" className="flex items-center gap-1 text-[11px] font-semibold text-[#6e9b3d] hover:text-[#4e812c]">Voir tout <ChevronRight className="h-3.5 w-3.5" /></Link>
+        </div>
+        <div className="divide-y divide-[#edf0ed]">
+          {recent.length === 0
+            ? <div className="px-5 py-12 text-center text-xs text-[#819087]">Aucune activité enregistrée pour le moment.</div>
+            : recent.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 px-5 py-3.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#edf6e7] text-[#61943a]"><ArrowUpFromLine className="h-4 w-4" /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-semibold">{item.recipient}</p>
+                    <p className="text-[10px] text-[#819087]">{item.network}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs font-semibold">{formatNumber(item.amountFcfa)} FCFA</p>
+                    <p className="text-[10px] text-[#819087]">{new Date(item.createdAt).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}</p>
+                  </div>
+                  <CheckCircle2 className="h-4 w-4 text-[#82b64e]" />
+                </div>
+              ))}
+        </div>
       </div>
     </>
   );
