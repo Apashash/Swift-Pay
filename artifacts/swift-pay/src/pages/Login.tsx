@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, LogIn, Phone, Mail, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Phone, Mail, AlertCircle, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/lib/auth';
+import { COUNTRIES } from '@/lib/mock-data';
 import swiftPayLogo from '@assets/swift-logo.png';
 
 export default function Login() {
   const [, navigate] = useLocation();
   const { login } = useAuth();
   const [identifier, setIdentifier] = useState('');
+  const [phoneLocal, setPhoneLocal] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState(COUNTRIES[0]);
+  const [countryOpen, setCountryOpen] = useState(false);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -21,13 +25,21 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!identifier || !password) {
+    const effectiveIdentifier =
+      identifierType === 'phone'
+        ? `${selectedCountry.dialCode}${phoneLocal.trim()}`
+        : identifier;
+    if (!effectiveIdentifier || !password) {
       setError('Veuillez remplir tous les champs.');
+      return;
+    }
+    if (identifierType === 'phone' && !phoneLocal.trim()) {
+      setError('Veuillez entrer votre numéro de téléphone.');
       return;
     }
     setLoading(true);
     try {
-      await login(identifier, password);
+      await login(effectiveIdentifier, password);
       navigate('/dashboard');
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
@@ -123,15 +135,62 @@ export default function Login() {
               <Label htmlFor="identifier">
                 {identifierType === 'email' ? 'Adresse email' : 'Numéro de téléphone'}
               </Label>
-              <Input
-                id="identifier"
-                type={identifierType === 'email' ? 'email' : 'tel'}
-                placeholder={identifierType === 'email' ? 'vous@exemple.com' : '+225 07 12 34 56'}
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
-                className="h-12"
-                autoComplete={identifierType === 'email' ? 'email' : 'tel'}
-              />
+
+              {identifierType === 'email' ? (
+                <Input
+                  id="identifier"
+                  type="email"
+                  placeholder="vous@exemple.com"
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  className="h-12"
+                  autoComplete="email"
+                />
+              ) : (
+                <div className="flex gap-2">
+                  {/* Country selector */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setCountryOpen((o) => !o)}
+                      className="flex items-center gap-1.5 h-12 px-3 rounded-md border border-input bg-background text-sm font-medium hover:bg-secondary transition-colors min-w-[90px]"
+                    >
+                      <span className="text-base">{selectedCountry.flag}</span>
+                      <span className="text-muted-foreground">{selectedCountry.dialCode}</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-0.5" />
+                    </button>
+                    {countryOpen && (
+                      <div className="absolute top-full left-0 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-auto max-h-56 w-52">
+                        {COUNTRIES.map((c) => (
+                          <button
+                            key={c.code}
+                            type="button"
+                            onClick={() => { setSelectedCountry(c); setCountryOpen(false); }}
+                            className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm text-left hover:bg-secondary transition-colors ${
+                              c.code === selectedCountry.code ? 'bg-secondary text-primary font-medium' : ''
+                            }`}
+                          >
+                            <span className="text-base">{c.flag}</span>
+                            <span className="flex-1 truncate">{c.name}</span>
+                            <span className="text-muted-foreground text-xs">{c.dialCode}</span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Local number */}
+                  <Input
+                    id="identifier"
+                    type="tel"
+                    placeholder="07 12 34 56"
+                    value={phoneLocal}
+                    onChange={(e) => setPhoneLocal(e.target.value)}
+                    className="h-12 flex-1"
+                    autoComplete="tel-national"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">

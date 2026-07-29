@@ -46340,16 +46340,17 @@ function normalizeEmail(email) {
   return email.trim().toLowerCase();
 }
 function normalizePhone(phone) {
-  const normalized = phone.trim();
+  const normalized = phone.trim().replace(/\s+/g, "");
   return normalized || null;
 }
 async function findUserByIdentifier(identifier) {
   const { db: db2 } = await Promise.resolve().then(() => (init_src(), src_exports));
   const normalized = identifier.trim();
+  const normalizedPhone = normalizePhone(normalized);
   const rows = await db2.select().from(usersTable).where(
     or(
       eq(usersTable.email, normalizeEmail(normalized)),
-      eq(usersTable.phone, normalized)
+      ...normalizedPhone ? [eq(usersTable.phone, normalizedPhone)] : []
     )
   ).limit(1);
   return rows[0] ?? null;

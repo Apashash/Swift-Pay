@@ -102,20 +102,23 @@ export function normalizeEmail(email: string): string {
 }
 
 export function normalizePhone(phone: string): string | null {
-  const normalized = phone.trim();
+  // Strip all whitespace so "+225 07 12 34 56" and "+22507123456" are equivalent
+  const normalized = phone.trim().replace(/\s+/g, "");
   return normalized || null;
 }
 
 export async function findUserByIdentifier(identifier: string): Promise<User | null> {
   const { db } = await import("@workspace/db");
   const normalized = identifier.trim();
+  // Normalize the phone candidate the same way registration does
+  const normalizedPhone = normalizePhone(normalized);
   const rows = await db
     .select()
     .from(usersTable)
     .where(
       or(
         eq(usersTable.email, normalizeEmail(normalized)),
-        eq(usersTable.phone, normalized),
+        ...(normalizedPhone ? [eq(usersTable.phone, normalizedPhone)] : []),
       ),
     )
     .limit(1);
