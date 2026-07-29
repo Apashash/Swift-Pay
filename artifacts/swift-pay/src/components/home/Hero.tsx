@@ -92,7 +92,7 @@ export function Hero() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.7, delay: 0.2 }}
-            className="relative lg:ml-auto w-full max-w-md min-w-0 overflow-hidden"
+            className="relative lg:ml-auto w-full max-w-md min-w-0"
           >
             <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full pointer-events-none" />
             {/* Vérifier transaction — au-dessus du formulaire */}

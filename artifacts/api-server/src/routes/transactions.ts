@@ -28,6 +28,26 @@ function generatePaymentAddress(currency: string, txId: string): string {
   return `0x${suffix}C2b8D7E6F4A9B0C1D2E3F4`;
 }
 
+// ── GET /api/transactions/status/:id  (public — no auth) ─────────────────────
+
+router.get("/transactions/status/:id", async (req, res, next) => {
+  try {
+    const [tx] = await db
+      .select({ status: transactionsTable.status })
+      .from(transactionsTable)
+      .where(eq(transactionsTable.id, req.params.id))
+      .limit(1);
+
+    if (!tx) {
+      res.status(404).json({ message: "Transaction introuvable." });
+      return;
+    }
+    res.json({ status: tx.status });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // ── GET /api/transactions ─────────────────────────────────────────────────────
 
 router.get("/transactions", async (req, res, next) => {

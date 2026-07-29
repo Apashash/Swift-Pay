@@ -97,6 +97,9 @@ export function PaymentForm() {
   const [createdTx, setCreatedTx] = useState<ApiTransaction | null>(null);
   const [submitError, setSubmitError] = useState('');
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [copiedRef, setCopiedRef] = useState(false);
+  const [txStatus, setTxStatus] = useState<'pending' | 'completed' | 'failed'>('pending');
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     apiFetch<{ rates: Rates }>('/rates')
@@ -184,12 +187,38 @@ export function PaymentForm() {
   };
 
   const handleReset = () => {
+    if (pollingRef.current) clearInterval(pollingRef.current);
     setStep('form');
     setPhone('');
     setRawAmount('');
     setCreatedTx(null);
     setSubmitError('');
+    setTxStatus('pending');
   };
+
+  // Start polling when a transaction is created
+  useEffect(() => {
+    if (!createdTx || step !== 'success') return;
+    setTxStatus('pending');
+
+    pollingRef.current = setInterval(async () => {
+      try {
+        const data = await apiFetch<{ status: 'pending' | 'completed' | 'failed' }>(
+          `/transactions/status/${createdTx.id}`
+        );
+        setTxStatus(data.status);
+        if (data.status !== 'pending') {
+          if (pollingRef.current) clearInterval(pollingRef.current);
+        }
+      } catch {
+        // keep polling on transient errors
+      }
+    }, 4000);
+
+    return () => {
+      if (pollingRef.current) clearInterval(pollingRef.current);
+    };
+  }, [createdTx, step]);
 
   const handleCopyAddress = () => {
     if (createdTx?.paymentAddress) {
@@ -197,6 +226,12 @@ export function PaymentForm() {
       setCopiedAddress(true);
       setTimeout(() => setCopiedAddress(false), 2000);
     }
+  };
+
+  const handleCopyRef = (ref: string) => {
+    navigator.clipboard.writeText(ref);
+    setCopiedRef(true);
+    setTimeout(() => setCopiedRef(false), 2000);
   };
 
   return (
@@ -447,74 +482,104 @@ export function PaymentForm() {
         )}
 
         {/* ── STEP 3: SUCCESS ─────────────────────────────────── */}
-        {step === 'success' && createdTx && (
-          <motion.div key="success" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.3 }} className="space-y-6 text-center">
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 14 }}
-              className="w-16 h-16 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(0,230,118,0.3)]"
-            >
-              <Check className="w-8 h-8 text-primary" />
-            </motion.div>
+        {step === 'success' && createdTx && (() => {
+          const txRef = `swift-0283729-${createdTx.id.slice(0, 8)}`;
+          return (
+            <motion.div key="success" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.3 }} className="space-y-6 text-center">
+              <motion.div
+                initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.1, type: 'spring', stiffness: 200, damping: 14 }}
+                className="w-16 h-16 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center mx-auto shadow-[0_0_30px_rgba(0,230,118,0.3)]"
+              >
+                <Check className="w-8 h-8 text-primary" />
+              </motion.div>
 
-            <div>
-              <h4 className="font-bold text-foreground text-lg mb-1">Adresse de paiement générée</h4>
-              <p className="text-sm text-muted-foreground">
-                Envoyez exactement{' '}
-                <span className="font-mono text-foreground font-semibold">
-                  {formatAmount(cryptoTotal, crypto)} {crypto}
-                </span>{' '}
-                à l'adresse ci-dessous.
-              </p>
-            </div>
+              <div>
+                <h4 className="font-bold text-foreground text-lg mb-1">Adresse de paiement générée</h4>
+                <p className="text-sm text-muted-foreground">
+                  Envoyez exactement{' '}
+                  <span className="font-mono text-foreground font-semibold">
+                    {formatAmount(cryptoTotal, crypto)} {crypto}
+                  </span>{' '}
+                  à l'adresse ci-dessous.
+                </p>
+              </div>
 
-            <div className="bg-secondary/60 border border-border rounded-xl p-4 space-y-3 text-left overflow-hidden min-w-0">
-              <div className="space-y-1 min-w-0">
-                <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Adresse {crypto}</p>
-                <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2 justify-between min-w-0 overflow-hidden">
-                  <code className="text-[11px] text-foreground font-mono truncate min-w-0 flex-1">{createdTx.paymentAddress}</code>
-                  <button
-                    onClick={handleCopyAddress}
-                    className="text-[10px] text-primary font-semibold hover:underline shrink-0 flex items-center gap-1"
-                  >
-                    {copiedAddress ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                    {copiedAddress ? 'Copié' : 'Copier'}
-                  </button>
+              <div className="bg-secondary/60 border border-border rounded-xl p-4 space-y-3 text-left overflow-hidden min-w-0">
+                <div className="space-y-1 min-w-0">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Adresse {crypto}</p>
+                  <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2 justify-between min-w-0 overflow-hidden">
+                    <code className="text-[11px] text-foreground font-mono truncate min-w-0 flex-1">{createdTx.paymentAddress}</code>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="text-[10px] text-primary font-semibold hover:underline shrink-0 flex items-center gap-1"
+                    >
+                      {copiedAddress ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      {copiedAddress ? 'Copié' : 'Copier'}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex justify-between gap-2 text-xs pt-1 border-t border-border">
+                  <span className="text-muted-foreground shrink-0">Destinataire</span>
+                  <span className="text-foreground font-medium text-right truncate min-w-0">{phone} · {OPERATORS[operator]?.name || operator}</span>
+                </div>
+                <div className="flex justify-between gap-2 text-xs">
+                  <span className="text-muted-foreground shrink-0">Recevra</span>
+                  <span className="text-primary font-semibold font-mono">{formatFcfa(rawAmount)} {country.currency}</span>
+                </div>
+                <div className="flex items-center justify-between gap-2 text-xs">
+                  <span className="text-muted-foreground shrink-0">Réf. transaction</span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-foreground font-mono text-[10px] truncate">{txRef}</span>
+                    <button
+                      onClick={() => handleCopyRef(txRef)}
+                      className="text-primary shrink-0 hover:text-primary/80 transition-colors"
+                      title="Copier la référence"
+                    >
+                      {copiedRef ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex justify-between gap-2 text-xs pt-1 border-t border-border">
-                <span className="text-muted-foreground shrink-0">Destinataire</span>
-                <span className="text-foreground font-medium text-right truncate min-w-0">{phone} · {OPERATORS[operator]?.name || operator}</span>
+              {/* Confirmation spinner */}
+              <div className={cn(
+                'flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-medium border',
+                txStatus === 'pending'   && 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400',
+                txStatus === 'completed' && 'bg-primary/10 border-primary/20 text-primary',
+                txStatus === 'failed'    && 'bg-destructive/10 border-destructive/20 text-destructive',
+              )}>
+                {txStatus === 'pending' && (
+                  <><Loader2 className="w-4 h-4 animate-spin shrink-0" /> En attente de confirmation du paiement…</>
+                )}
+                {txStatus === 'completed' && (
+                  <><Check className="w-4 h-4 shrink-0" /> Paiement confirmé !</>
+                )}
+                {txStatus === 'failed' && (
+                  <><X className="w-4 h-4 shrink-0" /> Paiement non reçu. Contactez le support.</>
+                )}
               </div>
-              <div className="flex justify-between gap-2 text-xs">
-                <span className="text-muted-foreground shrink-0">Recevra</span>
-                <span className="text-primary font-semibold font-mono">{formatFcfa(rawAmount)} {country.currency}</span>
-              </div>
-              <div className="flex justify-between gap-2 text-xs">
-                <span className="text-muted-foreground shrink-0">Réf. transaction</span>
-                <span className="text-foreground font-mono text-[10px]">{createdTx.id.slice(0, 12)}…</span>
-              </div>
-            </div>
 
-            <p className="text-[11px] text-muted-foreground">
-              Ce paiement expire dans <span className="text-foreground font-medium">30 minutes</span>.
-              Le destinataire sera notifié automatiquement par SMS.
-            </p>
+              <p className="text-[11px] text-muted-foreground">
+                Ce paiement expire dans <span className="text-foreground font-medium">30 minutes</span>.
+                Le destinataire sera notifié automatiquement par SMS.
+              </p>
 
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                onClick={() => navigate(`/transactions/${createdTx.id}`)}
-                className="flex-1 rounded-xl h-11 gap-2"
-              >
-                <ExternalLink className="w-4 h-4" /> Voir la transaction
-              </Button>
-              <Button variant="outline" onClick={handleReset} className="flex-1 rounded-xl h-11">
-                Nouveau paiement
-              </Button>
-            </div>
-          </motion.div>
-        )}
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/transactions/${createdTx.id}`)}
+                  className="flex-1 rounded-xl h-11 gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" /> Voir la transaction
+                </Button>
+                <Button variant="outline" onClick={handleReset} className="flex-1 rounded-xl h-11">
+                  Nouveau paiement
+                </Button>
+              </div>
+            </motion.div>
+          );
+        })()}
 
       </AnimatePresence>
     </div>

@@ -46616,6 +46616,18 @@ function generatePaymentAddress(currency, txId) {
   }
   return `0x${suffix}C2b8D7E6F4A9B0C1D2E3F4`;
 }
+router3.get("/transactions/status/:id", async (req, res, next) => {
+  try {
+    const [tx] = await db.select({ status: transactionsTable.status }).from(transactionsTable).where(eq(transactionsTable.id, req.params.id)).limit(1);
+    if (!tx) {
+      res.status(404).json({ message: "Transaction introuvable." });
+      return;
+    }
+    res.json({ status: tx.status });
+  } catch (error) {
+    next(error);
+  }
+});
 router3.get("/transactions", async (req, res, next) => {
   try {
     const user = await requireUser(req.headers.authorization);
