@@ -41,14 +41,30 @@ API health check: `GET /api/healthz` → `{"status":"ok"}`
 
 ## Required secrets
 
-Both secrets must be set as Replit Secrets before the API server will start:
-
 | Secret | Description |
 |--------|-------------|
-| `SUPABASE_DATABASE_URL` | PostgreSQL connection string (URI format) from Supabase → Settings → Database → Connection string. Use port **6543** (PgBouncer pooler) with SSL. Example: `postgresql://postgres.[ref]:[password]@aws-0-[region].pooler.supabase.com:6543/postgres` |
+| `SUPABASE_DATABASE_URL` | PostgreSQL connection string (URI format) from Supabase → Settings → Database → Connection string. Use port **6543** (PgBouncer pooler) with SSL. |
 | `SESSION_SECRET` | Arbitrary random string used to sign session tokens |
+| `IZIPAY_API_KEY` | IzichangePay API key (`sk_live_…` or `sk_test_…`) — Dashboard → Développeurs → Clés API |
+| `IZIPAY_WEBHOOK_SECRET` | IzichangePay webhook signing secret (`whsec_…`) — Dashboard → Développeurs → Webhooks |
 
-> **Note:** Without `SUPABASE_DATABASE_URL`, the API server will exit immediately with `Error: SUPABASE_DATABASE_URL must be set`. The frontend (SwiftPay web) will still start but API calls will fail.
+> Without `SUPABASE_DATABASE_URL` the API server exits immediately. `IZIPAY_API_KEY` and `IZIPAY_WEBHOOK_SECRET` are optional at startup — transactions fall back to placeholder addresses until configured.
+
+## IzichangePay integration
+
+Payment flow:
+1. `POST /api/transactions` → creates a DB record + calls `izipay.paymentIntents.create()` with the FCFA amount and accepted coins (USDT.TRC20/BEP20 or BTC).
+2. The response includes `depositAddress` (the crypto address the sender pays to) and `intentId`.
+3. IzichangePay notifies `POST /webhooks/izipay` when payment is detected.
+4. `payment_intent.completed` → transaction status set to `completed`, user notified.
+5. `payment_intent.expired` → transaction status set to `failed`.
+
+Webhook endpoint to configure in the izichange dashboard:
+```
+https://<your-domain>/webhooks/izipay
+```
+
+> **Note:** When a payment intent is first created with multiple `acceptedCoins`, `depositAddress` may be `null` (status `waiting_address_selection`) until the payer selects a coin on `paymentUrl`. The frontend currently polls for an address — see the follow-up task about the `paymentUrl` redirect flow.
 
 ## Replit setup status
 
