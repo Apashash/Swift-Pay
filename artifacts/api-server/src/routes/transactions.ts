@@ -303,11 +303,10 @@ router.post("/transactions", async (req, res, next) => {
           merchantReference: tx.id,
         });
         intentId = intent.id;
-        // The SDK returns a paymentAddress for the payer to send crypto to.
+        // depositAddress is the crypto address the payer must send funds to.
+        // It may be null until the payer selects a coin (status: waiting_address_selection).
         paymentAddress =
-          (intent as Record<string, unknown>).paymentAddress as string ??
-          (intent as Record<string, unknown>).address as string ??
-          generatePaymentAddress(tx.cryptoCurrency, tx.id);
+          intent.depositAddress ?? generatePaymentAddress(tx.cryptoCurrency, tx.id);
       } catch (err) {
         // Log but don't fail the transaction — degrade to placeholder
         const { logger } = await import("../lib/logger.js");

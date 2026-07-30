@@ -99,7 +99,6 @@ async function processWebhookEvent(
       break;
     }
 
-    case "payment_intent.failed":
     case "payment_intent.expired": {
       const [updated] = await db
         .update(transactionsTable)
