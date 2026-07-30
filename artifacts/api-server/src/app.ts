@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import router from "./routes";
+import webhookRouter from "./routes/webhooks";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -28,6 +29,10 @@ app.use(
   }),
 );
 app.use(cors());
+
+// Webhook izichange — doit recevoir le body brut (Buffer), AVANT express.json()
+app.use("/webhooks", express.raw({ type: "application/json" }), webhookRouter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

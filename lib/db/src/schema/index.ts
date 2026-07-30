@@ -71,6 +71,7 @@ export const transactionsTable = pgTable(
     status: text("status").notNull().default("pending"), // 'pending' | 'completed' | 'failed'
     txHash: text("tx_hash"),
     paymentAddress: text("payment_address"),
+    intentId: text("intent_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
-import { and, desc, eq, gte, ilike, like, or, sql } from "drizzle-orm";
-import { db, transactionsTable, notificationsTable, usersTable, authSessionsTable } from "@workspace/db";
+import { and, desc, eq, gte, ilike, or, sql } from "drizzle-orm";
+import { db, transactionsTable, notificationsTable } from "@workspace/db";
 import { getBearerToken, getUserFromToken } from "../lib/auth";
+import { getIziPayClient, toAcceptedCoins } from "../lib/izipay";
 
 const router: IRouter = Router();
 
@@ -286,11 +287,40 @@ router.post("/transactions", async (req, res, next) => {
       })
       .returning();
 
-    // Assign a payment address now that we have the ID
-    const paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
+    // Create an izichange payment intent to get a real crypto payment address.
+    // Falls back to a deterministic placeholder if IZIPAY_API_KEY is not set.
+    let paymentAddress: string;
+    let intentId: string | undefined;
+
+    const izipay = getIziPayClient();
+    if (izipay) {
+      try {
+        const intent = await izipay.paymentIntents.create({
+          requestedCurrencyType: "fiat",
+          currencyRequested: "XOF",
+          amountRequested: tx.amountFcfa,
+          acceptedCoins: toAcceptedCoins(tx.cryptoCurrency),
+          merchantReference: tx.id,
+        });
+        intentId = intent.id;
+        // The SDK returns a paymentAddress for the payer to send crypto to.
+        paymentAddress =
+          (intent as Record<string, unknown>).paymentAddress as string ??
+          (intent as Record<string, unknown>).address as string ??
+          generatePaymentAddress(tx.cryptoCurrency, tx.id);
+      } catch (err) {
+        // Log but don't fail the transaction — degrade to placeholder
+        const { logger } = await import("../lib/logger.js");
+        logger.error({ err }, "Failed to create izichange payment intent");
+        paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
+      }
+    } else {
+      paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
+    }
+
     const [updated] = await db
       .update(transactionsTable)
-      .set({ paymentAddress })
+      .set({ paymentAddress, intentId })
       .where(eq(transactionsTable.id, tx.id))
       .returning();
 
