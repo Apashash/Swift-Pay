@@ -76,7 +76,8 @@ https://<your-domain>/webhooks/ashtechpay
 - [x] `SESSION_SECRET` — secret configured
 - [x] SwiftPay web workflow running on port 22199
 - [x] API Server workflow running on port 8080
-- [ ] Database schema pushed — run `pnpm --filter @workspace/db run push` once to create tables
+- [x] `ASHTECHPAY_API_KEY` — secret configured
+- [x] Database schema pushed
 
 ## Database schema
 

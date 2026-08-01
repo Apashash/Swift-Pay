@@ -1,3 +1,3 @@
 - [SwiftPay auth pattern](swiftpay-auth.md) — Supabase-backed auth; AuthProvider must wrap the app above QueryClientProvider.
 - [Plesk deployment](plesk-deployment.md) — Plesk may run npm; keep install compatible and commit production dist artifacts when needed.
-- [IzichangePay integration](izipay-integration.md) — payment intent flow, webhook setup, depositAddress null edge case, valid WebhookEventType values.
+- [AshtechPay integration](ashtechpay-integration.md) — replaced IziChangePay; GET /v1/crypto/assets + POST /v1/crypto/collect, no webhook signature, reference=txUUID.
