@@ -30,8 +30,8 @@ app.use(
 );
 app.use(cors());
 
-// Webhook izichange — doit recevoir le body brut (Buffer), AVANT express.json()
-app.use("/webhooks", express.raw({ type: "application/json" }), webhookRouter);
+// Webhooks AshtechPay — delivered as plain JSON, no raw body needed
+app.use("/webhooks", webhookRouter);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -12,11 +12,11 @@ import {
   Loader2,
   Copy,
   ExternalLink,
+  AlertCircle,
 } from 'lucide-react';
-import { SiBitcoin, SiTether } from 'react-icons/si';
 import { useTranslation } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
-import { apiFetch, type ApiTransaction, type Rates } from '@/lib/api';
+import { apiFetch, type ApiTransaction, type Rates, type CryptoAsset } from '@/lib/api';
 import { useLocation } from 'wouter';
 import imgOrange from '@/assets/operators/orange.png';
 import imgMtn    from '@/assets/operators/mtn.png';
@@ -51,18 +51,25 @@ const COUNTRIES = [
   { code: 'TG', flag: '🇹🇬', name: 'Togo',            currency: 'FCFA', operators: ['Orange', 'TMoney', 'Flooz'] },
 ];
 
-type Crypto = 'USDT' | 'BTC';
-type Step   = 'form' | 'recap' | 'success';
+type Step = 'form' | 'recap' | 'success';
 
 const FEE_RATE = 0.01;
 
-const CRYPTO_META: Record<Crypto, { label: string; sublabel: string; color: string }> = {
-  USDT: { label: 'USDT', sublabel: 'BEP-20',    color: '#26A17B' },
-  BTC:  { label: 'BTC',  sublabel: 'Lightning', color: '#F7931A' },
+// ── Coin logos (emoji fallback) ───────────────────────────────────────────────
+
+const COIN_EMOJI: Record<string, string> = {
+  USDT: '₮', BTC: '₿', ETH: 'Ξ', LTC: 'Ł', DOGE: 'Ð', BCH: '₿', TRX: '◈',
+};
+const COIN_COLOR: Record<string, string> = {
+  USDT: '#26A17B', BTC: '#F7931A', ETH: '#627EEA', LTC: '#BFBBBB',
+  DOGE: '#C2A633', BCH: '#8DC351', TRX: '#EF0027',
 };
 
-function formatAmount(n: number, crypto: Crypto) {
-  if (crypto === 'BTC') return n.toFixed(6);
+function coinColor(coin: string) { return COIN_COLOR[coin] ?? '#888'; }
+
+function formatAmount(n: number, coin: string) {
+  if (coin === 'BTC' || coin === 'LTC') return n.toFixed(6);
+  if (coin === 'ETH') return n.toFixed(5);
   return n.toFixed(2);
 }
 
@@ -71,15 +78,16 @@ function formatFcfa(raw: string) {
   return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
+// ── Component ────────────────────────────────────────────────────────────────
+
 export function PaymentForm() {
   const { t } = useTranslation();
   const [, navigate] = useLocation();
 
-  // State
+  // ─ Country / operator ─
   const [countryCode, setCountryCode]   = useState('CI');
   const [operator, setOperator]         = useState('Orange');
   const [rawAmount, setRawAmount]       = useState('');
-  const [crypto, setCrypto]             = useState<Crypto>('USDT');
   const [phone, setPhone]               = useState('');
   const [step, setStep]                 = useState<Step>('form');
   const [email, setEmail]               = useState('');
@@ -88,25 +96,64 @@ export function PaymentForm() {
   const menuRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Live rates
+  // ─ Rates ─
   const [rates, setRates] = useState<Rates>({ USDT: 655, BTC: 46_000_000 });
   const [loadingRates, setLoadingRates] = useState(true);
 
-  // Transaction creation
-  const [submitting, setSubmitting] = useState(false);
-  const [createdTx, setCreatedTx] = useState<ApiTransaction | null>(null);
+  // ─ AshtechPay crypto assets ─
+  const [assets, setAssets] = useState<CryptoAsset[]>([]);
+  const [loadingAssets, setLoadingAssets] = useState(true);
+  const [assetsError, setAssetsError] = useState('');
+
+  // ─ Crypto selection ─
+  const [selectedCoin, setSelectedCoin]       = useState('');
+  const [selectedAssetCode, setSelectedAssetCode] = useState('');
+
+  // ─ Transaction ─
+  const [submitting, setSubmitting]   = useState(false);
+  const [createdTx, setCreatedTx]     = useState<ApiTransaction | null>(null);
   const [submitError, setSubmitError] = useState('');
   const [copiedAddress, setCopiedAddress] = useState(false);
-  const [copiedRef, setCopiedRef] = useState(false);
-  const [txStatus, setTxStatus] = useState<'pending' | 'completed' | 'failed'>('pending');
+  const [copiedMemo, setCopiedMemo]       = useState(false);
+  const [copiedRef, setCopiedRef]         = useState(false);
+  const [txStatus, setTxStatus]           = useState<'pending' | 'completed' | 'failed'>('pending');
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
+  // ─ Fetch rates ─
   useEffect(() => {
     apiFetch<{ rates: Rates }>('/rates')
       .then((data) => setRates(data.rates))
       .catch(() => {})
       .finally(() => setLoadingRates(false));
   }, []);
+
+  // ─ Fetch AshtechPay assets ─
+  useEffect(() => {
+    apiFetch<{ assets: CryptoAsset[] }>('/crypto/assets')
+      .then((data) => {
+        setAssets(data.assets);
+        // Auto-select first available coin + network
+        if (data.assets.length > 0) {
+          const first = data.assets[0];
+          setSelectedCoin(first.coin);
+          setSelectedAssetCode(first.asset_code);
+        }
+      })
+      .catch(() => setAssetsError('Impossible de charger les réseaux crypto.'))
+      .finally(() => setLoadingAssets(false));
+  }, []);
+
+  // ─ Group assets by coin ─
+  const coinGroups = useMemo(() => {
+    const map = new Map<string, CryptoAsset[]>();
+    for (const a of assets) {
+      if (!map.has(a.coin)) map.set(a.coin, []);
+      map.get(a.coin)!.push(a);
+    }
+    return map;
+  }, [assets]);
+
+  const selectedAsset = assets.find(a => a.asset_code === selectedAssetCode) ?? null;
 
   const country = COUNTRIES.find(c => c.code === countryCode) ?? COUNTRIES[0];
 
@@ -141,19 +188,18 @@ export function PaymentForm() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const fcfaAmount = parseInt(rawAmount.replace(/\D/g, '') || '0', 10);
-  const rateValue  = rates[crypto];
-  const cryptoNet  = fcfaAmount / rateValue;
-  const fee        = cryptoNet * FEE_RATE;
+  const fcfaAmount  = parseInt(rawAmount.replace(/\D/g, '') || '0', 10);
+  const rateValue   = rates[selectedCoin] ?? 1;
+  const cryptoNet   = fcfaAmount / rateValue;
+  const fee         = cryptoNet * FEE_RATE;
   const cryptoTotal = cryptoNet + fee;
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const digits = e.target.value.replace(/\D/g, '');
-    setRawAmount(digits);
+    setRawAmount(e.target.value.replace(/\D/g, ''));
   };
 
   const handleGenerate = () => {
-    if (fcfaAmount > 0 && phone.trim().length >= 8) setStep('recap');
+    if (fcfaAmount > 0 && phone.trim().length >= 8 && selectedAssetCode) setStep('recap');
   };
 
   const handleConfirm = async () => {
@@ -172,7 +218,9 @@ export function PaymentForm() {
           network: op.name,
           amountFcfa: fcfaAmount,
           amountCrypto: cryptoNet,
-          cryptoCurrency: crypto,
+          cryptoCurrency: selectedCoin,
+          cryptoNetwork: selectedAsset?.network ?? null,
+          assetCode: selectedAssetCode,
           rate: rateValue,
           fee,
         }),
@@ -196,7 +244,7 @@ export function PaymentForm() {
     setTxStatus('pending');
   };
 
-  // Start polling when a transaction is created
+  // ─ Poll for status updates ─
   useEffect(() => {
     if (!createdTx || step !== 'success') return;
     setTxStatus('pending');
@@ -220,19 +268,15 @@ export function PaymentForm() {
     };
   }, [createdTx, step]);
 
-  const handleCopyAddress = () => {
-    if (createdTx?.paymentAddress) {
-      navigator.clipboard.writeText(createdTx.paymentAddress);
-      setCopiedAddress(true);
-      setTimeout(() => setCopiedAddress(false), 2000);
-    }
+  const handleCopy = (text: string, setter: (v: boolean) => void) => {
+    navigator.clipboard.writeText(text);
+    setter(true);
+    setTimeout(() => setter(false), 2000);
   };
 
-  const handleCopyRef = (ref: string) => {
-    navigator.clipboard.writeText(ref);
-    setCopiedRef(true);
-    setTimeout(() => setCopiedRef(false), 2000);
-  };
+  // ─ Derived crypto display ─
+  const networkLabel = selectedAsset?.network_label ?? selectedAsset?.network ?? '';
+  const memoRequired = selectedAsset?.memo_required ?? false;
 
   return (
     <div className="relative bg-card border border-border rounded-2xl shadow-2xl backdrop-blur-sm p-4 sm:p-6 w-full min-w-0">
@@ -242,7 +286,7 @@ export function PaymentForm() {
           {step === 'form' && (
             <motion.h3 key="title-form" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} className="font-semibold text-foreground text-lg">
               {t('form_title')}
-              {loadingRates && <span className="ml-2 text-xs text-muted-foreground font-normal">Chargement des taux…</span>}
+              {(loadingRates || loadingAssets) && <span className="ml-2 text-xs text-muted-foreground font-normal">Chargement…</span>}
             </motion.h3>
           )}
           {step === 'recap' && (
@@ -362,30 +406,101 @@ export function PaymentForm() {
               </div>
             </div>
 
-            {/* Crypto selector */}
+            {/* Crypto selector — dynamic from AshtechPay */}
             <div className="space-y-2">
               <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('form_payWith')}</label>
-              <div className="grid grid-cols-2 gap-3">
-                {(['USDT', 'BTC'] as Crypto[]).map(c => {
-                  const meta = CRYPTO_META[c];
-                  const selected = crypto === c;
-                  return (
-                    <button key={c} onClick={() => setCrypto(c)}
-                      className={cn('rounded-xl p-3 flex items-center gap-3 border transition-all text-left', selected ? 'bg-primary/10 border-primary/60 shadow-[0_0_12px_rgba(0,230,118,0.15)]' : 'bg-secondary border-border hover:bg-muted')}
-                    >
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${meta.color}22`, color: meta.color }}>
-                        {c === 'USDT' ? <SiTether size={16} /> : <SiBitcoin size={16} />}
+
+              {loadingAssets ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground py-3">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Chargement des cryptos disponibles…
+                </div>
+              ) : assetsError ? (
+                <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {assetsError}
+                </div>
+              ) : (
+                <>
+                  {/* Coin selection */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {Array.from(coinGroups.keys()).map(coin => {
+                      const isSelected = selectedCoin === coin;
+                      const color = coinColor(coin);
+                      const emoji = COIN_EMOJI[coin] ?? coin.slice(0, 1);
+                      const rateForCoin = rates[coin];
+                      return (
+                        <button
+                          key={coin}
+                          onClick={() => {
+                            setSelectedCoin(coin);
+                            // Auto-select first network of this coin
+                            const networks = coinGroups.get(coin)!;
+                            setSelectedAssetCode(networks[0].asset_code);
+                          }}
+                          className={cn(
+                            'rounded-xl p-3 flex flex-col items-center gap-1.5 border transition-all text-center',
+                            isSelected
+                              ? 'border-primary/60 shadow-[0_0_12px_rgba(0,230,118,0.15)]'
+                              : 'bg-secondary border-border hover:bg-muted',
+                          )}
+                          style={{ background: isSelected ? `${color}15` : undefined }}
+                        >
+                          <div
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+                            style={{ backgroundColor: `${color}22`, color }}
+                          >
+                            {emoji}
+                          </div>
+                          <span className={cn('text-xs font-semibold', isSelected ? 'text-primary' : 'text-foreground')}>{coin}</span>
+                          {rateForCoin && (
+                            <span className="text-[9px] text-muted-foreground leading-tight">
+                              {loadingRates ? '…' : `${rateForCoin.toLocaleString('fr-FR')} FCFA`}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Network selection for the chosen coin */}
+                  {selectedCoin && coinGroups.has(selectedCoin) && coinGroups.get(selectedCoin)!.length > 1 && (
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Réseau</label>
+                      <div className="flex flex-wrap gap-2">
+                        {coinGroups.get(selectedCoin)!.map(asset => {
+                          const isSelected = selectedAssetCode === asset.asset_code;
+                          return (
+                            <button
+                              key={asset.asset_code}
+                              onClick={() => setSelectedAssetCode(asset.asset_code)}
+                              className={cn(
+                                'rounded-lg px-3 py-1.5 text-xs font-medium border transition-all',
+                                isSelected
+                                  ? 'bg-primary/15 border-primary/50 text-primary'
+                                  : 'bg-secondary border-border text-muted-foreground hover:border-primary/30 hover:text-foreground',
+                              )}
+                            >
+                              {asset.network_label}
+                              {asset.memo_required && (
+                                <span className="ml-1 opacity-60 text-[9px]">+memo</span>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
-                      <div>
-                        <div className="text-sm font-semibold text-foreground">{meta.label}</div>
-                        <div className="text-[10px] text-muted-foreground">
-                          {loadingRates ? '…' : `${rates[c].toLocaleString('fr-FR')} FCFA`}
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                    </div>
+                  )}
+
+                  {/* Single network — just show the label */}
+                  {selectedCoin && coinGroups.has(selectedCoin) && coinGroups.get(selectedCoin)!.length === 1 && (
+                    <p className="text-xs text-muted-foreground">
+                      Réseau : <span className="text-foreground font-medium">{coinGroups.get(selectedCoin)![0].network_label}</span>
+                      {coinGroups.get(selectedCoin)![0].memo_required && <span className="ml-1 text-orange-400">(+ memo requis)</span>}
+                    </p>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Phone */}
@@ -399,24 +514,32 @@ export function PaymentForm() {
             </div>
 
             {/* Summary */}
-            <div className="bg-muted/50 rounded-xl p-4 space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t('form_youPay')}</span>
-                <span className="text-foreground font-mono">{fcfaAmount > 0 ? formatAmount(cryptoTotal, crypto) : '—'} {crypto}</span>
+            {selectedAssetCode && (
+              <div className="bg-muted/50 rounded-xl p-4 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t('form_youPay')}</span>
+                  <span className="text-foreground font-mono">{fcfaAmount > 0 ? formatAmount(cryptoTotal, selectedCoin) : '—'} {selectedCoin}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{t('form_fee')} (1%)</span>
+                  <span className="text-foreground font-mono">{fcfaAmount > 0 ? formatAmount(fee, selectedCoin) : '—'} {selectedCoin}</span>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground/70 pt-1 border-t border-border">
+                  <span>Taux</span>
+                  <span>1 {selectedCoin} = {loadingRates ? '…' : `${(rates[selectedCoin] ?? 0).toLocaleString('fr-FR')} FCFA`}</span>
+                </div>
+                {networkLabel && (
+                  <div className="flex justify-between text-xs text-muted-foreground/70">
+                    <span>Réseau</span>
+                    <span className="text-foreground">{networkLabel}</span>
+                  </div>
+                )}
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">{t('form_fee')} (1%)</span>
-                <span className="text-foreground font-mono">{fcfaAmount > 0 ? formatAmount(fee, crypto) : '—'} {crypto}</span>
-              </div>
-              <div className="flex justify-between text-xs text-muted-foreground/70 pt-1 border-t border-border">
-                <span>Taux</span>
-                <span>1 {crypto} = {loadingRates ? '…' : `${rates[crypto].toLocaleString('fr-FR')} FCFA`}</span>
-              </div>
-            </div>
+            )}
 
             <Button
               onClick={handleGenerate}
-              disabled={fcfaAmount <= 0 || phone.trim().length < 8}
+              disabled={fcfaAmount <= 0 || phone.trim().length < 8 || !selectedAssetCode || loadingAssets}
               className="w-full h-14 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-base shadow-[0_0_20px_rgba(0,230,118,0.2)] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             >
               {t('form_generate')} <ArrowRight className="ml-2 w-5 h-5" />
@@ -434,14 +557,15 @@ export function PaymentForm() {
           <motion.div key="recap" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.25 }} className="space-y-5">
             <div className="bg-secondary/60 border border-border rounded-xl divide-y divide-border">
               <RecapRow label="Pays" value={`${country.flag} ${country.name}`} />
-              <RecapRow label="Réseau" value={OPERATORS[operator]?.name || operator} />
+              <RecapRow label="Réseau Mobile Money" value={OPERATORS[operator]?.name || operator} />
               <RecapRow label="Bénéficiaire" value={phone} />
               <RecapRow label="Montant reçu" value={`${formatFcfa(rawAmount)} ${country.currency}`} highlight />
-              <RecapRow label="Payer en" value={`${CRYPTO_META[crypto].label} (${CRYPTO_META[crypto].sublabel})`} />
-              <RecapRow label="Taux appliqué" value={`1 ${crypto} = ${rates[crypto].toLocaleString('fr-FR')} FCFA`} />
-              <RecapRow label="Montant crypto" value={`${formatAmount(cryptoNet, crypto)} ${crypto}`} />
-              <RecapRow label="Frais (1%)" value={`${formatAmount(fee, crypto)} ${crypto}`} />
-              <RecapRow label="Total à envoyer" value={`${formatAmount(cryptoTotal, crypto)} ${crypto}`} bold />
+              <RecapRow label="Crypto" value={selectedCoin} />
+              {networkLabel && <RecapRow label="Réseau" value={networkLabel} />}
+              <RecapRow label="Taux appliqué" value={`1 ${selectedCoin} = ${(rates[selectedCoin] ?? 0).toLocaleString('fr-FR')} FCFA`} />
+              <RecapRow label="Montant crypto" value={`${formatAmount(cryptoNet, selectedCoin)} ${selectedCoin}`} />
+              <RecapRow label="Frais (1%)" value={`${formatAmount(fee, selectedCoin)} ${selectedCoin}`} />
+              <RecapRow label="Total à envoyer" value={`${formatAmount(cryptoTotal, selectedCoin)} ${selectedCoin}`} bold />
             </div>
 
             <div className="space-y-1.5">
@@ -484,6 +608,8 @@ export function PaymentForm() {
         {/* ── STEP 3: SUCCESS ─────────────────────────────────── */}
         {step === 'success' && createdTx && (() => {
           const txRef = `swift-0283729-${createdTx.id.slice(0, 8)}`;
+          const addr  = createdTx.paymentAddress ?? '';
+          const memo  = createdTx.paymentMemo ?? '';
           return (
             <motion.div key="success" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} transition={{ duration: 0.3 }} className="space-y-6 text-center">
               <motion.div
@@ -498,26 +624,47 @@ export function PaymentForm() {
                 <p className="text-sm text-muted-foreground">
                   Envoyez exactement{' '}
                   <span className="font-mono text-foreground font-semibold">
-                    {formatAmount(cryptoTotal, crypto)} {crypto}
+                    {formatAmount(cryptoTotal, selectedCoin)} {selectedCoin}
                   </span>{' '}
-                  à l'adresse ci-dessous.
+                  à l'adresse ci-dessous{networkLabel ? ` via ${networkLabel}` : ''}.
                 </p>
               </div>
 
               <div className="bg-secondary/60 border border-border rounded-xl p-4 space-y-3 text-left overflow-hidden min-w-0">
+                {/* Deposit address */}
                 <div className="space-y-1 min-w-0">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Adresse {crypto}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Adresse {selectedCoin}{networkLabel ? ` · ${networkLabel}` : ''}</p>
                   <div className="bg-muted rounded-lg px-3 py-2 flex items-center gap-2 justify-between min-w-0 overflow-hidden">
-                    <code className="text-[11px] text-foreground font-mono truncate min-w-0 flex-1">{createdTx.paymentAddress}</code>
+                    <code className="text-[11px] text-foreground font-mono truncate min-w-0 flex-1">{addr || '—'}</code>
                     <button
-                      onClick={handleCopyAddress}
-                      className="text-[10px] text-primary font-semibold hover:underline shrink-0 flex items-center gap-1"
+                      onClick={() => addr && handleCopy(addr, setCopiedAddress)}
+                      disabled={!addr}
+                      className="text-[10px] text-primary font-semibold hover:underline shrink-0 flex items-center gap-1 disabled:opacity-30"
                     >
                       {copiedAddress ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       {copiedAddress ? 'Copié' : 'Copier'}
                     </button>
                   </div>
                 </div>
+
+                {/* Memo / Tag (if required) */}
+                {memo && (
+                  <div className="space-y-1 min-w-0">
+                    <p className="text-[10px] text-orange-400 uppercase tracking-wider font-semibold">
+                      ⚠ Memo / Tag requis — sans ce mémo, votre paiement sera perdu
+                    </p>
+                    <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg px-3 py-2 flex items-center gap-2 justify-between min-w-0 overflow-hidden">
+                      <code className="text-[11px] text-foreground font-mono truncate min-w-0 flex-1">{memo}</code>
+                      <button
+                        onClick={() => handleCopy(memo, setCopiedMemo)}
+                        className="text-[10px] text-orange-400 font-semibold hover:underline shrink-0 flex items-center gap-1"
+                      >
+                        {copiedMemo ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                        {copiedMemo ? 'Copié' : 'Copier'}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 <div className="flex justify-between gap-2 text-xs pt-1 border-t border-border">
                   <span className="text-muted-foreground shrink-0">Destinataire</span>
@@ -532,7 +679,7 @@ export function PaymentForm() {
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="text-foreground font-mono text-[10px] truncate">{txRef}</span>
                     <button
-                      onClick={() => handleCopyRef(txRef)}
+                      onClick={() => handleCopy(txRef, setCopiedRef)}
                       className="text-primary shrink-0 hover:text-primary/80 transition-colors"
                       title="Copier la référence"
                     >

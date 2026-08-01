@@ -69,9 +69,12 @@ export const transactionsTable = pgTable(
     rate: doublePrecision("rate").notNull(),
     fee: doublePrecision("fee").notNull(),
     status: text("status").notNull().default("pending"), // 'pending' | 'completed' | 'failed'
+    cryptoNetwork: text("crypto_network"), // TRC20 | BEP20 | ERC20 | BTC | etc.
+    assetCode: text("asset_code"), // e.g. USDT.TRC20 | BTC | ETH.ERC20
+    paymentMemo: text("payment_memo"), // memo/tag for networks that require it (XRP, XLM, TON…)
     txHash: text("tx_hash"),
     paymentAddress: text("payment_address"),
-    intentId: text("intent_id"),
+    intentId: text("intent_id"), // AshtechPay transaction_id
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

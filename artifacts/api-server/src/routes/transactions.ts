@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { and, desc, eq, gte, ilike, or, sql } from "drizzle-orm";
 import { db, transactionsTable, notificationsTable } from "@workspace/db";
 import { getBearerToken, getUserFromToken } from "../lib/auth";
-import { getIziPayClient, toAcceptedCoins } from "../lib/izipay";
+import { createCollect, isConfigured as ashIsConfigured } from "../lib/ashtechpay";
 
 const router: IRouter = Router();
 
@@ -246,6 +246,8 @@ router.post("/transactions", async (req, res, next) => {
       amountFcfa,
       amountCrypto,
       cryptoCurrency,
+      cryptoNetwork,
+      assetCode,
       rate,
       fee,
     } = req.body as Record<string, unknown>;
@@ -260,6 +262,7 @@ router.post("/transactions", async (req, res, next) => {
       typeof amountFcfa !== "number" ||
       typeof amountCrypto !== "number" ||
       typeof cryptoCurrency !== "string" ||
+      typeof assetCode !== "string" ||
       typeof rate !== "number" ||
       typeof fee !== "number" ||
       amountFcfa <= 0
@@ -281,45 +284,51 @@ router.post("/transactions", async (req, res, next) => {
         amountFcfa,
         amountCrypto,
         cryptoCurrency: cryptoCurrency.trim(),
+        cryptoNetwork: typeof cryptoNetwork === "string" ? cryptoNetwork.trim() : null,
+        assetCode: assetCode.trim(),
         rate,
         fee,
         status: "pending",
       })
       .returning();
 
-    // Create an izichange payment intent to get a real crypto payment address.
-    // Falls back to a deterministic placeholder if IZIPAY_API_KEY is not set.
+    // Call AshtechPay to generate a deposit address for the selected asset.
+    // Falls back to a deterministic placeholder if ASHTECHPAY_API_KEY is not set.
     let paymentAddress: string;
-    let intentId: string | undefined;
+    let paymentMemo: string | null = null;
+    let ashpayTxId: string | undefined;
 
-    const izipay = getIziPayClient();
-    if (izipay) {
+    if (ashIsConfigured()) {
       try {
-        const intent = await izipay.paymentIntents.create({
-          requestedCurrencyType: "fiat",
-          currencyRequested: "XOF",
-          amountRequested: tx.amountFcfa,
-          acceptedCoins: toAcceptedCoins(tx.cryptoCurrency),
-          merchantReference: tx.id,
+        const { logger } = await import("../lib/logger.js");
+        const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
+        const notifyUrl = deployedDomain
+          ? `https://${deployedDomain}/webhooks/ashtechpay`
+          : undefined;
+
+        const collect = await createCollect({
+          asset_code: tx.assetCode ?? assetCode.trim(),
+          reference: tx.id,
+          notify_url: notifyUrl,
         });
-        intentId = intent.id;
-        // depositAddress is the crypto address the payer must send funds to.
-        // It may be null until the payer selects a coin (status: waiting_address_selection).
-        paymentAddress =
-          intent.depositAddress ?? generatePaymentAddress(tx.cryptoCurrency, tx.id);
+
+        paymentAddress = collect.address;
+        paymentMemo = collect.memo ?? null;
+        ashpayTxId = collect.transaction_id;
+        logger.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
       } catch (err) {
         // Log but don't fail the transaction — degrade to placeholder
         const { logger } = await import("../lib/logger.js");
-        logger.error({ err }, "Failed to create izichange payment intent");
-        paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
+        logger.error({ err }, "Failed to create AshtechPay collect address");
+        paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
       }
     } else {
-      paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
+      paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
     }
 
     const [updated] = await db
       .update(transactionsTable)
-      .set({ paymentAddress, intentId })
+      .set({ paymentAddress, paymentMemo, intentId: ashpayTxId })
       .where(eq(transactionsTable.id, tx.id))
       .returning();
 

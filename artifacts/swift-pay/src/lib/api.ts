@@ -42,16 +42,30 @@ export interface ApiTransaction {
   amountFcfa: number;
   amountCrypto: number;
   cryptoCurrency: string;
+  cryptoNetwork: string | null;
+  assetCode: string | null;
   rate: number;
   fee: number;
   status: TxStatus;
   txHash: string | null;
   paymentAddress: string | null;
+  paymentMemo: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
+/** One entry from GET /api/crypto/assets */
+export interface CryptoAsset {
+  asset_code: string;   // "USDT.TRC20"
+  coin: string;         // "USDT"
+  name: string;         // "Tether"
+  network: string;      // "TRC20"
+  network_label: string; // "TRON (TRC20)"
+  memo_required: boolean;
+  memo_type: string | null;
+  currency: string;
+}
+
 export interface Rates {
-  USDT: number;
-  BTC: number;
+  [coin: string]: number;
 }

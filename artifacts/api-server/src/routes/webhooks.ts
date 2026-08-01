@@ -1,5 +1,4 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { IziPayClient, IziPayWebhookError } from "izichangepay-sdk";
 import { eq } from "drizzle-orm";
 import { db, transactionsTable, notificationsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
@@ -7,72 +6,55 @@ import { logger } from "../lib/logger";
 const router: IRouter = Router();
 
 /**
- * POST /webhooks/izipay
+ * POST /webhooks/ashtechpay
  *
- * Receives izichange payment events.
- * IMPORTANT: this route must receive the raw body (Buffer) — do NOT parse it
- * with express.json() first. It is mounted in app.ts before the JSON middleware.
+ * Receives AshtechPay payment events delivered as JSON to the notify_url
+ * registered at collect-address creation time.
+ *
+ * AshtechPay does not sign webhooks — verify by matching transaction_id
+ * against our own DB records.
  *
  * Supported events:
- *   - payment_intent.completed  → mark transaction completed
- *   - payment_intent.failed     → mark transaction failed
+ *   payment.completed  → mark transaction completed
+ *   payment.failed     → mark transaction failed
  */
 router.post(
-  "/webhooks/izipay",
+  "/webhooks/ashtechpay",
   async (req: Request, res: Response): Promise<void> => {
-    const webhookSecret = process.env.IZIPAY_WEBHOOK_SECRET;
-    if (!webhookSecret) {
-      logger.warn("IZIPAY_WEBHOOK_SECRET not set — rejecting webhook");
-      res.status(500).json({ error: "Webhook not configured." });
-      return;
-    }
-
-    let event: ReturnType<typeof IziPayClient.validateWebhook>;
-    try {
-      event = IziPayClient.validateWebhook(
-        req.body as Buffer,
-        req.headers["x-izipay-signature"] as string,
-        webhookSecret,
-      );
-    } catch (err) {
-      if (err instanceof IziPayWebhookError) {
-        logger.warn({ reason: err.reason }, "Invalid izichange webhook");
-        res.status(400).json({ error: "invalid_webhook" });
-        return;
-      }
-      logger.error({ err }, "Webhook validation error");
-      res.status(400).json({ error: "invalid_webhook" });
-      return;
-    }
-
-    // Acquit immédiatement, traitement en async
+    // Ack immediately — AshtechPay expects HTTP 200 right away
     res.json({ received: true });
 
     try {
-      await processWebhookEvent(event);
+      await processWebhookEvent(req.body as Record<string, unknown>);
     } catch (err) {
-      logger.error({ err, eventType: event.type }, "Error processing webhook event");
+      logger.error({ err }, "Error processing AshtechPay webhook event");
     }
   },
 );
 
-async function processWebhookEvent(
-  event: ReturnType<typeof IziPayClient.validateWebhook>,
-) {
-  const data = event.data as Record<string, unknown>;
-  // merchantReference = our transaction UUID, set at creation time
-  const txId = (data.merchantReference ?? data.intentId) as string | undefined;
+async function processWebhookEvent(payload: Record<string, unknown>) {
+  const event = payload.event as string | undefined;
+  // AshtechPay uses our reference (= our transaction UUID) to link back
+  const reference = payload.reference as string | undefined;
+  // Also available: transaction_id (AshtechPay's own ID)
+  const ashpayTxId = payload.transaction_id as string | undefined;
 
-  logger.info({ type: event.type, txId }, "Processing izichange webhook event");
+  logger.info({ event, reference, ashpayTxId }, "Processing AshtechPay webhook");
 
-  if (!txId) {
-    logger.warn({ event }, "Webhook event missing merchantReference");
+  if (!event) {
+    logger.warn({ payload }, "AshtechPay webhook missing event field");
     return;
   }
 
-  switch (event.type) {
-    case "payment_intent.completed": {
-      const txHash = (data.txHash ?? data.transactionHash ?? null) as string | null;
+  // Look up by reference (= our transaction UUID set as reference at creation)
+  if (!reference) {
+    logger.warn({ payload }, "AshtechPay webhook missing reference field");
+    return;
+  }
+
+  switch (event) {
+    case "payment.completed": {
+      const txHash = (payload.tx_hash ?? payload.txHash ?? null) as string | null;
 
       const [updated] = await db
         .update(transactionsTable)
@@ -81,7 +63,7 @@ async function processWebhookEvent(
           txHash: txHash ?? undefined,
           updatedAt: new Date(),
         })
-        .where(eq(transactionsTable.id, txId))
+        .where(eq(transactionsTable.id, reference))
         .returning();
 
       if (updated?.userId) {
@@ -90,7 +72,7 @@ async function processWebhookEvent(
           type: "transaction",
           title: "Transfert confirmé ✓",
           message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA vers ${updated.recipient} a été effectué.`,
-          details: `${updated.amountCrypto} ${updated.cryptoCurrency} reçus via ${updated.network}. Le destinataire a été crédité.`,
+          details: `${updated.amountCrypto} ${updated.cryptoCurrency} reçus via ${updated.cryptoNetwork ?? updated.cryptoCurrency}. Le destinataire a été crédité.`,
           read: false,
           actionLabel: "Voir la transaction",
           actionHref: `/transactions/${updated.id}`,
@@ -99,11 +81,11 @@ async function processWebhookEvent(
       break;
     }
 
-    case "payment_intent.expired": {
+    case "payment.failed": {
       const [updated] = await db
         .update(transactionsTable)
         .set({ status: "failed", updatedAt: new Date() })
-        .where(eq(transactionsTable.id, txId))
+        .where(eq(transactionsTable.id, reference))
         .returning();
 
       if (updated?.userId) {
@@ -115,14 +97,14 @@ async function processWebhookEvent(
           details: "Aucun paiement n'a été reçu dans le délai imparti. Vous pouvez réessayer.",
           read: false,
           actionLabel: "Réessayer",
-          actionHref: `/`,
+          actionHref: "/",
         });
       }
       break;
     }
 
     default:
-      logger.info({ type: event.type }, "Unhandled izichange event type (ignored)");
+      logger.info({ event }, "Unhandled AshtechPay event type (ignored)");
   }
 }
 

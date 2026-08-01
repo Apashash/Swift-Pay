@@ -45,26 +45,29 @@ API health check: `GET /api/healthz` → `{"status":"ok"}`
 |--------|-------------|
 | `SUPABASE_DATABASE_URL` | PostgreSQL connection string (URI format) from Supabase → Settings → Database → Connection string. Use port **6543** (PgBouncer pooler) with SSL. |
 | `SESSION_SECRET` | Arbitrary random string used to sign session tokens |
-| `IZIPAY_API_KEY` | IzichangePay API key (`sk_live_…` or `sk_test_…`) — Dashboard → Développeurs → Clés API |
-| `IZIPAY_WEBHOOK_SECRET` | IzichangePay webhook signing secret (`whsec_…`) — Dashboard → Développeurs → Webhooks |
+| `ASHTECHPAY_API_KEY` | AshtechPay API key (`Bearer …`) — Dashboard → API Keys |
 
-> Without `SUPABASE_DATABASE_URL` the API server exits immediately. `IZIPAY_API_KEY` and `IZIPAY_WEBHOOK_SECRET` are optional at startup — transactions fall back to placeholder addresses until configured.
+> Without `SUPABASE_DATABASE_URL` the API server exits immediately. Without `ASHTECHPAY_API_KEY` the crypto asset list is empty and transactions use placeholder addresses.
 
-## IzichangePay integration
+## AshtechPay integration
+
+Docs: https://ashtechpay.top/docs/api  
+Base URL: `https://ashtechpay.top/v1/`  
+Auth: `Authorization: Bearer <ASHTECHPAY_API_KEY>`
 
 Payment flow:
-1. `POST /api/transactions` → creates a DB record + calls `izipay.paymentIntents.create()` with the FCFA amount and accepted coins (USDT.TRC20/BEP20 or BTC).
-2. The response includes `depositAddress` (the crypto address the sender pays to) and `intentId`.
-3. IzichangePay notifies `POST /webhooks/izipay` when payment is detected.
-4. `payment_intent.completed` → transaction status set to `completed`, user notified.
-5. `payment_intent.expired` → transaction status set to `failed`.
+1. `GET /api/crypto/assets` → frontend fetches available coins + networks dynamically (cached 10 min, proxied through the API server).
+2. User selects coin (USDT, BTC, ETH, …) and network (TRC20, BEP20, ERC20, …).
+3. `POST /api/transactions` → creates a DB record + calls AshtechPay `POST /v1/crypto/collect` with `asset_code` and sets `reference = transaction.id`.
+4. Response includes `address` (deposit address) and optional `memo` (required for some networks like XRP, XLM, TON).
+5. AshtechPay notifies `POST /webhooks/ashtechpay` when payment is detected.
+6. `payment.completed` → transaction status set to `completed`, user notified.
+7. `payment.failed` → transaction status set to `failed`.
 
-Webhook endpoint to configure in the izichange dashboard:
+Webhook endpoint to configure in the AshtechPay dashboard as `notify_url`:
 ```
-https://<your-domain>/webhooks/izipay
+https://<your-domain>/webhooks/ashtechpay
 ```
-
-> **Note:** When a payment intent is first created with multiple `acceptedCoins`, `depositAddress` may be `null` (status `waiting_address_selection`) until the payer selects a coin on `paymentUrl`. The frontend currently polls for an address — see the follow-up task about the `paymentUrl` redirect flow.
 
 ## Replit setup status
 

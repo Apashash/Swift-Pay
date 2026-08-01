@@ -20709,27 +20709,27 @@ var require_router = __commonJS({
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var methods = METHODS.map((method) => method.toLowerCase());
-    module.exports = Router9;
+    module.exports = Router10;
     module.exports.Route = Route;
-    function Router9(options) {
-      if (!(this instanceof Router9)) {
-        return new Router9(options);
+    function Router10(options) {
+      if (!(this instanceof Router10)) {
+        return new Router10(options);
       }
       const opts = options || {};
-      function router9(req, res, next) {
-        router9.handle(req, res, next);
+      function router10(req, res, next) {
+        router10.handle(req, res, next);
       }
-      Object.setPrototypeOf(router9, this);
-      router9.caseSensitive = opts.caseSensitive;
-      router9.mergeParams = opts.mergeParams;
-      router9.params = {};
-      router9.strict = opts.strict;
-      router9.stack = [];
-      return router9;
+      Object.setPrototypeOf(router10, this);
+      router10.caseSensitive = opts.caseSensitive;
+      router10.mergeParams = opts.mergeParams;
+      router10.params = {};
+      router10.strict = opts.strict;
+      router10.stack = [];
+      return router10;
     }
-    Router9.prototype = function() {
+    Router10.prototype = function() {
     };
-    Router9.prototype.param = function param(name, fn) {
+    Router10.prototype.param = function param(name, fn) {
       if (!name) {
         throw new TypeError("argument name is required");
       }
@@ -20749,7 +20749,7 @@ var require_router = __commonJS({
       params.push(fn);
       return this;
     };
-    Router9.prototype.handle = function handle(req, res, callback) {
+    Router10.prototype.handle = function handle(req, res, callback) {
       if (!callback) {
         throw new TypeError("argument callback is required");
       }
@@ -20876,7 +20876,7 @@ var require_router = __commonJS({
         }
       }
     };
-    Router9.prototype.use = function use(handler) {
+    Router10.prototype.use = function use(handler) {
       let offset = 0;
       let path2 = "/";
       if (typeof handler !== "function") {
@@ -20909,7 +20909,7 @@ var require_router = __commonJS({
       }
       return this;
     };
-    Router9.prototype.route = function route(path2) {
+    Router10.prototype.route = function route(path2) {
       const route2 = new Route(path2);
       const layer = new Layer(path2, {
         sensitive: this.caseSensitive,
@@ -20924,7 +20924,7 @@ var require_router = __commonJS({
       return route2;
     };
     methods.concat("all").forEach(function(method) {
-      Router9.prototype[method] = function(path2) {
+      Router10.prototype[method] = function(path2) {
         const route = this.route(path2);
         route[method].apply(route, slice.call(arguments, 1));
         return this;
@@ -21107,13 +21107,13 @@ var require_application = __commonJS({
     var compileTrust = require_utils3().compileTrust;
     var resolve = __require("node:path").resolve;
     var once = require_once();
-    var Router9 = require_router();
+    var Router10 = require_router();
     var slice = Array.prototype.slice;
     var flatten = Array.prototype.flat;
     var app2 = exports = module.exports = {};
     var trustProxyDefaultSymbol = "@@symbol:trust_proxy_default";
     app2.init = function init() {
-      var router9 = null;
+      var router10 = null;
       this.cache = /* @__PURE__ */ Object.create(null);
       this.engines = /* @__PURE__ */ Object.create(null);
       this.settings = /* @__PURE__ */ Object.create(null);
@@ -21122,13 +21122,13 @@ var require_application = __commonJS({
         configurable: true,
         enumerable: true,
         get: function getrouter() {
-          if (router9 === null) {
-            router9 = new Router9({
+          if (router10 === null) {
+            router10 = new Router10({
               caseSensitive: this.enabled("case sensitive routing"),
               strict: this.enabled("strict routing")
             });
           }
-          return router9;
+          return router10;
         }
       });
     };
@@ -21199,15 +21199,15 @@ var require_application = __commonJS({
       if (fns.length === 0) {
         throw new TypeError("app.use() requires a middleware function");
       }
-      var router9 = this.router;
+      var router10 = this.router;
       fns.forEach(function(fn2) {
         if (!fn2 || !fn2.handle || !fn2.set) {
-          return router9.use(path2, fn2);
+          return router10.use(path2, fn2);
         }
         debug(".use app under %s", path2);
         fn2.mountpath = path2;
         fn2.parent = this;
-        router9.use(path2, function mounted_app(req, res, next) {
+        router10.use(path2, function mounted_app(req, res, next) {
           var orig = req.app;
           fn2.handle(req, res, function(err) {
             Object.setPrototypeOf(req, orig.request);
@@ -21297,7 +21297,7 @@ var require_application = __commonJS({
       return this;
     };
     app2.render = function render(name, options, callback) {
-      var cache2 = this.cache;
+      var cache3 = this.cache;
       var done = callback;
       var engines = this.engines;
       var opts = options;
@@ -21311,7 +21311,7 @@ var require_application = __commonJS({
         renderOptions.cache = this.enabled("view cache");
       }
       if (renderOptions.cache) {
-        view = cache2[name];
+        view = cache3[name];
       }
       if (!view) {
         var View3 = this.get("view");
@@ -21327,7 +21327,7 @@ var require_application = __commonJS({
           return done(err);
         }
         if (renderOptions.cache) {
-          cache2[name] = view;
+          cache3[name] = view;
         }
       }
       tryRender(view, renderOptions, done);
@@ -23792,7 +23792,7 @@ var require_express = __commonJS({
     var EventEmitter = __require("node:events").EventEmitter;
     var mixin = require_merge_descriptors();
     var proto = require_application();
-    var Router9 = require_router();
+    var Router10 = require_router();
     var req = require_request();
     var res = require_response();
     exports = module.exports = createApplication;
@@ -23814,8 +23814,8 @@ var require_express = __commonJS({
     exports.application = proto;
     exports.request = req;
     exports.response = res;
-    exports.Route = Router9.Route;
-    exports.Router = Router9;
+    exports.Route = Router10.Route;
+    exports.Router = Router10;
     exports.json = bodyParser.json;
     exports.raw = bodyParser.raw;
     exports.static = require_serve_static();
@@ -27055,12 +27055,12 @@ var require_levels = __commonJS({
     function genLsCache(instance) {
       const formatter = instance[formattersSym].level;
       const { labels } = instance.levels;
-      const cache2 = {};
+      const cache3 = {};
       for (const label in labels) {
         const level = formatter(labels[label], Number(label));
-        cache2[label] = JSON.stringify(level).slice(0, -1);
+        cache3[label] = JSON.stringify(level).slice(0, -1);
       }
-      instance[lsCacheSym] = cache2;
+      instance[lsCacheSym] = cache3;
       return instance;
     }
     function isStandardLevel(level, useOnlyCustomLevels) {
@@ -41681,12 +41681,12 @@ var init_session = __esm({
     init_tracing();
     init_db();
     PgPreparedQuery = class {
-      constructor(query, cache2, queryMetadata, cacheConfig) {
+      constructor(query, cache3, queryMetadata, cacheConfig) {
         this.query = query;
-        this.cache = cache2;
+        this.cache = cache3;
         this.queryMetadata = queryMetadata;
         this.cacheConfig = cacheConfig;
-        if (cache2 && cache2.strategy() === "all" && cacheConfig === void 0) {
+        if (cache3 && cache3.strategy() === "all" && cacheConfig === void 0) {
           this.cacheConfig = { enable: true, autoInvalidate: true };
         }
         if (!this.cacheConfig?.enable) {
@@ -41896,8 +41896,8 @@ var init_session2 = __esm({
     init_utils();
     ({ Pool: Pool2, types: types2 } = esm_default);
     NodePgPreparedQuery = class extends PgPreparedQuery {
-      constructor(client, queryString, params, logger2, cache2, queryMetadata, cacheConfig, fields, name, _isResponseInArrayMode, customResultMapper) {
-        super({ sql: queryString, params }, cache2, queryMetadata, cacheConfig);
+      constructor(client, queryString, params, logger2, cache3, queryMetadata, cacheConfig, fields, name, _isResponseInArrayMode, customResultMapper) {
+        super({ sql: queryString, params }, cache3, queryMetadata, cacheConfig);
         this.client = client;
         this.queryString = queryString;
         this.params = params;
@@ -42272,9 +42272,16 @@ var init_schema2 = __esm({
         fee: doublePrecision("fee").notNull(),
         status: text("status").notNull().default("pending"),
         // 'pending' | 'completed' | 'failed'
+        cryptoNetwork: text("crypto_network"),
+        // TRC20 | BEP20 | ERC20 | BTC | etc.
+        assetCode: text("asset_code"),
+        // e.g. USDT.TRC20 | BTC | ETH.ERC20
+        paymentMemo: text("payment_memo"),
+        // memo/tag for networks that require it (XRP, XLM, TON…)
         txHash: text("tx_hash"),
         paymentAddress: text("payment_address"),
         intentId: text("intent_id"),
+        // AshtechPay transaction_id
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
       },
@@ -42360,1220 +42367,6 @@ var init_src = __esm({
   }
 });
 
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/errors.js
-var require_errors = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/errors.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.IziPayWebhookError = exports.IziPayNetworkError = exports.IziPayServerError = exports.IziPayRateLimitError = exports.IziPayValidationError = exports.IziPayNotFoundError = exports.IziPayAuthError = exports.IziPayApiError = exports.IziPayError = void 0;
-    var IziPayError = class extends Error {
-      name = "IziPayError";
-      constructor(message) {
-        super(message);
-        Object.setPrototypeOf(this, new.target.prototype);
-      }
-    };
-    exports.IziPayError = IziPayError;
-    var IziPayApiError = class extends IziPayError {
-      name = "IziPayApiError";
-      statusCode;
-      code;
-      requestId;
-      /** Verbatim parsed body — useful for ad-hoc inspection. */
-      body;
-      constructor(args) {
-        super(args.message);
-        this.statusCode = args.statusCode;
-        this.code = args.code;
-        this.requestId = args.requestId;
-        this.body = args.body;
-      }
-    };
-    exports.IziPayApiError = IziPayApiError;
-    var IziPayAuthError = class extends IziPayApiError {
-      name = "IziPayAuthError";
-    };
-    exports.IziPayAuthError = IziPayAuthError;
-    var IziPayNotFoundError = class extends IziPayApiError {
-      name = "IziPayNotFoundError";
-    };
-    exports.IziPayNotFoundError = IziPayNotFoundError;
-    var IziPayValidationError = class extends IziPayApiError {
-      name = "IziPayValidationError";
-      fields;
-      constructor(args) {
-        super(args);
-        this.fields = args.fields ?? {};
-      }
-    };
-    exports.IziPayValidationError = IziPayValidationError;
-    var IziPayRateLimitError = class extends IziPayApiError {
-      name = "IziPayRateLimitError";
-      retryAfter;
-      constructor(args) {
-        super(args);
-        this.retryAfter = args.retryAfter;
-      }
-    };
-    exports.IziPayRateLimitError = IziPayRateLimitError;
-    var IziPayServerError = class extends IziPayApiError {
-      name = "IziPayServerError";
-    };
-    exports.IziPayServerError = IziPayServerError;
-    var IziPayNetworkError = class extends IziPayError {
-      name = "IziPayNetworkError";
-      cause;
-      constructor(message, cause) {
-        super(message);
-        this.cause = cause;
-      }
-    };
-    exports.IziPayNetworkError = IziPayNetworkError;
-    var IziPayWebhookError2 = class extends IziPayError {
-      name = "IziPayWebhookError";
-      reason;
-      constructor(reason, message) {
-        super(message);
-        this.reason = reason;
-      }
-    };
-    exports.IziPayWebhookError = IziPayWebhookError2;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/http.js
-var require_http = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/http.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.HttpClient = void 0;
-    var node_crypto_1 = __require("node:crypto");
-    var errors_js_1 = require_errors();
-    var DEFAULT_BASE_URL = "https://api.pay.izichange.com";
-    var DEFAULT_TIMEOUT_MS = 3e4;
-    var DEFAULT_MAX_RETRIES = 3;
-    var SDK_VERSION = "0.1.0";
-    var RETRY_BASE_DELAY_MS = 250;
-    var RETRY_MAX_DELAY_MS = 5e3;
-    var HttpClient = class {
-      apiKey;
-      baseUrl;
-      timeout;
-      maxRetries;
-      fetchImpl;
-      constructor(opts) {
-        if (!opts.apiKey || typeof opts.apiKey !== "string") {
-          throw new TypeError("IziPayClient: `apiKey` is required");
-        }
-        this.apiKey = opts.apiKey;
-        this.baseUrl = stripTrailingSlash(opts.baseUrl ?? DEFAULT_BASE_URL);
-        this.timeout = opts.timeout ?? DEFAULT_TIMEOUT_MS;
-        this.maxRetries = Math.max(0, opts.maxRetries ?? DEFAULT_MAX_RETRIES);
-        const f = opts.fetch ?? globalThis.fetch;
-        if (typeof f !== "function") {
-          throw new TypeError("IziPayClient: global `fetch` not found. Use Node \u226518 or pass `fetch` in options.");
-        }
-        this.fetchImpl = f.bind(globalThis);
-      }
-      async request(opts) {
-        const url = this.buildUrl(opts.path, opts.query);
-        const headers = {
-          Authorization: `Bearer ${this.apiKey}`,
-          Accept: "application/json",
-          "User-Agent": `izipay-node-sdk/${SDK_VERSION} node/${process.version}`,
-          "X-IziPay-Sdk": `node/${SDK_VERSION}`
-        };
-        let body;
-        if (opts.body !== void 0 && opts.method !== "GET") {
-          headers["Content-Type"] = "application/json";
-          body = JSON.stringify(opts.body);
-        }
-        if (opts.method === "POST") {
-          headers["Idempotency-Key"] = opts.idempotencyKey ?? `sdk-${(0, node_crypto_1.randomBytes)(12).toString("hex")}`;
-        }
-        const timeoutMs = opts.timeout ?? this.timeout;
-        let lastError;
-        for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
-          const ctrl = new AbortController();
-          const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-          try {
-            const res = await this.fetchImpl(url, {
-              method: opts.method,
-              headers,
-              ...body !== void 0 && { body },
-              signal: ctrl.signal
-            });
-            clearTimeout(timer);
-            if (res.status === 204 || res.status === 205) {
-              return void 0;
-            }
-            if (res.ok) {
-              const text2 = await res.text();
-              if (text2.length === 0) {
-                throw new errors_js_1.IziPayApiError({
-                  message: `Empty body on ${res.status} response; expected JSON`,
-                  statusCode: res.status
-                });
-              }
-              try {
-                return JSON.parse(text2);
-              } catch {
-                throw new errors_js_1.IziPayApiError({
-                  message: "Invalid JSON in 2xx response",
-                  statusCode: res.status,
-                  body: text2
-                });
-              }
-            }
-            const errBody = await safeJson(res);
-            const apiErr = buildApiError(res.status, errBody, res.headers.get("Retry-After"));
-            if (shouldRetry(res.status, attempt, this.maxRetries)) {
-              lastError = apiErr;
-              await sleep(retryDelay(attempt, apiErr instanceof errors_js_1.IziPayRateLimitError ? apiErr.retryAfter : void 0));
-              continue;
-            }
-            throw apiErr;
-          } catch (err) {
-            clearTimeout(timer);
-            if (err instanceof errors_js_1.IziPayApiError)
-              throw err;
-            if (attempt < this.maxRetries) {
-              lastError = err;
-              await sleep(retryDelay(attempt));
-              continue;
-            }
-            if (err.name === "AbortError") {
-              throw new errors_js_1.IziPayNetworkError(`Request to ${url} timed out after ${timeoutMs}ms`, err);
-            }
-            throw new errors_js_1.IziPayNetworkError(`Network error contacting ${url}: ${err.message}`, err);
-          }
-        }
-        throw lastError instanceof Error ? lastError : new errors_js_1.IziPayNetworkError("Exhausted retries", lastError);
-      }
-      buildUrl(path2, query) {
-        const normalizedPath = path2.startsWith("/") ? path2 : `/${path2}`;
-        const url = new URL(`${this.baseUrl}${normalizedPath}`);
-        if (query) {
-          for (const [k, v] of Object.entries(query)) {
-            if (v === void 0 || v === null)
-              continue;
-            url.searchParams.set(k, String(v));
-          }
-        }
-        return url.toString();
-      }
-    };
-    exports.HttpClient = HttpClient;
-    function stripTrailingSlash(s) {
-      return s.endsWith("/") ? s.slice(0, -1) : s;
-    }
-    async function safeJson(res) {
-      try {
-        const text2 = await res.text();
-        if (text2.length === 0)
-          return null;
-        return JSON.parse(text2);
-      } catch {
-        return null;
-      }
-    }
-    function buildApiError(statusCode, body, retryAfterHeader) {
-      const envelope = body && typeof body === "object" ? body : {};
-      const message = envelope.message ?? envelope.error ?? `API request failed with status ${statusCode}`;
-      const code = envelope.code;
-      const requestId = envelope.requestId;
-      let fields = envelope.fields;
-      if (!fields && Array.isArray(envelope.errors)) {
-        fields = {};
-        for (const e of envelope.errors) {
-          if (e && typeof e === "object" && e.field && e.message) {
-            fields[e.field] = e.message;
-          }
-        }
-      }
-      const common = { message, statusCode, code, requestId, body };
-      if (statusCode === 401 || statusCode === 403) {
-        return new errors_js_1.IziPayAuthError(common);
-      }
-      if (statusCode === 404) {
-        return new errors_js_1.IziPayNotFoundError(common);
-      }
-      if (statusCode === 422) {
-        return new errors_js_1.IziPayValidationError({ ...common, fields });
-      }
-      if (statusCode === 429) {
-        const retryAfter = parseRetryAfter(retryAfterHeader);
-        return new errors_js_1.IziPayRateLimitError({ ...common, retryAfter });
-      }
-      if (statusCode >= 500) {
-        return new errors_js_1.IziPayServerError(common);
-      }
-      return new errors_js_1.IziPayApiError(common);
-    }
-    function parseRetryAfter(header) {
-      if (!header)
-        return void 0;
-      const n = Number(header);
-      if (Number.isFinite(n) && n >= 0)
-        return n;
-      const t = Date.parse(header);
-      if (!Number.isFinite(t))
-        return void 0;
-      const diff = Math.ceil((t - Date.now()) / 1e3);
-      return diff > 0 ? diff : 0;
-    }
-    function shouldRetry(statusCode, attempt, maxRetries) {
-      if (attempt >= maxRetries)
-        return false;
-      if (statusCode === 429)
-        return true;
-      if (statusCode >= 500 && statusCode < 600)
-        return true;
-      return false;
-    }
-    function retryDelay(attempt, retryAfterSeconds) {
-      if (retryAfterSeconds !== void 0) {
-        return Math.min(retryAfterSeconds * 1e3, RETRY_MAX_DELAY_MS);
-      }
-      const base = Math.min(RETRY_BASE_DELAY_MS * 2 ** attempt, RETRY_MAX_DELAY_MS);
-      const jitter = base * 0.2 * (Math.random() * 2 - 1);
-      return Math.max(0, Math.floor(base + jitter));
-    }
-    function sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/payment-intents.js
-var require_payment_intents = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/payment-intents.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PaymentIntentsResource = void 0;
-    var PaymentIntentsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /**
-       * Create a payment intent. The returned intent's `paymentUrl` is the
-       * checkout link to redirect the customer to (or embed in your widget).
-       * Pass `idempotencyKey` so duplicate creates return the original intent.
-       */
-      async create(params) {
-        const { idempotencyKey, ...body } = params;
-        return this.http.request({
-          method: "POST",
-          path: "/v1/payment-intents",
-          body,
-          ...idempotencyKey !== void 0 && { idempotencyKey }
-        });
-      }
-      async retrieve(id) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/payment-intents/${encodeURIComponent(id)}`
-        });
-      }
-      async list(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/payment-intents",
-          query: {
-            cursor: params.cursor,
-            take: params.limit,
-            status: params.status,
-            assetCode: params.assetCode,
-            productId: params.productId,
-            posTerminalId: params.posTerminalId,
-            invoiceId: params.invoiceId,
-            merchantReference: params.merchantReference
-          }
-        });
-      }
-      /**
-       * Async iterator over every intent matching the filter. Handles cursor
-       * pagination internally — `for await (const intent of izipay.paymentIntents.iterate({...}))`.
-       */
-      async *iterate(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.list({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.PaymentIntentsResource = PaymentIntentsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/payouts.js
-var require_payouts = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/payouts.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PayoutsResource = void 0;
-    var PayoutsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /**
-       * Create a standard (external) payout to a blockchain address. When the
-       * merchant runs in `whitelist_only` mode the destination is validated
-       * server-side against the whitelist (and its maturation delay).
-       */
-      async create(params) {
-        const { idempotencyKey, ...body } = params;
-        return this.http.request({
-          method: "POST",
-          path: "/v1/payouts",
-          body,
-          ...idempotencyKey !== void 0 && { idempotencyKey }
-        });
-      }
-      /**
-       * Create an internal transfer to another IzichangePay merchant (no
-       * blockchain transaction — instantaneous, no network fee). Pass
-       * `destinationEmail` for `internal_email`, or `destinationMerchantId`
-       * for `internal_merchant_id`.
-       */
-      async createInternal(params) {
-        const { idempotencyKey, ...body } = params;
-        if (body.destinationType === "internal_email" && !body.destinationEmail || body.destinationType === "internal_merchant_id" && !body.destinationMerchantId) {
-          throw new TypeError("createInternal: provide `destinationEmail` for `internal_email`, or `destinationMerchantId` for `internal_merchant_id`.");
-        }
-        return this.http.request({
-          method: "POST",
-          path: "/v1/payouts/internal",
-          body,
-          ...idempotencyKey !== void 0 && { idempotencyKey }
-        });
-      }
-      /**
-       * Refund a completed (non-disputed) payment intent to the customer's
-       * refund address. Idempotent per intent by default (`refund-${intentId}`)
-       * — a single refund per intent. Pass `amount` for a partial refund and
-       * `destinationAddress` to override the customer's on-file address.
-       */
-      async createRefund(params) {
-        const { idempotencyKey, ...body } = params;
-        return this.http.request({
-          method: "POST",
-          path: "/v1/payouts/refund",
-          body,
-          ...idempotencyKey !== void 0 && { idempotencyKey }
-        });
-      }
-      async retrieve(id) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/payouts/${encodeURIComponent(id)}`
-        });
-      }
-      async list(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/payouts",
-          query: {
-            cursor: params.cursor,
-            take: params.limit,
-            status: params.status,
-            assetCode: params.assetCode,
-            from: params.from,
-            to: params.to,
-            merchantReference: params.merchantReference
-          }
-        });
-      }
-      async *iterate(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.list({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.PayoutsResource = PayoutsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/invoices.js
-var require_invoices = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/invoices.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.InvoicesResource = void 0;
-    var InvoicesResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /**
-       * Create an invoice and email it to the customer. Once paid, the invoice
-       * is locked — subsequent payment intents derived from it are auto-cancelled
-       * (spec §4.6: one invoice → one paid intent).
-       */
-      async create(params) {
-        const { idempotencyKey, ...body } = params;
-        return this.http.request({
-          method: "POST",
-          path: "/v1/invoices",
-          body,
-          ...idempotencyKey !== void 0 && { idempotencyKey }
-        });
-      }
-      async retrieve(id) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/invoices/${encodeURIComponent(id)}`
-        });
-      }
-      /** Update a draft/pending invoice. All fields optional. */
-      async update(id, params) {
-        return this.http.request({
-          method: "PATCH",
-          path: `/v1/invoices/${encodeURIComponent(id)}`,
-          body: params
-        });
-      }
-      async list(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/invoices",
-          query: {
-            cursor: params.cursor,
-            take: params.limit,
-            status: params.status,
-            merchantReference: params.merchantReference
-          }
-        });
-      }
-      /** Send the invoice email for the first time (draft → pending). */
-      async send(id) {
-        return this.http.request({
-          method: "POST",
-          path: `/v1/invoices/${encodeURIComponent(id)}/send`
-        });
-      }
-      /**
-       * Re-send the invoice email. If the original due date has passed, supply
-       * a new `dueDate` to reset the expiry; otherwise only the email is re-issued.
-       */
-      async resend(id, params = {}) {
-        return this.http.request({
-          method: "POST",
-          path: `/v1/invoices/${encodeURIComponent(id)}/resend`,
-          body: params
-        });
-      }
-      /** Delete (cancel) an invoice. */
-      async delete(id) {
-        return this.http.request({
-          method: "DELETE",
-          path: `/v1/invoices/${encodeURIComponent(id)}`
-        });
-      }
-      async *iterate(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.list({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.InvoicesResource = InvoicesResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/products.js
-var require_products = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/products.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ProductsResource = void 0;
-    var ProductsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /**
-       * Create a permanent payment link. Each visit to `product.publicUrl`
-       * generates a fresh payment intent — useful for tip jars, recurring
-       * sale items, catalog SKUs.
-       */
-      async create(params) {
-        const { idempotencyKey, ...body } = params;
-        return this.http.request({
-          method: "POST",
-          path: "/v1/products",
-          body,
-          ...idempotencyKey !== void 0 && { idempotencyKey }
-        });
-      }
-      /** Retrieve the merchant-facing (manage) view of a product. */
-      async retrieve(id) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/products/${encodeURIComponent(id)}/manage`
-        });
-      }
-      async list(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/products",
-          query: {
-            cursor: params.cursor,
-            take: params.limit,
-            merchantReference: params.merchantReference
-          }
-        });
-      }
-      async update(id, params) {
-        return this.http.request({
-          method: "PATCH",
-          path: `/v1/products/${encodeURIComponent(id)}`,
-          body: params
-        });
-      }
-      /** Deactivate / delete a product link. */
-      async delete(id) {
-        return this.http.request({
-          method: "DELETE",
-          path: `/v1/products/${encodeURIComponent(id)}`
-        });
-      }
-      async *iterate(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.list({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.ProductsResource = ProductsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/settlements.js
-var require_settlements = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/settlements.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SettlementsResource = void 0;
-    var SettlementsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /**
-       * Convert crypto to local currency and send it to a registered settlement
-       * account. The applied FX rate is the provider's market rate at execution,
-       * not locked at create time (see `quote` for an indicative figure).
-       */
-      async create(params) {
-        const { idempotencyKey, ...body } = params;
-        return this.http.request({
-          method: "POST",
-          path: "/v1/settlements",
-          body,
-          ...idempotencyKey !== void 0 && { idempotencyKey }
-        });
-      }
-      async retrieve(id) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/settlements/${encodeURIComponent(id)}`
-        });
-      }
-      async list(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/settlements",
-          query: {
-            cursor: params.cursor,
-            take: params.limit,
-            from: params.from,
-            to: params.to,
-            merchantReference: params.merchantReference
-          }
-        });
-      }
-      /**
-       * Indicative quote (rate, fees, net received, max withdrawable) for a
-       * crypto→fiat settlement, before committing. The real figures may move
-       * with the market between quote and execution.
-       */
-      async quote(params) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/settlements/quote",
-          query: {
-            assetCode: params.assetCode,
-            amountCrypto: String(params.amountCrypto),
-            settlementAccountId: params.settlementAccountId
-          }
-        });
-      }
-      /** Retry a `failed` settlement with a fresh quote (e.g. after a rate-guard reject). */
-      async relaunch(id) {
-        return this.http.request({
-          method: "POST",
-          path: `/v1/settlements/${encodeURIComponent(id)}/relaunch`
-        });
-      }
-      /** Fiat rails (mobile money / bank) available for settlement accounts. */
-      async listPaymentMethods() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/settlements/payment-methods"
-        });
-      }
-      /** Assets that currently have a provider route to fiat. */
-      async listSettleableAssets() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/settlements/settleable-assets"
-        });
-      }
-      async *iterate(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.list({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.SettlementsResource = SettlementsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/settlement-accounts.js
-var require_settlement_accounts = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/settlement-accounts.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SettlementAccountsResource = void 0;
-    var SettlementAccountsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /**
-       * Register a fiat reception account (mobile-money number or IBAN). The
-       * `receptionAddress` is validated against the chosen payment method's
-       * `addressPattern`.
-       */
-      async create(params) {
-        return this.http.request({
-          method: "POST",
-          path: "/v1/settlement-accounts",
-          body: params
-        });
-      }
-      async list() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/settlement-accounts"
-        });
-      }
-      async update(id, params) {
-        return this.http.request({
-          method: "PATCH",
-          path: `/v1/settlement-accounts/${encodeURIComponent(id)}`,
-          body: params
-        });
-      }
-      async delete(id) {
-        return this.http.request({
-          method: "DELETE",
-          path: `/v1/settlement-accounts/${encodeURIComponent(id)}`
-        });
-      }
-      /** Available fiat rails to attach a reception account to. */
-      async listPaymentMethods() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/settlement-accounts/payment-methods"
-        });
-      }
-    };
-    exports.SettlementAccountsResource = SettlementAccountsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/wallet.js
-var require_wallet = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/wallet.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WalletResource = void 0;
-    var WalletResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /** All crypto balances held for the merchant (one row per active asset). */
-      async listBalances() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/wallet/balances"
-        });
-      }
-      /** Balance for a single asset (`USDT.TRC20`, `BTC`, …). */
-      async getBalance(assetCode) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/wallet/balances/${encodeURIComponent(assetCode)}`
-        });
-      }
-      /** A deposit address (and memo, if the chain needs one) for an asset. */
-      async getDepositAddress(assetCode) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/wallet/deposit-address/${encodeURIComponent(assetCode)}`
-        });
-      }
-      async listTransactions(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/wallet/transactions",
-          query: {
-            cursor: params.cursor,
-            take: params.limit,
-            assetCode: params.assetCode
-          }
-        });
-      }
-      async *iterateTransactions(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.listTransactions({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.WalletResource = WalletResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/merchant-assets.js
-var require_merchant_assets = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/merchant-assets.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MerchantAssetsResource = void 0;
-    var MerchantAssetsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /** Assets the merchant has activated (or can activate) for payments. */
-      async list() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/merchant-assets"
-        });
-      }
-      /** Enable or disable an asset for the merchant (ToggleAssetDto). */
-      async toggle(assetCode, isActive) {
-        return this.http.request({
-          method: "PATCH",
-          path: `/v1/merchant-assets/${encodeURIComponent(assetCode)}`,
-          body: { isActive }
-        });
-      }
-    };
-    exports.MerchantAssetsResource = MerchantAssetsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/payins.js
-var require_payins = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/payins.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PayinsResource = void 0;
-    var PayinsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      async retrieve(id) {
-        return this.http.request({
-          method: "GET",
-          path: `/v1/payments/payins/${encodeURIComponent(id)}`
-        });
-      }
-      async list(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/payments/payins",
-          query: {
-            cursor: params.cursor,
-            take: params.limit,
-            assetCode: params.assetCode,
-            status: params.status,
-            intentId: params.intentId,
-            payinType: params.payinType,
-            from: params.from,
-            to: params.to
-          }
-        });
-      }
-      async *iterate(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.list({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.PayinsResource = PayinsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/webhook-endpoints.js
-var require_webhook_endpoints = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/webhook-endpoints.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebhookEndpointsResource = void 0;
-    var WebhookEndpointsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /** Configured webhook endpoints for the merchant. */
-      async list() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/webhook-endpoints"
-        });
-      }
-      /** Delivery attempts log, optionally filtered by intent / payout / endpoint. */
-      async listDeliveries(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/webhook-endpoints/deliveries",
-          query: {
-            cursor: params.cursor,
-            limit: params.limit,
-            paymentIntentId: params.paymentIntentId,
-            payoutId: params.payoutId,
-            webhookEndpointId: params.webhookEndpointId
-          }
-        });
-      }
-    };
-    exports.WebhookEndpointsResource = WebhookEndpointsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/whitelist-addresses.js
-var require_whitelist_addresses = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/whitelist-addresses.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WhitelistAddressesResource = void 0;
-    var WhitelistAddressesResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /**
-       * Whitelisted payout destinations (used when the merchant runs in
-       * `whitelist_only` mode). `matured` tells you whether the maturation
-       * delay has elapsed and the address is usable.
-       */
-      async list(params = {}) {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/whitelist-addresses",
-          query: {
-            cursor: params.cursor,
-            take: params.limit
-          }
-        });
-      }
-      async *iterate(params = {}) {
-        let cursor = params.cursor;
-        while (true) {
-          const page = await this.list({ ...params, ...cursor !== void 0 && { cursor } });
-          for (const item of page.data)
-            yield item;
-          if (!page.nextCursor)
-            return;
-          cursor = page.nextCursor;
-        }
-      }
-    };
-    exports.WhitelistAddressesResource = WhitelistAddressesResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/merchants.js
-var require_merchants = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/merchants.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MerchantsResource = void 0;
-    var MerchantsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /** The merchant account the API key belongs to. */
-      async me() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/merchants/me"
-        });
-      }
-    };
-    exports.MerchantsResource = MerchantsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/assets.js
-var require_assets = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/resources/assets.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.AssetsResource = void 0;
-    var AssetsResource = class {
-      http;
-      constructor(http) {
-        this.http = http;
-      }
-      /** Full catalogue of crypto assets supported on the platform. */
-      async list() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/assets"
-        });
-      }
-      /** Public (marketing) subset of the asset catalogue. No auth required. */
-      async listPublic() {
-        return this.http.request({
-          method: "GET",
-          path: "/v1/public/assets"
-        });
-      }
-    };
-    exports.AssetsResource = AssetsResource;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/webhooks.js
-var require_webhooks = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/webhooks.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.validateWebhook = validateWebhook;
-    var node_crypto_1 = __require("node:crypto");
-    var errors_js_1 = require_errors();
-    var DEFAULT_TOLERANCE_SECONDS = 5 * 60;
-    function validateWebhook(rawBody, signatureHeader, secret, options = {}) {
-      if (!secret || typeof secret !== "string") {
-        throw new TypeError("validateWebhook: `secret` is required");
-      }
-      if (Array.isArray(signatureHeader)) {
-        if (signatureHeader.length !== 1) {
-          throw new errors_js_1.IziPayWebhookError("malformed_signature", `Expected exactly one X-IziPay-Signature header, got ${signatureHeader.length}.`);
-        }
-        signatureHeader = signatureHeader[0];
-      }
-      if (!signatureHeader || typeof signatureHeader !== "string") {
-        throw new errors_js_1.IziPayWebhookError("missing_signature", "Missing X-IziPay-Signature header.");
-      }
-      const match = /^sha256=([a-fA-F0-9]+)$/.exec(signatureHeader.trim());
-      if (!match) {
-        throw new errors_js_1.IziPayWebhookError("malformed_signature", 'X-IziPay-Signature must be of the form "sha256=<hex>".');
-      }
-      const providedHex = match[1].toLowerCase();
-      if (providedHex.length % 2 !== 0) {
-        throw new errors_js_1.IziPayWebhookError("malformed_signature", "Signature hex has odd length.");
-      }
-      const bodyBuffer = toBuffer(rawBody);
-      const expectedHex = (0, node_crypto_1.createHmac)("sha256", secret).update(bodyBuffer).digest("hex");
-      const providedBuf = Buffer.from(providedHex, "hex");
-      const expectedBuf = Buffer.from(expectedHex, "hex");
-      if (providedBuf.length !== expectedBuf.length || !(0, node_crypto_1.timingSafeEqual)(providedBuf, expectedBuf)) {
-        throw new errors_js_1.IziPayWebhookError("invalid_signature", "Webhook signature verification failed.");
-      }
-      let parsed;
-      try {
-        parsed = JSON.parse(bodyBuffer.toString("utf-8"));
-      } catch (e) {
-        throw new errors_js_1.IziPayWebhookError("invalid_body", `Webhook body is not valid JSON: ${e.message}`);
-      }
-      if (typeof parsed.timestamp !== "number" || !Number.isFinite(parsed.timestamp)) {
-        throw new errors_js_1.IziPayWebhookError("missing_timestamp", "Webhook body has no numeric `timestamp` field.");
-      }
-      const now = options.nowSeconds ?? Math.floor(Date.now() / 1e3);
-      const tolerance = options.toleranceSeconds ?? DEFAULT_TOLERANCE_SECONDS;
-      const ageSeconds = now - parsed.timestamp;
-      if (ageSeconds > tolerance) {
-        throw new errors_js_1.IziPayWebhookError("expired_timestamp", `Webhook timestamp is ${ageSeconds}s old, beyond the ${tolerance}s tolerance.`);
-      }
-      if (ageSeconds < -60) {
-        throw new errors_js_1.IziPayWebhookError("expired_timestamp", `Webhook timestamp is ${-ageSeconds}s in the future; rejecting.`);
-      }
-      if (!parsed.event || typeof parsed.event !== "string") {
-        throw new errors_js_1.IziPayWebhookError("invalid_body", "Webhook body is missing the `event` field.");
-      }
-      return {
-        type: parsed.event,
-        timestamp: parsed.timestamp,
-        data: parsed.data ?? {}
-      };
-    }
-    function toBuffer(input) {
-      if (Buffer.isBuffer(input))
-        return input;
-      if (typeof input === "string")
-        return Buffer.from(input, "utf-8");
-      return Buffer.from(input);
-    }
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/client.js
-var require_client3 = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/client.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.IziPayClient = void 0;
-    var http_js_1 = require_http();
-    var payment_intents_js_1 = require_payment_intents();
-    var payouts_js_1 = require_payouts();
-    var invoices_js_1 = require_invoices();
-    var products_js_1 = require_products();
-    var settlements_js_1 = require_settlements();
-    var settlement_accounts_js_1 = require_settlement_accounts();
-    var wallet_js_1 = require_wallet();
-    var merchant_assets_js_1 = require_merchant_assets();
-    var payins_js_1 = require_payins();
-    var webhook_endpoints_js_1 = require_webhook_endpoints();
-    var whitelist_addresses_js_1 = require_whitelist_addresses();
-    var merchants_js_1 = require_merchants();
-    var assets_js_1 = require_assets();
-    var webhooks_js_1 = require_webhooks();
-    var IziPayClient3 = class {
-      paymentIntents;
-      payouts;
-      invoices;
-      products;
-      settlements;
-      settlementAccounts;
-      wallet;
-      merchantAssets;
-      payins;
-      webhookEndpoints;
-      whitelistAddresses;
-      merchants;
-      assets;
-      /**
-       * Verify a webhook signature. See `validateWebhook` in `./webhooks.ts`.
-       * Re-exported here for ergonomic discovery via the main entry point.
-       */
-      static validateWebhook = webhooks_js_1.validateWebhook;
-      constructor(options) {
-        const http = new http_js_1.HttpClient(options);
-        this.paymentIntents = new payment_intents_js_1.PaymentIntentsResource(http);
-        this.payouts = new payouts_js_1.PayoutsResource(http);
-        this.invoices = new invoices_js_1.InvoicesResource(http);
-        this.products = new products_js_1.ProductsResource(http);
-        this.settlements = new settlements_js_1.SettlementsResource(http);
-        this.settlementAccounts = new settlement_accounts_js_1.SettlementAccountsResource(http);
-        this.wallet = new wallet_js_1.WalletResource(http);
-        this.merchantAssets = new merchant_assets_js_1.MerchantAssetsResource(http);
-        this.payins = new payins_js_1.PayinsResource(http);
-        this.webhookEndpoints = new webhook_endpoints_js_1.WebhookEndpointsResource(http);
-        this.whitelistAddresses = new whitelist_addresses_js_1.WhitelistAddressesResource(http);
-        this.merchants = new merchants_js_1.MerchantsResource(http);
-        this.assets = new assets_js_1.AssetsResource(http);
-      }
-    };
-    exports.IziPayClient = IziPayClient3;
-  }
-});
-
-// ../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/index.js
-var require_dist4 = __commonJS({
-  "../../node_modules/.pnpm/izichangepay-sdk@0.1.2/node_modules/izichangepay-sdk/dist/index.js"(exports) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.IziPayWebhookError = exports.IziPayNetworkError = exports.IziPayServerError = exports.IziPayRateLimitError = exports.IziPayValidationError = exports.IziPayNotFoundError = exports.IziPayAuthError = exports.IziPayApiError = exports.IziPayError = exports.validateWebhook = exports.IziPayClient = void 0;
-    var client_js_1 = require_client3();
-    Object.defineProperty(exports, "IziPayClient", { enumerable: true, get: function() {
-      return client_js_1.IziPayClient;
-    } });
-    var webhooks_js_1 = require_webhooks();
-    Object.defineProperty(exports, "validateWebhook", { enumerable: true, get: function() {
-      return webhooks_js_1.validateWebhook;
-    } });
-    var errors_js_1 = require_errors();
-    Object.defineProperty(exports, "IziPayError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayError;
-    } });
-    Object.defineProperty(exports, "IziPayApiError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayApiError;
-    } });
-    Object.defineProperty(exports, "IziPayAuthError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayAuthError;
-    } });
-    Object.defineProperty(exports, "IziPayNotFoundError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayNotFoundError;
-    } });
-    Object.defineProperty(exports, "IziPayValidationError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayValidationError;
-    } });
-    Object.defineProperty(exports, "IziPayRateLimitError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayRateLimitError;
-    } });
-    Object.defineProperty(exports, "IziPayServerError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayServerError;
-    } });
-    Object.defineProperty(exports, "IziPayNetworkError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayNetworkError;
-    } });
-    Object.defineProperty(exports, "IziPayWebhookError", { enumerable: true, get: function() {
-      return errors_js_1.IziPayWebhookError;
-    } });
-  }
-});
-
 // src/lib/logger.ts
 var logger_exports = {};
 __export(logger_exports, {
@@ -43603,14 +42396,14 @@ var init_logger2 = __esm({
 });
 
 // src/app.ts
-var import_express9 = __toESM(require_express2(), 1);
+var import_express10 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
 var import_pino_http = __toESM(require_logger(), 1);
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 // src/routes/index.ts
-var import_express7 = __toESM(require_express2(), 1);
+var import_express8 = __toESM(require_express2(), 1);
 
 // src/routes/health.ts
 var import_express = __toESM(require_express2(), 1);
@@ -47843,19 +46636,42 @@ var auth_default = router2;
 var import_express3 = __toESM(require_express2(), 1);
 init_src();
 
-// src/lib/izipay.ts
-var import_izichangepay_sdk = __toESM(require_dist4(), 1);
-var _client = null;
-function getIziPayClient() {
-  if (_client) return _client;
-  const apiKey = process.env.IZIPAY_API_KEY;
-  if (!apiKey) return null;
-  _client = new import_izichangepay_sdk.IziPayClient({ apiKey });
-  return _client;
+// src/lib/ashtechpay.ts
+var BASE_URL = "https://ashtechpay.top/v1";
+function getApiKey() {
+  return process.env.ASHTECHPAY_API_KEY ?? null;
 }
-function toAcceptedCoins(cryptoCurrency) {
-  if (cryptoCurrency === "BTC") return ["BTC"];
-  return ["USDT.TRC20", "USDT.BEP20"];
+async function ashFetch(path2, options = {}) {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("ASHTECHPAY_API_KEY not set");
+  const res = await fetch(`${BASE_URL}${path2}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+      ...options.headers
+    },
+    signal: AbortSignal.timeout(1e4)
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const msg = body?.message ?? body?.error ?? `HTTP ${res.status}`;
+    throw new Error(`AshtechPay error: ${msg}`);
+  }
+  return res.json();
+}
+async function getAssets() {
+  const data = await ashFetch("/crypto/assets");
+  return data.assets;
+}
+async function createCollect(req) {
+  return ashFetch("/crypto/collect", {
+    method: "POST",
+    body: JSON.stringify(req)
+  });
+}
+function isConfigured() {
+  return Boolean(getApiKey());
 }
 
 // src/routes/transactions.ts
@@ -48024,10 +46840,12 @@ router3.post("/transactions", async (req, res, next) => {
       amountFcfa,
       amountCrypto,
       cryptoCurrency,
+      cryptoNetwork,
+      assetCode,
       rate,
       fee
     } = req.body;
-    if (typeof recipient !== "string" || typeof recipientPhone !== "string" || typeof countryCode !== "string" || typeof countryName !== "string" || typeof networkFlag !== "string" || typeof network !== "string" || typeof amountFcfa !== "number" || typeof amountCrypto !== "number" || typeof cryptoCurrency !== "string" || typeof rate !== "number" || typeof fee !== "number" || amountFcfa <= 0) {
+    if (typeof recipient !== "string" || typeof recipientPhone !== "string" || typeof countryCode !== "string" || typeof countryName !== "string" || typeof networkFlag !== "string" || typeof network !== "string" || typeof amountFcfa !== "number" || typeof amountCrypto !== "number" || typeof cryptoCurrency !== "string" || typeof assetCode !== "string" || typeof rate !== "number" || typeof fee !== "number" || amountFcfa <= 0) {
       res.status(400).json({ message: "Donn\xE9es de transaction invalides." });
       return;
     }
@@ -48042,33 +46860,38 @@ router3.post("/transactions", async (req, res, next) => {
       amountFcfa,
       amountCrypto,
       cryptoCurrency: cryptoCurrency.trim(),
+      cryptoNetwork: typeof cryptoNetwork === "string" ? cryptoNetwork.trim() : null,
+      assetCode: assetCode.trim(),
       rate,
       fee,
       status: "pending"
     }).returning();
     let paymentAddress;
-    let intentId;
-    const izipay = getIziPayClient();
-    if (izipay) {
+    let paymentMemo = null;
+    let ashpayTxId;
+    if (isConfigured()) {
       try {
-        const intent = await izipay.paymentIntents.create({
-          requestedCurrencyType: "fiat",
-          currencyRequested: "XOF",
-          amountRequested: tx.amountFcfa,
-          acceptedCoins: toAcceptedCoins(tx.cryptoCurrency),
-          merchantReference: tx.id
+        const { logger: logger2 } = await Promise.resolve().then(() => (init_logger2(), logger_exports));
+        const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
+        const notifyUrl = deployedDomain ? `https://${deployedDomain}/webhooks/ashtechpay` : void 0;
+        const collect = await createCollect({
+          asset_code: tx.assetCode ?? assetCode.trim(),
+          reference: tx.id,
+          notify_url: notifyUrl
         });
-        intentId = intent.id;
-        paymentAddress = intent.depositAddress ?? generatePaymentAddress(tx.cryptoCurrency, tx.id);
+        paymentAddress = collect.address;
+        paymentMemo = collect.memo ?? null;
+        ashpayTxId = collect.transaction_id;
+        logger2.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
       } catch (err) {
         const { logger: logger2 } = await Promise.resolve().then(() => (init_logger2(), logger_exports));
-        logger2.error({ err }, "Failed to create izichange payment intent");
-        paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
+        logger2.error({ err }, "Failed to create AshtechPay collect address");
+        paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
       }
     } else {
-      paymentAddress = generatePaymentAddress(tx.cryptoCurrency, tx.id);
+      paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
     }
-    const [updated] = await db.update(transactionsTable).set({ paymentAddress, intentId }).where(eq(transactionsTable.id, tx.id)).returning();
+    const [updated] = await db.update(transactionsTable).set({ paymentAddress, paymentMemo, intentId: ashpayTxId }).where(eq(transactionsTable.id, tx.id)).returning();
     if (userId) {
       await db.insert(notificationsTable).values({
         userId,
@@ -48091,21 +46914,42 @@ var transactions_default = router3;
 // src/routes/rates.ts
 var import_express4 = __toESM(require_express2(), 1);
 var router4 = (0, import_express4.Router)();
+var COIN_IDS = {
+  USDT: "tether",
+  BTC: "bitcoin",
+  ETH: "ethereum",
+  LTC: "litecoin",
+  DOGE: "dogecoin",
+  BCH: "bitcoin-cash"
+};
 var cache = null;
 var CACHE_TTL_MS = 5 * 60 * 1e3;
-var FALLBACK_RATES = { USDT: 655, BTC: 46e6 };
+var FALLBACK_RATES = {
+  USDT: 655,
+  BTC: 46e6,
+  ETH: 2e6,
+  LTC: 6e4,
+  DOGE: 300,
+  BCH: 34e4
+};
 async function fetchLiveRates() {
   try {
+    const ids = Object.values(COIN_IDS).join(",");
     const res = await fetch(
-      "https://api.coingecko.com/api/v3/simple/price?ids=tether,bitcoin&vs_currencies=xof",
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=xof`,
       { signal: AbortSignal.timeout(5e3) }
     );
     if (!res.ok) return FALLBACK_RATES;
     const json2 = await res.json();
-    const usdtRate = json2.tether?.xof;
-    const btcRate = json2.bitcoin?.xof;
-    if (!usdtRate || !btcRate) return FALLBACK_RATES;
-    return { USDT: Math.round(usdtRate), BTC: Math.round(btcRate) };
+    const rates = {};
+    for (const [coin, geckoId] of Object.entries(COIN_IDS)) {
+      const xof = json2[geckoId]?.xof;
+      if (xof) rates[coin] = Math.round(xof);
+    }
+    for (const coin of Object.keys(COIN_IDS)) {
+      if (!rates[coin]) rates[coin] = FALLBACK_RATES[coin] ?? 0;
+    }
+    return rates;
   } catch {
     return FALLBACK_RATES;
   }
@@ -48440,79 +47284,89 @@ router6.delete("/admin/notifications/:id", async (req, res, next) => {
 });
 var admin_default = router6;
 
-// src/routes/index.ts
+// src/routes/cryptoAssets.ts
+var import_express7 = __toESM(require_express2(), 1);
+init_logger2();
 var router7 = (0, import_express7.Router)();
-router7.use(health_default);
-router7.use(auth_default);
-router7.use(transactions_default);
-router7.use(rates_default);
-router7.use(notifications_default);
-router7.use(admin_default);
-var routes_default = router7;
+var cache2 = null;
+var CACHE_TTL_MS2 = 10 * 60 * 1e3;
+router7.get("/crypto/assets", async (_req, res, next) => {
+  try {
+    const now = Date.now();
+    if (!cache2 || now - cache2.fetchedAt > CACHE_TTL_MS2) {
+      try {
+        const assets = await getAssets();
+        cache2 = { data: assets, fetchedAt: now };
+      } catch (err) {
+        logger.warn({ err }, "Failed to fetch AshtechPay crypto assets");
+        if (!cache2) {
+          res.json({ assets: [], cached: false });
+          return;
+        }
+      }
+    }
+    res.json({ assets: cache2.data, fetchedAt: new Date(cache2.fetchedAt).toISOString() });
+  } catch (error) {
+    next(error);
+  }
+});
+var cryptoAssets_default = router7;
+
+// src/routes/index.ts
+var router8 = (0, import_express8.Router)();
+router8.use(health_default);
+router8.use(auth_default);
+router8.use(transactions_default);
+router8.use(rates_default);
+router8.use(notifications_default);
+router8.use(admin_default);
+router8.use(cryptoAssets_default);
+var routes_default = router8;
 
 // src/routes/webhooks.ts
-var import_express8 = __toESM(require_express2(), 1);
-var import_izichangepay_sdk2 = __toESM(require_dist4(), 1);
+var import_express9 = __toESM(require_express2(), 1);
 init_src();
 init_logger2();
-var router8 = (0, import_express8.Router)();
-router8.post(
-  "/webhooks/izipay",
+var router9 = (0, import_express9.Router)();
+router9.post(
+  "/webhooks/ashtechpay",
   async (req, res) => {
-    const webhookSecret = process.env.IZIPAY_WEBHOOK_SECRET;
-    if (!webhookSecret) {
-      logger.warn("IZIPAY_WEBHOOK_SECRET not set \u2014 rejecting webhook");
-      res.status(500).json({ error: "Webhook not configured." });
-      return;
-    }
-    let event;
-    try {
-      event = import_izichangepay_sdk2.IziPayClient.validateWebhook(
-        req.body,
-        req.headers["x-izipay-signature"],
-        webhookSecret
-      );
-    } catch (err) {
-      if (err instanceof import_izichangepay_sdk2.IziPayWebhookError) {
-        logger.warn({ reason: err.reason }, "Invalid izichange webhook");
-        res.status(400).json({ error: "invalid_webhook" });
-        return;
-      }
-      logger.error({ err }, "Webhook validation error");
-      res.status(400).json({ error: "invalid_webhook" });
-      return;
-    }
     res.json({ received: true });
     try {
-      await processWebhookEvent(event);
+      await processWebhookEvent(req.body);
     } catch (err) {
-      logger.error({ err, eventType: event.type }, "Error processing webhook event");
+      logger.error({ err }, "Error processing AshtechPay webhook event");
     }
   }
 );
-async function processWebhookEvent(event) {
-  const data = event.data;
-  const txId = data.merchantReference ?? data.intentId;
-  logger.info({ type: event.type, txId }, "Processing izichange webhook event");
-  if (!txId) {
-    logger.warn({ event }, "Webhook event missing merchantReference");
+async function processWebhookEvent(payload) {
+  const event = payload.event;
+  const reference = payload.reference;
+  const ashpayTxId = payload.transaction_id;
+  logger.info({ event, reference, ashpayTxId }, "Processing AshtechPay webhook");
+  if (!event) {
+    logger.warn({ payload }, "AshtechPay webhook missing event field");
     return;
   }
-  switch (event.type) {
-    case "payment_intent.completed": {
-      const txHash = data.txHash ?? data.transactionHash ?? null;
+  if (!reference) {
+    logger.warn({ payload }, "AshtechPay webhook missing reference field");
+    return;
+  }
+  switch (event) {
+    case "payment.completed": {
+      const txHash = payload.tx_hash ?? payload.txHash ?? null;
       const [updated] = await db.update(transactionsTable).set({
         status: "completed",
         txHash: txHash ?? void 0,
         updatedAt: /* @__PURE__ */ new Date()
-      }).where(eq(transactionsTable.id, txId)).returning();
+      }).where(eq(transactionsTable.id, reference)).returning();
       if (updated?.userId) {
         await db.insert(notificationsTable).values({
           userId: updated.userId,
           type: "transaction",
           title: "Transfert confirm\xE9 \u2713",
           message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA vers ${updated.recipient} a \xE9t\xE9 effectu\xE9.`,
-          details: `${updated.amountCrypto} ${updated.cryptoCurrency} re\xE7us via ${updated.network}. Le destinataire a \xE9t\xE9 cr\xE9dit\xE9.`,
+          details: `${updated.amountCrypto} ${updated.cryptoCurrency} re\xE7us via ${updated.cryptoNetwork ?? updated.cryptoCurrency}. Le destinataire a \xE9t\xE9 cr\xE9dit\xE9.`,
           read: false,
           actionLabel: "Voir la transaction",
           actionHref: `/transactions/${updated.id}`
@@ -48520,8 +47374,8 @@ async function processWebhookEvent(event) {
       }
       break;
     }
-    case "payment_intent.expired": {
-      const [updated] = await db.update(transactionsTable).set({ status: "failed", updatedAt: /* @__PURE__ */ new Date() }).where(eq(transactionsTable.id, txId)).returning();
+    case "payment.failed": {
+      const [updated] = await db.update(transactionsTable).set({ status: "failed", updatedAt: /* @__PURE__ */ new Date() }).where(eq(transactionsTable.id, reference)).returning();
       if (updated?.userId) {
         await db.insert(notificationsTable).values({
           userId: updated.userId,
@@ -48531,20 +47385,20 @@ async function processWebhookEvent(event) {
           details: "Aucun paiement n'a \xE9t\xE9 re\xE7u dans le d\xE9lai imparti. Vous pouvez r\xE9essayer.",
           read: false,
           actionLabel: "R\xE9essayer",
-          actionHref: `/`
+          actionHref: "/"
         });
       }
       break;
     }
     default:
-      logger.info({ type: event.type }, "Unhandled izichange event type (ignored)");
+      logger.info({ event }, "Unhandled AshtechPay event type (ignored)");
   }
 }
-var webhooks_default = router8;
+var webhooks_default = router9;
 
 // src/app.ts
 init_logger2();
-var app = (0, import_express9.default)();
+var app = (0, import_express10.default)();
 app.use(
   (0, import_pino_http.default)({
     logger,
@@ -48565,13 +47419,13 @@ app.use(
   })
 );
 app.use((0, import_cors.default)());
-app.use("/webhooks", import_express9.default.raw({ type: "application/json" }), webhooks_default);
-app.use(import_express9.default.json());
-app.use(import_express9.default.urlencoded({ extended: true }));
+app.use("/webhooks", webhooks_default);
+app.use(import_express10.default.json());
+app.use(import_express10.default.urlencoded({ extended: true }));
 app.use("/api", routes_default);
 var __dirname2 = path.dirname(fileURLToPath(import.meta.url));
 var frontendDist = path.resolve(__dirname2, "../../swift-pay/dist/public");
-app.use(import_express9.default.static(frontendDist));
+app.use(import_express10.default.static(frontendDist));
 app.get(/^(?!\/api).*$/, (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });
