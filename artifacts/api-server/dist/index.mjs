@@ -46853,14 +46853,15 @@ router3.post("/transactions", async (req, res, next) => {
     try {
       const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
       const notifyUrl = deployedDomain ? `https://${deployedDomain}/webhooks/ashtechpay` : void 0;
-      const customerEmail = typeof email === "string" && email.includes("@") ? email.trim() : "unknown";
+      const customerEmail = typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? email.trim() : "client1234@gmail.com";
+      const customerPhone = recipientPhone.trim();
       const collect = await createCollect({
         asset_code: tx.assetCode ?? assetCode.trim(),
         amount: amountCrypto + fee,
         currency: tx.cryptoCurrency,
         reference: tx.id,
         notify_url: notifyUrl,
-        customer: { firstName: customerEmail, lastName: customerEmail, email: customerEmail }
+        customer: { firstName: customerPhone, lastName: customerPhone, email: customerEmail }
       });
       paymentAddress = collect.address;
       paymentMemo = collect.memo ?? null;

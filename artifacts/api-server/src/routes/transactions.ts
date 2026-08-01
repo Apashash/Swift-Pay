@@ -296,15 +296,19 @@ router.post("/transactions", async (req, res, next) => {
         ? `https://${deployedDomain}/webhooks/ashtechpay`
         : undefined;
 
-      // customer doit toujours être un objet avec firstName, lastName et email
-      const customerEmail = typeof email === "string" && email.includes("@") ? email.trim() : "unknown";
+      // customer: email fourni par l'utilisateur ou fallback, firstName/lastName = numéro de téléphone
+      const customerEmail =
+        typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+          ? email.trim()
+          : "client1234@gmail.com";
+      const customerPhone = recipientPhone.trim();
       const collect = await createCollect({
         asset_code: tx.assetCode ?? assetCode.trim(),
         amount: (amountCrypto as number) + (fee as number),
         currency: tx.cryptoCurrency,
         reference: tx.id,
         notify_url: notifyUrl,
-        customer: { firstName: customerEmail, lastName: customerEmail, email: customerEmail },
+        customer: { firstName: customerPhone, lastName: customerPhone, email: customerEmail },
       });
 
       paymentAddress = collect.address;
