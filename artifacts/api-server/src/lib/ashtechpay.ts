@@ -25,6 +25,7 @@ export interface AshAsset {
 
 export interface AshCollectRequest {
   asset_code: string;
+  amount: number;           // crypto amount the customer will send (required by API)
   reference?: string;
   notify_url?: string;
   customer?: { firstName?: string; lastName?: string; email?: string };

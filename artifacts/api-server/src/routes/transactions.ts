@@ -308,6 +308,7 @@ router.post("/transactions", async (req, res, next) => {
 
         const collect = await createCollect({
           asset_code: tx.assetCode ?? assetCode.trim(),
+          amount: (amountCrypto as number) + (fee as number), // total the customer sends
           reference: tx.id,
           notify_url: notifyUrl,
         });
