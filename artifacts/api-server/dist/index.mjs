@@ -42367,34 +42367,6 @@ var init_src = __esm({
   }
 });
 
-// src/lib/logger.ts
-var logger_exports = {};
-__export(logger_exports, {
-  logger: () => logger
-});
-var import_pino, isProduction, logger;
-var init_logger2 = __esm({
-  "src/lib/logger.ts"() {
-    "use strict";
-    import_pino = __toESM(require_pino(), 1);
-    isProduction = process.env.NODE_ENV === "production";
-    logger = (0, import_pino.default)({
-      level: process.env.LOG_LEVEL ?? "info",
-      redact: [
-        "req.headers.authorization",
-        "req.headers.cookie",
-        "res.headers['set-cookie']"
-      ],
-      ...isProduction ? {} : {
-        transport: {
-          target: "pino-pretty",
-          options: { colorize: true }
-        }
-      }
-    });
-  }
-});
-
 // src/app.ts
 var import_express10 = __toESM(require_express2(), 1);
 var import_cors = __toESM(require_lib3(), 1);
@@ -46670,9 +46642,24 @@ async function createCollect(req) {
     body: JSON.stringify(req)
   });
 }
-function isConfigured() {
-  return Boolean(getApiKey());
-}
+
+// src/lib/logger.ts
+var import_pino = __toESM(require_pino(), 1);
+var isProduction = process.env.NODE_ENV === "production";
+var logger = (0, import_pino.default)({
+  level: process.env.LOG_LEVEL ?? "info",
+  redact: [
+    "req.headers.authorization",
+    "req.headers.cookie",
+    "res.headers['set-cookie']"
+  ],
+  ...isProduction ? {} : {
+    transport: {
+      target: "pino-pretty",
+      options: { colorize: true }
+    }
+  }
+});
 
 // src/routes/transactions.ts
 var router3 = (0, import_express3.Router)();
@@ -46685,13 +46672,6 @@ async function requireUser(authHeader) {
     throw err;
   }
   return user;
-}
-function generatePaymentAddress(currency, txId) {
-  const suffix = txId.replace(/-/g, "").slice(0, 16).toUpperCase();
-  if (currency === "BTC") {
-    return `bc1q${suffix.toLowerCase()}sw4fpay0`;
-  }
-  return `0x${suffix}C2b8D7E6F4A9B0C1D2E3F4`;
 }
 router3.get("/transactions/status/:id", async (req, res, next) => {
   try {
@@ -46869,31 +46849,26 @@ router3.post("/transactions", async (req, res, next) => {
     let paymentAddress;
     let paymentMemo = null;
     let ashpayTxId;
-    if (isConfigured()) {
-      try {
-        const { logger: logger2 } = await Promise.resolve().then(() => (init_logger2(), logger_exports));
-        const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
-        const notifyUrl = deployedDomain ? `https://${deployedDomain}/webhooks/ashtechpay` : void 0;
-        const collect = await createCollect({
-          asset_code: tx.assetCode ?? assetCode.trim(),
-          amount: amountCrypto + fee,
-          // total the customer sends
-          currency: tx.cryptoCurrency,
-          // obligatoire : USDT, XAF, XOF, etc.
-          reference: tx.id,
-          notify_url: notifyUrl
-        });
-        paymentAddress = collect.address;
-        paymentMemo = collect.memo ?? null;
-        ashpayTxId = collect.transaction_id;
-        logger2.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
-      } catch (err) {
-        const { logger: logger2 } = await Promise.resolve().then(() => (init_logger2(), logger_exports));
-        logger2.error({ err }, "Failed to create AshtechPay collect address");
-        paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
-      }
-    } else {
-      paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
+    try {
+      const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
+      const notifyUrl = deployedDomain ? `https://${deployedDomain}/webhooks/ashtechpay` : void 0;
+      const collect = await createCollect({
+        asset_code: tx.assetCode ?? assetCode.trim(),
+        amount: amountCrypto + fee,
+        currency: tx.cryptoCurrency,
+        reference: tx.id,
+        notify_url: notifyUrl
+      });
+      paymentAddress = collect.address;
+      paymentMemo = collect.memo ?? null;
+      ashpayTxId = collect.transaction_id;
+      logger.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
+    } catch (err) {
+      await db.delete(transactionsTable).where(eq(transactionsTable.id, tx.id)).catch(() => null);
+      logger.error({ err }, "AshtechPay collect failed \u2014 transaction annul\xE9e");
+      const message = err instanceof Error ? err.message : "Impossible de g\xE9n\xE9rer l'adresse de paiement.";
+      const httpErr = Object.assign(new Error(message), { statusCode: 502 });
+      throw httpErr;
     }
     const [updated] = await db.update(transactionsTable).set({ paymentAddress, paymentMemo, intentId: ashpayTxId }).where(eq(transactionsTable.id, tx.id)).returning();
     if (userId) {
@@ -47290,7 +47265,6 @@ var admin_default = router6;
 
 // src/routes/cryptoAssets.ts
 var import_express7 = __toESM(require_express2(), 1);
-init_logger2();
 var router7 = (0, import_express7.Router)();
 var cache2 = null;
 var CACHE_TTL_MS2 = 10 * 60 * 1e3;
@@ -47330,7 +47304,6 @@ var routes_default = router8;
 // src/routes/webhooks.ts
 var import_express9 = __toESM(require_express2(), 1);
 init_src();
-init_logger2();
 var router9 = (0, import_express9.Router)();
 router9.post(
   "/webhooks/ashtechpay",
@@ -47401,7 +47374,6 @@ async function processWebhookEvent(payload) {
 var webhooks_default = router9;
 
 // src/app.ts
-init_logger2();
 var app = (0, import_express10.default)();
 app.use(
   (0, import_pino_http.default)({
@@ -47446,7 +47418,6 @@ app.use((err, _req, res, _next) => {
 var app_default = app;
 
 // src/index.ts
-init_logger2();
 var rawPort = process.env["PORT"] ?? "3000";
 var port = Number(rawPort);
 if (Number.isNaN(port) || port <= 0) {

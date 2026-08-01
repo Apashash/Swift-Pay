@@ -2,7 +2,8 @@ import { Router, type IRouter } from "express";
 import { and, desc, eq, gte, ilike, or, sql } from "drizzle-orm";
 import { db, transactionsTable, notificationsTable } from "@workspace/db";
 import { getBearerToken, getUserFromToken } from "../lib/auth";
-import { createCollect, isConfigured as ashIsConfigured } from "../lib/ashtechpay";
+import { createCollect } from "../lib/ashtechpay";
+import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
@@ -17,16 +18,6 @@ async function requireUser(authHeader: string | undefined) {
     throw err;
   }
   return user;
-}
-
-// ── Payment addresses (deterministic placeholders) ────────────────────────────
-
-function generatePaymentAddress(currency: string, txId: string): string {
-  const suffix = txId.replace(/-/g, "").slice(0, 16).toUpperCase();
-  if (currency === "BTC") {
-    return `bc1q${suffix.toLowerCase()}sw4fpay0`;
-  }
-  return `0x${suffix}C2b8D7E6F4A9B0C1D2E3F4`;
 }
 
 // ── GET /api/transactions/status/:id  (public — no auth) ─────────────────────
@@ -292,40 +283,37 @@ router.post("/transactions", async (req, res, next) => {
       })
       .returning();
 
-    // Call AshtechPay to generate a deposit address for the selected asset.
-    // Falls back to a deterministic placeholder if ASHTECHPAY_API_KEY is not set.
+    // Appel AshtechPay obligatoire — aucun fallback mock.
+    // Si l'API échoue ou la clé est absente, la transaction est supprimée et une erreur est renvoyée.
     let paymentAddress: string;
     let paymentMemo: string | null = null;
     let ashpayTxId: string | undefined;
 
-    if (ashIsConfigured()) {
-      try {
-        const { logger } = await import("../lib/logger.js");
-        const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
-        const notifyUrl = deployedDomain
-          ? `https://${deployedDomain}/webhooks/ashtechpay`
-          : undefined;
+    try {
+      const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
+      const notifyUrl = deployedDomain
+        ? `https://${deployedDomain}/webhooks/ashtechpay`
+        : undefined;
 
-        const collect = await createCollect({
-          asset_code: tx.assetCode ?? assetCode.trim(),
-          amount: (amountCrypto as number) + (fee as number), // total the customer sends
-          currency: tx.cryptoCurrency,  // obligatoire : USDT, XAF, XOF, etc.
-          reference: tx.id,
-          notify_url: notifyUrl,
-        });
+      const collect = await createCollect({
+        asset_code: tx.assetCode ?? assetCode.trim(),
+        amount: (amountCrypto as number) + (fee as number),
+        currency: tx.cryptoCurrency,
+        reference: tx.id,
+        notify_url: notifyUrl,
+      });
 
-        paymentAddress = collect.address;
-        paymentMemo = collect.memo ?? null;
-        ashpayTxId = collect.transaction_id;
-        logger.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
-      } catch (err) {
-        // Log but don't fail the transaction — degrade to placeholder
-        const { logger } = await import("../lib/logger.js");
-        logger.error({ err }, "Failed to create AshtechPay collect address");
-        paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
-      }
-    } else {
-      paymentAddress = generatePaymentAddress(tx.assetCode ?? tx.cryptoCurrency, tx.id);
+      paymentAddress = collect.address;
+      paymentMemo = collect.memo ?? null;
+      ashpayTxId = collect.transaction_id;
+      logger.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
+    } catch (err) {
+      // Supprimer la transaction orpheline avant de renvoyer l'erreur
+      await db.delete(transactionsTable).where(eq(transactionsTable.id, tx.id)).catch(() => null);
+      logger.error({ err }, "AshtechPay collect failed — transaction annulée");
+      const message = err instanceof Error ? err.message : "Impossible de générer l'adresse de paiement.";
+      const httpErr = Object.assign(new Error(message), { statusCode: 502 });
+      throw httpErr;
     }
 
     const [updated] = await db
