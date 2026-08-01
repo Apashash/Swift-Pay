@@ -46878,6 +46878,8 @@ router3.post("/transactions", async (req, res, next) => {
           asset_code: tx.assetCode ?? assetCode.trim(),
           amount: amountCrypto + fee,
           // total the customer sends
+          currency: tx.cryptoCurrency,
+          // obligatoire : USDT, XAF, XOF, etc.
           reference: tx.id,
           notify_url: notifyUrl
         });
