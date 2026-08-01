@@ -29,7 +29,7 @@ export interface AshCollectRequest {
   currency: string;         // USDT, XAF, XOF, GNF, CDF, USD — obligatoire
   reference?: string;
   notify_url?: string;
-  customer?: { firstName?: string; lastName?: string; email?: string };
+  customer?: Record<string, string>; // toujours un objet — {} si aucune info, { email } si fourni
   refund_address?: string;
 }
 

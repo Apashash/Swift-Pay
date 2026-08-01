@@ -437,6 +437,7 @@ export function PaymentForm() {
           assetCode: selectedAssetCode,
           rate: rateValue,
           fee,
+          email: email.trim() || undefined,
         }),
       });
       setCreatedTx(data.transaction);
