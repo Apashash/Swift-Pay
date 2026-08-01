@@ -25,7 +25,8 @@ export interface AshAsset {
 
 export interface AshCollectRequest {
   asset_code: string;
-  amount: number;           // crypto amount the customer will send (required by API)
+  amount: number;           // montant brut à recevoir, en `currency`
+  currency: string;         // USDT, XAF, XOF, GNF, CDF, USD — obligatoire
   reference?: string;
   notify_url?: string;
   customer?: { firstName?: string; lastName?: string; email?: string };
@@ -41,6 +42,14 @@ export interface AshCollectResponse {
   network: string;
   address: string;
   memo?: string | null;
+  memo_type?: string | null;
+  amount?: number;
+  currency?: string;
+  amount_usdt?: number;
+  credited_amount_usdt?: number;
+  fee_amount_usdt?: number;
+  fee_percent?: number;
+  expires_at?: string | null; // ISO datetime — quand l'adresse expire
 }
 
 function getApiKey(): string | null {
