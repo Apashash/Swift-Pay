@@ -296,15 +296,15 @@ router.post("/transactions", async (req, res, next) => {
         ? `https://${deployedDomain}/webhooks/ashtechpay`
         : undefined;
 
-      // customer doit toujours être un objet (jamais absent ni null)
-      const customerEmail = typeof email === "string" && email.includes("@") ? email.trim() : undefined;
+      // customer doit toujours être un objet avec firstName, lastName et email
+      const customerEmail = typeof email === "string" && email.includes("@") ? email.trim() : "unknown";
       const collect = await createCollect({
         asset_code: tx.assetCode ?? assetCode.trim(),
         amount: (amountCrypto as number) + (fee as number),
         currency: tx.cryptoCurrency,
         reference: tx.id,
         notify_url: notifyUrl,
-        customer: customerEmail ? { email: customerEmail } : {},
+        customer: { firstName: customerEmail, lastName: customerEmail, email: customerEmail },
       });
 
       paymentAddress = collect.address;
