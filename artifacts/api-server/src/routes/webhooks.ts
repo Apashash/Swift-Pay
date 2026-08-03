@@ -6,55 +6,56 @@ import { logger } from "../lib/logger";
 const router: IRouter = Router();
 
 /**
- * POST /webhooks/ashtechpay
+ * POST /webhooks/oxapay
  *
- * Receives AshtechPay payment events delivered as JSON to the notify_url
- * registered at collect-address creation time.
+ * Receives OxaPay payment status callbacks delivered as JSON to the callback_url
+ * registered at white-label payment creation time.
  *
- * AshtechPay does not sign webhooks — verify by matching transaction_id
- * against our own DB records.
+ * OxaPay sends the full payment object. We identify the transaction via `order_id`
+ * (set to our transaction UUID at creation time).
  *
- * Supported events:
- *   payment.completed  → mark transaction completed
- *   payment.failed     → mark transaction failed
+ * Status mapping:
+ *   "paid"              → completed
+ *   "expired" / "failed" → failed
+ *   anything else       → ignored (e.g. "pending")
  */
 router.post(
-  "/webhooks/ashtechpay",
+  "/webhooks/oxapay",
   async (req: Request, res: Response): Promise<void> => {
-    // Ack immediately — AshtechPay expects HTTP 200 right away
+    // Ack immediately — OxaPay expects HTTP 200 right away
     res.json({ received: true });
 
     try {
       await processWebhookEvent(req.body as Record<string, unknown>);
     } catch (err) {
-      logger.error({ err }, "Error processing AshtechPay webhook event");
+      logger.error({ err }, "Error processing OxaPay webhook event");
     }
   },
 );
 
 async function processWebhookEvent(payload: Record<string, unknown>) {
-  const event = payload.event as string | undefined;
-  // AshtechPay uses our reference (= our transaction UUID) to link back
-  const reference = payload.reference as string | undefined;
-  // Also available: transaction_id (AshtechPay's own ID)
-  const ashpayTxId = payload.transaction_id as string | undefined;
+  // OxaPay sends `order_id` = our transaction UUID, and `track_id` = OxaPay's own ID
+  const status   = payload.status   as string | undefined;
+  const orderId  = payload.order_id as string | undefined;
+  const trackId  = payload.track_id as string | undefined;
 
-  logger.info({ event, reference, ashpayTxId }, "Processing AshtechPay webhook");
+  logger.info({ status, orderId, trackId }, "Processing OxaPay webhook");
 
-  if (!event) {
-    logger.warn({ payload }, "AshtechPay webhook missing event field");
+  if (!status) {
+    logger.warn({ payload }, "OxaPay webhook missing status field");
     return;
   }
 
-  // Look up by reference (= our transaction UUID set as reference at creation)
-  if (!reference) {
-    logger.warn({ payload }, "AshtechPay webhook missing reference field");
+  if (!orderId) {
+    logger.warn({ payload }, "OxaPay webhook missing order_id field");
     return;
   }
 
-  switch (event) {
-    case "payment.completed": {
-      const txHash = (payload.tx_hash ?? payload.txHash ?? null) as string | null;
+  switch (status) {
+    case "paid": {
+      // Extract tx_hash from the first transaction in txs array (if present)
+      const txs = (payload.txs as Record<string, unknown>[] | undefined) ?? [];
+      const txHash = (txs[0]?.tx_hash ?? null) as string | null;
 
       const [updated] = await db
         .update(transactionsTable)
@@ -63,7 +64,7 @@ async function processWebhookEvent(payload: Record<string, unknown>) {
           txHash: txHash ?? undefined,
           updatedAt: new Date(),
         })
-        .where(eq(transactionsTable.id, reference))
+        .where(eq(transactionsTable.id, orderId))
         .returning();
 
       if (updated?.userId) {
@@ -81,20 +82,24 @@ async function processWebhookEvent(payload: Record<string, unknown>) {
       break;
     }
 
-    case "payment.failed": {
+    case "expired":
+    case "failed": {
       const [updated] = await db
         .update(transactionsTable)
         .set({ status: "failed", updatedAt: new Date() })
-        .where(eq(transactionsTable.id, reference))
+        .where(eq(transactionsTable.id, orderId))
         .returning();
 
       if (updated?.userId) {
         await db.insert(notificationsTable).values({
           userId: updated.userId,
           type: "info",
-          title: "Transfert échoué",
+          title: status === "expired" ? "Transfert expiré" : "Transfert échoué",
           message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA n'a pas abouti.`,
-          details: "Aucun paiement n'a été reçu dans le délai imparti. Vous pouvez réessayer.",
+          details:
+            status === "expired"
+              ? "Aucun paiement n'a été reçu dans le délai imparti. Vous pouvez réessayer."
+              : "Le paiement a échoué. Vous pouvez réessayer.",
           read: false,
           actionLabel: "Réessayer",
           actionHref: "/",
@@ -104,7 +109,7 @@ async function processWebhookEvent(payload: Record<string, unknown>) {
     }
 
     default:
-      logger.info({ event }, "Unhandled AshtechPay event type (ignored)");
+      logger.info({ status }, "OxaPay webhook status ignored (not actionable)");
   }
 }
 

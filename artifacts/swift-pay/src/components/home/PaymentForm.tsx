@@ -434,6 +434,7 @@ export function PaymentForm() {
           amountCrypto: cryptoNet,
           cryptoCurrency: selectedCoin,
           cryptoNetwork: selectedAsset?.network ?? null,
+          networkLabel: selectedAsset?.network_label ?? null,
           assetCode: selectedAssetCode,
           rate: rateValue,
           fee,

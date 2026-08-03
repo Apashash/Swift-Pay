@@ -30,7 +30,7 @@ app.use(
 );
 app.use(cors());
 
-// Webhooks AshtechPay — delivered as plain JSON, no raw body needed
+// Webhooks OxaPay — delivered as plain JSON, no raw body needed
 app.use("/webhooks", webhookRouter);
 
 app.use(express.json());

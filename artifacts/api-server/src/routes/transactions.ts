@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { and, desc, eq, gte, ilike, or, sql } from "drizzle-orm";
 import { db, transactionsTable, notificationsTable } from "@workspace/db";
 import { getBearerToken, getUserFromToken } from "../lib/auth";
-import { createCollect } from "../lib/ashtechpay";
+import { createWhiteLabel } from "../lib/oxapay";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
@@ -242,6 +242,7 @@ router.post("/transactions", async (req, res, next) => {
       rate,
       fee,
       email,
+      networkLabel,
     } = req.body as Record<string, unknown>;
 
     if (
@@ -284,41 +285,46 @@ router.post("/transactions", async (req, res, next) => {
       })
       .returning();
 
-    // Appel AshtechPay obligatoire — aucun fallback mock.
+    // Appel OxaPay white-label obligatoire — aucun fallback mock.
     // Si l'API échoue ou la clé est absente, la transaction est supprimée et une erreur est renvoyée.
     let paymentAddress: string;
     let paymentMemo: string | null = null;
-    let ashpayTxId: string | undefined;
+    let oxapayTrackId: string | undefined;
 
     try {
       const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
-      const notifyUrl = deployedDomain
-        ? `https://${deployedDomain}/webhooks/ashtechpay`
+      const callbackUrl = deployedDomain
+        ? `https://${deployedDomain}/webhooks/oxapay`
         : undefined;
 
-      // customer: email fourni par l'utilisateur ou fallback, firstName/lastName = numéro de téléphone
-      const customerEmail =
+      // Email: celui fourni par l'utilisateur si valide, sinon fallback générique
+      const payerEmail =
         typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
           ? email.trim()
-          : "client1234@gmail.com";
-      const customerPhone = recipientPhone.trim();
-      const collect = await createCollect({
-        asset_code: tx.assetCode ?? assetCode.trim(),
+          : undefined;
+
+      // network_label (human name e.g. "Tron Network") envoyé par le frontend
+      const oxaNetwork = typeof networkLabel === "string" ? networkLabel.trim() : undefined;
+
+      const payment = await createWhiteLabel({
+        pay_currency: tx.cryptoCurrency,               // e.g. "USDT"
         amount: (amountCrypto as number) + (fee as number),
-        currency: tx.cryptoCurrency,
-        reference: tx.id,
-        notify_url: notifyUrl,
-        customer: { firstName: customerPhone, lastName: customerPhone, email: customerEmail },
+        network: oxaNetwork,                           // e.g. "Tron Network" (optionnel)
+        callback_url: callbackUrl,
+        email: payerEmail,
+        order_id: tx.id,                               // notre UUID — reçu dans le webhook
+        description: `SwiftPay transfer to ${tx.recipientPhone}`,
+        lifetime: 60,
       });
 
-      paymentAddress = collect.address;
-      paymentMemo = collect.memo ?? null;
-      ashpayTxId = collect.transaction_id;
-      logger.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
+      paymentAddress = payment.address;
+      paymentMemo = payment.memo && payment.memo !== "" ? payment.memo : null;
+      oxapayTrackId = payment.track_id;
+      logger.info({ txId: tx.id, oxapayTrackId }, "OxaPay white-label payment created");
     } catch (err) {
       // Supprimer la transaction orpheline avant de renvoyer l'erreur
       await db.delete(transactionsTable).where(eq(transactionsTable.id, tx.id)).catch(() => null);
-      logger.error({ err }, "AshtechPay collect failed — transaction annulée");
+      logger.error({ err }, "OxaPay white-label failed — transaction annulée");
       const message = err instanceof Error ? err.message : "Impossible de générer l'adresse de paiement.";
       const httpErr = Object.assign(new Error(message), { statusCode: 502 });
       throw httpErr;
@@ -326,7 +332,7 @@ router.post("/transactions", async (req, res, next) => {
 
     const [updated] = await db
       .update(transactionsTable)
-      .set({ paymentAddress, paymentMemo, intentId: ashpayTxId })
+      .set({ paymentAddress, paymentMemo, intentId: oxapayTrackId })
       .where(eq(transactionsTable.id, tx.id))
       .returning();
 

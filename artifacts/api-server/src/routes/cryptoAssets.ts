@@ -1,12 +1,12 @@
 import { Router, type IRouter } from "express";
-import { getAssets } from "../lib/ashtechpay";
-import type { AshAsset } from "../lib/ashtechpay";
+import { getAssets } from "../lib/oxapay";
+import type { OxaAsset } from "../lib/oxapay";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
 interface AssetsCache {
-  data: AshAsset[];
+  data: OxaAsset[];
   fetchedAt: number;
 }
 
@@ -16,9 +16,9 @@ const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 /**
  * GET /api/crypto/assets
  *
- * Returns the list of active crypto networks from AshtechPay.
+ * Returns the list of active crypto networks from OxaPay.
  * Cached for 10 minutes to avoid hammering the upstream API.
- * Falls back to an empty list if ASHTECHPAY_API_KEY is not set.
+ * Falls back to an empty list if the fetch fails.
  */
 router.get("/crypto/assets", async (_req, res, next) => {
   try {
@@ -28,7 +28,7 @@ router.get("/crypto/assets", async (_req, res, next) => {
         const assets = await getAssets();
         cache = { data: assets, fetchedAt: now };
       } catch (err) {
-        logger.warn({ err }, "Failed to fetch AshtechPay crypto assets");
+        logger.warn({ err }, "Failed to fetch OxaPay crypto assets");
         // Return stale cache if available, otherwise empty list
         if (!cache) {
           res.json({ assets: [], cached: false });

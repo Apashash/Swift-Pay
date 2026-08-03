@@ -46608,36 +46608,69 @@ var auth_default = router2;
 var import_express3 = __toESM(require_express2(), 1);
 init_src();
 
-// src/lib/ashtechpay.ts
-var BASE_URL = "https://ashtechpay.top/v1";
+// src/lib/oxapay.ts
+var BASE_URL = "https://api.oxapay.com/v1";
 function getApiKey() {
-  return process.env.ASHTECHPAY_API_KEY ?? null;
+  return process.env.OXAPAY_MERCHANT_API_KEY ?? null;
 }
-async function ashFetch(path2, options = {}) {
-  const apiKey = getApiKey();
-  if (!apiKey) throw new Error("ASHTECHPAY_API_KEY not set");
+async function oxaFetch(path2, options = {}, requireAuth = true) {
+  const headers = {
+    "Content-Type": "application/json"
+  };
+  if (requireAuth) {
+    const apiKey = getApiKey();
+    if (!apiKey) throw new Error("OXAPAY_MERCHANT_API_KEY not set");
+    headers["merchant_api_key"] = apiKey;
+  }
   const res = await fetch(`${BASE_URL}${path2}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-      ...options.headers
-    },
+    headers: { ...headers, ...options.headers },
     signal: AbortSignal.timeout(1e4)
   });
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    const msg = body?.message ?? body?.error ?? `HTTP ${res.status}`;
-    throw new Error(`AshtechPay error: ${msg}`);
+  const body = await res.json().catch(() => null);
+  if (!res.ok || body && body.status && body.status >= 400) {
+    const msg = body?.error?.message ?? body?.message ?? `HTTP ${res.status}`;
+    throw new Error(`OxaPay error: ${msg}`);
   }
-  return res.json();
+  if (!body) throw new Error("OxaPay error: empty response");
+  return body.data;
 }
 async function getAssets() {
-  const data = await ashFetch("/crypto/assets");
-  return data.assets;
+  const data = await oxaFetch(
+    "/common/currencies",
+    { method: "GET" },
+    false
+    // no auth needed
+  );
+  const assets = [];
+  for (const [symbol, entry] of Object.entries(data)) {
+    if (!entry.status) continue;
+    for (const [networkLabel, net] of Object.entries(entry.networks)) {
+      const keys = net.keys ?? [];
+      const memoRequired = keys.includes("memo") || keys.includes("destination_tag") || keys.includes("tag");
+      const memoType = memoRequired ? keys.includes("destination_tag") || keys.includes("tag") ? "numeric" : "text" : null;
+      assets.push({
+        asset_code: `${symbol}.${net.network}`,
+        // e.g. "USDT.TRC20"
+        coin: symbol,
+        name: entry.name,
+        network: net.network,
+        // tech code
+        network_label: networkLabel,
+        // human name — used as `network` in white-label call
+        memo_required: memoRequired,
+        memo_type: memoType,
+        currency: symbol
+      });
+    }
+  }
+  assets.sort(
+    (a, b) => a.coin.localeCompare(b.coin) || a.network.localeCompare(b.network)
+  );
+  return assets;
 }
-async function createCollect(req) {
-  return ashFetch("/crypto/collect", {
+async function createWhiteLabel(req) {
+  return oxaFetch("/payment/white-label", {
     method: "POST",
     body: JSON.stringify(req)
   });
@@ -46824,7 +46857,8 @@ router3.post("/transactions", async (req, res, next) => {
       assetCode,
       rate,
       fee,
-      email
+      email,
+      networkLabel
     } = req.body;
     if (typeof recipient !== "string" || typeof recipientPhone !== "string" || typeof countryCode !== "string" || typeof countryName !== "string" || typeof networkFlag !== "string" || typeof network !== "string" || typeof amountFcfa !== "number" || typeof amountCrypto !== "number" || typeof cryptoCurrency !== "string" || typeof assetCode !== "string" || typeof rate !== "number" || typeof fee !== "number" || amountFcfa <= 0) {
       res.status(400).json({ message: "Donn\xE9es de transaction invalides." });
@@ -46849,32 +46883,37 @@ router3.post("/transactions", async (req, res, next) => {
     }).returning();
     let paymentAddress;
     let paymentMemo = null;
-    let ashpayTxId;
+    let oxapayTrackId;
     try {
       const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
-      const notifyUrl = deployedDomain ? `https://${deployedDomain}/webhooks/ashtechpay` : void 0;
-      const customerEmail = typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? email.trim() : "client1234@gmail.com";
-      const customerPhone = recipientPhone.trim();
-      const collect = await createCollect({
-        asset_code: tx.assetCode ?? assetCode.trim(),
+      const callbackUrl = deployedDomain ? `https://${deployedDomain}/webhooks/oxapay` : void 0;
+      const payerEmail = typeof email === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? email.trim() : void 0;
+      const oxaNetwork = typeof networkLabel === "string" ? networkLabel.trim() : void 0;
+      const payment = await createWhiteLabel({
+        pay_currency: tx.cryptoCurrency,
+        // e.g. "USDT"
         amount: amountCrypto + fee,
-        currency: tx.cryptoCurrency,
-        reference: tx.id,
-        notify_url: notifyUrl,
-        customer: { firstName: customerPhone, lastName: customerPhone, email: customerEmail }
+        network: oxaNetwork,
+        // e.g. "Tron Network" (optionnel)
+        callback_url: callbackUrl,
+        email: payerEmail,
+        order_id: tx.id,
+        // notre UUID — reçu dans le webhook
+        description: `SwiftPay transfer to ${tx.recipientPhone}`,
+        lifetime: 60
       });
-      paymentAddress = collect.address;
-      paymentMemo = collect.memo ?? null;
-      ashpayTxId = collect.transaction_id;
-      logger.info({ txId: tx.id, ashpayTxId }, "AshtechPay deposit address created");
+      paymentAddress = payment.address;
+      paymentMemo = payment.memo && payment.memo !== "" ? payment.memo : null;
+      oxapayTrackId = payment.track_id;
+      logger.info({ txId: tx.id, oxapayTrackId }, "OxaPay white-label payment created");
     } catch (err) {
       await db.delete(transactionsTable).where(eq(transactionsTable.id, tx.id)).catch(() => null);
-      logger.error({ err }, "AshtechPay collect failed \u2014 transaction annul\xE9e");
+      logger.error({ err }, "OxaPay white-label failed \u2014 transaction annul\xE9e");
       const message = err instanceof Error ? err.message : "Impossible de g\xE9n\xE9rer l'adresse de paiement.";
       const httpErr = Object.assign(new Error(message), { statusCode: 502 });
       throw httpErr;
     }
-    const [updated] = await db.update(transactionsTable).set({ paymentAddress, paymentMemo, intentId: ashpayTxId }).where(eq(transactionsTable.id, tx.id)).returning();
+    const [updated] = await db.update(transactionsTable).set({ paymentAddress, paymentMemo, intentId: oxapayTrackId }).where(eq(transactionsTable.id, tx.id)).returning();
     if (userId) {
       await db.insert(notificationsTable).values({
         userId,
@@ -47280,7 +47319,7 @@ router7.get("/crypto/assets", async (_req, res, next) => {
         const assets = await getAssets();
         cache2 = { data: assets, fetchedAt: now };
       } catch (err) {
-        logger.warn({ err }, "Failed to fetch AshtechPay crypto assets");
+        logger.warn({ err }, "Failed to fetch OxaPay crypto assets");
         if (!cache2) {
           res.json({ assets: [], cached: false });
           return;
@@ -47310,37 +47349,38 @@ var import_express9 = __toESM(require_express2(), 1);
 init_src();
 var router9 = (0, import_express9.Router)();
 router9.post(
-  "/webhooks/ashtechpay",
+  "/webhooks/oxapay",
   async (req, res) => {
     res.json({ received: true });
     try {
       await processWebhookEvent(req.body);
     } catch (err) {
-      logger.error({ err }, "Error processing AshtechPay webhook event");
+      logger.error({ err }, "Error processing OxaPay webhook event");
     }
   }
 );
 async function processWebhookEvent(payload) {
-  const event = payload.event;
-  const reference = payload.reference;
-  const ashpayTxId = payload.transaction_id;
-  logger.info({ event, reference, ashpayTxId }, "Processing AshtechPay webhook");
-  if (!event) {
-    logger.warn({ payload }, "AshtechPay webhook missing event field");
+  const status = payload.status;
+  const orderId = payload.order_id;
+  const trackId = payload.track_id;
+  logger.info({ status, orderId, trackId }, "Processing OxaPay webhook");
+  if (!status) {
+    logger.warn({ payload }, "OxaPay webhook missing status field");
     return;
   }
-  if (!reference) {
-    logger.warn({ payload }, "AshtechPay webhook missing reference field");
+  if (!orderId) {
+    logger.warn({ payload }, "OxaPay webhook missing order_id field");
     return;
   }
-  switch (event) {
-    case "payment.completed": {
-      const txHash = payload.tx_hash ?? payload.txHash ?? null;
+  switch (status) {
+    case "paid": {
+      const txs = payload.txs ?? [];
+      const txHash = txs[0]?.tx_hash ?? null;
       const [updated] = await db.update(transactionsTable).set({
         status: "completed",
         txHash: txHash ?? void 0,
         updatedAt: /* @__PURE__ */ new Date()
-      }).where(eq(transactionsTable.id, reference)).returning();
+      }).where(eq(transactionsTable.id, orderId)).returning();
       if (updated?.userId) {
         await db.insert(notificationsTable).values({
           userId: updated.userId,
@@ -47355,15 +47395,16 @@ async function processWebhookEvent(payload) {
       }
       break;
     }
-    case "payment.failed": {
-      const [updated] = await db.update(transactionsTable).set({ status: "failed", updatedAt: /* @__PURE__ */ new Date() }).where(eq(transactionsTable.id, reference)).returning();
+    case "expired":
+    case "failed": {
+      const [updated] = await db.update(transactionsTable).set({ status: "failed", updatedAt: /* @__PURE__ */ new Date() }).where(eq(transactionsTable.id, orderId)).returning();
       if (updated?.userId) {
         await db.insert(notificationsTable).values({
           userId: updated.userId,
           type: "info",
-          title: "Transfert \xE9chou\xE9",
+          title: status === "expired" ? "Transfert expir\xE9" : "Transfert \xE9chou\xE9",
           message: `Votre transfert de ${updated.amountFcfa.toLocaleString("fr-FR")} FCFA n'a pas abouti.`,
-          details: "Aucun paiement n'a \xE9t\xE9 re\xE7u dans le d\xE9lai imparti. Vous pouvez r\xE9essayer.",
+          details: status === "expired" ? "Aucun paiement n'a \xE9t\xE9 re\xE7u dans le d\xE9lai imparti. Vous pouvez r\xE9essayer." : "Le paiement a \xE9chou\xE9. Vous pouvez r\xE9essayer.",
           read: false,
           actionLabel: "R\xE9essayer",
           actionHref: "/"
@@ -47372,7 +47413,7 @@ async function processWebhookEvent(payload) {
       break;
     }
     default:
-      logger.info({ event }, "Unhandled AshtechPay event type (ignored)");
+      logger.info({ status }, "OxaPay webhook status ignored (not actionable)");
   }
 }
 var webhooks_default = router9;
