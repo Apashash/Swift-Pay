@@ -1,3 +1,3 @@
 - [SwiftPay auth pattern](swiftpay-auth.md) — Supabase-backed auth; AuthProvider must wrap the app above QueryClientProvider.
 - [Plesk deployment](plesk-deployment.md) — Plesk may run npm; keep install compatible and commit production dist artifacts when needed.
-- [AshtechPay integration](ashtechpay-integration.md) — replaced IziChangePay; GET /v1/crypto/assets + POST /v1/crypto/collect, no webhook signature, reference=txUUID.
+- [OxaPay integration](oxapay-integration.md) — replaced AshtechPay; white-label POST /payment/white-label, assets from GET /common/currencies (no auth), webhook uses order_id=txUUID, status "paid"→completed.
