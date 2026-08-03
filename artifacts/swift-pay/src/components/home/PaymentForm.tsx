@@ -87,9 +87,36 @@ const NETWORK_COIN: Record<string, string> = {
   TRX: 'TRX',
 };
 
+/**
+ * Real network brand logos, kept separate from the asset/coin logo.
+ * The Simple Icons CDN serves the official brand SVG mark for each chain.
+ */
+const NETWORK_BRAND: Record<string, string> = {
+  TRC20: 'tron', TRON: 'tron', 'TRON NETWORK': 'tron',
+  ERC20: 'ethereum', ETHEREUM: 'ethereum', 'ETHEREUM NETWORK': 'ethereum',
+  BEP20: 'bnb', BSC: 'bnb', 'BINANCE SMART CHAIN': 'bnb',
+  SOL: 'solana', SOLANA: 'solana', 'SOLANA NETWORK': 'solana',
+  TON: 'ton', 'TON NETWORK': 'ton',
+  MATIC: 'polygon', POLYGON: 'polygon', 'POLYGON NETWORK': 'polygon',
+  AVAXC: 'avalanche', AVAX: 'avalanche', 'AVALANCHE NETWORK': 'avalanche',
+  ARB: 'arbitrum', ARBITRUM: 'arbitrum', 'ARBITRUM ONE': 'arbitrum',
+  OP: 'optimism', OPTIMISM: 'optimism', 'OPTIMISM NETWORK': 'optimism',
+  XRP: 'xrp', 'XRP LEDGER': 'xrp',
+  ADA: 'cardano', CARDANO: 'cardano',
+  XLM: 'stellar', STELLAR: 'stellar',
+  XTZ: 'tezos', TEZOS: 'tezos',
+  DOGE: 'dogecoin', DOGECOIN: 'dogecoin',
+  LTC: 'litecoin', LITECOIN: 'litecoin',
+  BCH: 'bitcoincash', 'BITCOIN CASH': 'bitcoincash',
+  BTC: 'bitcoin', BITCOIN: 'bitcoin',
+ };
+
 function networkLogoUrl(networkCode: string): string {
-  const coin = NETWORK_COIN[networkCode.toUpperCase()] ?? networkCode;
-  return coinLogoUrl(coin);
+  const key = networkCode.trim().toUpperCase();
+  const brand = NETWORK_BRAND[key];
+  return brand
+    ? `https://cdn.simpleicons.org/${brand}`
+    : coinLogoUrl(NETWORK_COIN[key] ?? networkCode);
 }
 
 /** Coin accent colors */
@@ -133,7 +160,8 @@ function CoinLogo({ coin, size = 28 }: { coin: string; size?: number }) {
 /** Network logo img with fallback */
 function NetworkLogo({ network, size = 20 }: { network: string; size?: number }) {
   const [err, setErr] = useState(false);
-  const mappedCoin = NETWORK_COIN[network.toUpperCase()] ?? network;
+  const networkKey = network.trim().toUpperCase();
+  const mappedCoin = NETWORK_COIN[networkKey] ?? network;
   const color = coinColor(mappedCoin);
   if (err) {
     return (
