@@ -185,7 +185,6 @@ function CoinLogo({ coin, size = 28 }: { coin: string; size?: number }) {
       width={size}
       height={size}
       className="rounded-[22%] flex-shrink-0 object-contain"
-      style={{ background: `${color}22` }}
       onError={() => setErr(true)}
     />
   );
@@ -214,7 +213,6 @@ function NetworkLogo({ network, size = 20 }: { network: string; size?: number })
       width={size}
       height={size}
       className="rounded-[22%] flex-shrink-0 object-contain"
-      style={{ background: `${color}22` }}
       onError={() => setErr(true)}
     />
   );
