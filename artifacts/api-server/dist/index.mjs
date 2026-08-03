@@ -42281,7 +42281,9 @@ var init_schema2 = __esm({
         txHash: text("tx_hash"),
         paymentAddress: text("payment_address"),
         intentId: text("intent_id"),
-        // AshtechPay transaction_id
+        // OxaPay track_id
+        qrCodeUrl: text("qr_code_url"),
+        // QR code image URL provided by OxaPay
         createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
         updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow()
       },
@@ -46891,6 +46893,7 @@ router3.post("/transactions", async (req, res, next) => {
     let paymentAddress;
     let paymentMemo = null;
     let oxapayTrackId;
+    let oxapayQrCode = null;
     try {
       const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
       const callbackUrl = deployedDomain ? `https://${deployedDomain}/webhooks/oxapay` : void 0;
@@ -46912,6 +46915,7 @@ router3.post("/transactions", async (req, res, next) => {
       paymentAddress = payment.address;
       paymentMemo = payment.memo && payment.memo !== "" ? payment.memo : null;
       oxapayTrackId = payment.track_id;
+      oxapayQrCode = payment.qr_code ?? null;
       logger.info({ txId: tx.id, oxapayTrackId }, "OxaPay white-label payment created");
     } catch (err) {
       await db.delete(transactionsTable).where(eq(transactionsTable.id, tx.id)).catch(() => null);
@@ -46920,7 +46924,7 @@ router3.post("/transactions", async (req, res, next) => {
       const httpErr = Object.assign(new Error(message), { statusCode: 502 });
       throw httpErr;
     }
-    const [updated] = await db.update(transactionsTable).set({ paymentAddress, paymentMemo, intentId: oxapayTrackId }).where(eq(transactionsTable.id, tx.id)).returning();
+    const [updated] = await db.update(transactionsTable).set({ paymentAddress, paymentMemo, intentId: oxapayTrackId, qrCodeUrl: oxapayQrCode }).where(eq(transactionsTable.id, tx.id)).returning();
     if (userId) {
       await db.insert(notificationsTable).values({
         userId,

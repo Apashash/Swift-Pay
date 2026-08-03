@@ -810,7 +810,7 @@ export function PaymentForm() {
                 </p>
               </div>
 
-              {/* QR code */}
+              {/* QR code — utilise l'URL fournie par OxaPay si disponible */}
               {addr && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -819,21 +819,33 @@ export function PaymentForm() {
                   className="flex flex-col items-center gap-2"
                 >
                   <div className="relative p-3 bg-white rounded-2xl shadow-lg ring-1 ring-border inline-block">
-                    <QRCodeSVG
-                      value={addr}
-                      size={180}
-                      bgColor="#ffffff"
-                      fgColor="#111111"
-                      level="M"
-                      marginSize={0}
-                    />
+                    {createdTx?.qrCodeUrl ? (
+                      <img
+                        src={createdTx.qrCodeUrl}
+                        alt="QR code de paiement"
+                        width={180}
+                        height={180}
+                        style={{ display: 'block' }}
+                      />
+                    ) : (
+                      <QRCodeSVG
+                        value={addr}
+                        size={180}
+                        bgColor="#ffffff"
+                        fgColor="#111111"
+                        level="M"
+                        marginSize={0}
+                      />
+                    )}
                     {/* Coin logo overlay in center */}
-                    <div
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white p-1 shadow"
-                      style={{ width: 36, height: 36 }}
-                    >
-                      <CoinLogo coin={selectedCoin} size={28} />
-                    </div>
+                    {!createdTx?.qrCodeUrl && (
+                      <div
+                        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white p-1 shadow"
+                        style={{ width: 36, height: 36 }}
+                      >
+                        <CoinLogo coin={selectedCoin} size={28} />
+                      </div>
+                    )}
                   </div>
                   <p className="text-[10px] text-muted-foreground">Scanner le QR code pour copier l'adresse</p>
                 </motion.div>

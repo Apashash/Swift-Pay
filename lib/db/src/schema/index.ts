@@ -74,7 +74,8 @@ export const transactionsTable = pgTable(
     paymentMemo: text("payment_memo"), // memo/tag for networks that require it (XRP, XLM, TON…)
     txHash: text("tx_hash"),
     paymentAddress: text("payment_address"),
-    intentId: text("intent_id"), // AshtechPay transaction_id
+    intentId: text("intent_id"), // OxaPay track_id
+    qrCodeUrl: text("qr_code_url"), // QR code image URL provided by OxaPay
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

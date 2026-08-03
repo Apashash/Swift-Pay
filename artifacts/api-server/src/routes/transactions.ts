@@ -290,6 +290,7 @@ router.post("/transactions", async (req, res, next) => {
     let paymentAddress: string;
     let paymentMemo: string | null = null;
     let oxapayTrackId: string | undefined;
+    let oxapayQrCode: string | null = null;
 
     try {
       const deployedDomain = process.env.REPLIT_DEV_DOMAIN ?? process.env.REPLIT_DOMAINS?.split(",")[0];
@@ -320,6 +321,7 @@ router.post("/transactions", async (req, res, next) => {
       paymentAddress = payment.address;
       paymentMemo = payment.memo && payment.memo !== "" ? payment.memo : null;
       oxapayTrackId = payment.track_id;
+      oxapayQrCode = payment.qr_code ?? null;
       logger.info({ txId: tx.id, oxapayTrackId }, "OxaPay white-label payment created");
     } catch (err) {
       // Supprimer la transaction orpheline avant de renvoyer l'erreur
@@ -332,7 +334,7 @@ router.post("/transactions", async (req, res, next) => {
 
     const [updated] = await db
       .update(transactionsTable)
-      .set({ paymentAddress, paymentMemo, intentId: oxapayTrackId })
+      .set({ paymentAddress, paymentMemo, intentId: oxapayTrackId, qrCodeUrl: oxapayQrCode })
       .where(eq(transactionsTable.id, tx.id))
       .returning();
 

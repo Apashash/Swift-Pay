@@ -45,7 +45,8 @@ export interface OxaWhiteLabelResponse {
   pay_amount: number;
   pay_currency: string;
   network: string;
-  expired_at: number;  // UNIX timestamp
+  expired_at: number;   // UNIX timestamp
+  qr_code?: string;     // URL of QR code image provided by OxaPay
   amount?: number;
   currency?: string;
   status?: string;

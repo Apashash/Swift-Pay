@@ -50,6 +50,7 @@ export interface ApiTransaction {
   txHash: string | null;
   paymentAddress: string | null;
   paymentMemo: string | null;
+  qrCodeUrl: string | null;
   createdAt: string;
   updatedAt: string;
 }
