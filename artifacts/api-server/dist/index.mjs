@@ -46622,12 +46622,19 @@ async function oxaFetch(path2, options = {}, requireAuth = true) {
     if (!apiKey) throw new Error("OXAPAY_MERCHANT_API_KEY not set");
     headers["merchant_api_key"] = apiKey;
   }
-  const res = await fetch(`${BASE_URL}${path2}`, {
+  const url = `${BASE_URL}${path2}`;
+  const res = await fetch(url, {
     ...options,
     headers: { ...headers, ...options.headers },
     signal: AbortSignal.timeout(1e4)
   });
-  const body = await res.json().catch(() => null);
+  const rawText = await res.text().catch(() => "");
+  let body = null;
+  try {
+    body = JSON.parse(rawText);
+  } catch {
+  }
+  console.log("[OxaPay]", options.method ?? "GET", url, "\u2192 HTTP", res.status, JSON.stringify(body));
   if (!res.ok || body && body.status && body.status >= 400) {
     const msg = body?.error?.message ?? body?.message ?? `HTTP ${res.status}`;
     throw new Error(`OxaPay error: ${msg}`);

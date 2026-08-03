@@ -80,13 +80,19 @@ async function oxaFetch<T>(
     headers["merchant_api_key"] = apiKey;
   }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  const url = `${BASE_URL}${path}`;
+  const res = await fetch(url, {
     ...options,
     headers: { ...headers, ...(options.headers as Record<string, string> | undefined) },
     signal: AbortSignal.timeout(10_000),
   });
 
-  const body = await res.json().catch(() => null) as OxaApiResponse<T> | null;
+  const rawText = await res.text().catch(() => "");
+  let body: OxaApiResponse<T> | null = null;
+  try { body = JSON.parse(rawText) as OxaApiResponse<T>; } catch { /* ignore */ }
+
+  // Log full response for debugging (sans API key)
+  console.log("[OxaPay]", options.method ?? "GET", url, "→ HTTP", res.status, JSON.stringify(body));
 
   if (!res.ok || (body && body.status && body.status >= 400)) {
     const msg =
