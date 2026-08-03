@@ -164,14 +164,14 @@ const COIN_COLOR: Record<string, string> = {
 
 function coinColor(coin: string) { return COIN_COLOR[coin] ?? '#888'; }
 
-/** Coin logo img with fallback to colored circle */
+/** Coin logo img with the rounded-square shape used by OxaPay. */
 function CoinLogo({ coin, size = 28 }: { coin: string; size?: number }) {
   const [err, setErr] = useState(false);
   const color = coinColor(coin);
   if (err) {
     return (
       <div
-        className="rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
+        className="rounded-[22%] flex items-center justify-center font-bold text-white flex-shrink-0"
         style={{ width: size, height: size, fontSize: size * 0.38, background: color }}
       >
         {coin.slice(0, 1)}
@@ -184,14 +184,14 @@ function CoinLogo({ coin, size = 28 }: { coin: string; size?: number }) {
       alt={coin}
       width={size}
       height={size}
-      className="rounded-full flex-shrink-0 object-contain"
+      className="rounded-[22%] flex-shrink-0 object-contain"
       style={{ background: `${color}22` }}
       onError={() => setErr(true)}
     />
   );
 }
 
-/** Network logo img with fallback */
+/** Network logo with the same rounded-square shape as OxaPay. */
 function NetworkLogo({ network, size = 20 }: { network: string; size?: number }) {
   const [err, setErr] = useState(false);
   const networkKey = network.trim().toUpperCase();
@@ -200,7 +200,7 @@ function NetworkLogo({ network, size = 20 }: { network: string; size?: number })
   if (err) {
     return (
       <div
-        className="rounded-full flex items-center justify-center font-bold text-white flex-shrink-0"
+        className="rounded-[22%] flex items-center justify-center font-bold text-white flex-shrink-0"
         style={{ width: size, height: size, fontSize: size * 0.4, background: color }}
       >
         {network.slice(0, 1)}
@@ -213,7 +213,7 @@ function NetworkLogo({ network, size = 20 }: { network: string; size?: number })
       alt={network}
       width={size}
       height={size}
-      className="rounded-full flex-shrink-0 object-contain"
+      className="rounded-[22%] flex-shrink-0 object-contain"
       style={{ background: `${color}22` }}
       onError={() => setErr(true)}
     />
