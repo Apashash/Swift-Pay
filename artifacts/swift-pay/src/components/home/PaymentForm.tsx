@@ -24,6 +24,24 @@ import imgMtn    from '@/assets/operators/mtn.png';
 import imgWave   from '@/assets/operators/wave.webp';
 import imgMoov   from '@/assets/operators/moov.png';
 import imgTmoney from '@/assets/operators/tmoney.png';
+import logoBtc from '@/assets/crypto/btc.png';
+import logoEth from '@/assets/crypto/eth.png';
+import logoUsdt from '@/assets/crypto/usdt.png';
+import logoUsdc from '@/assets/crypto/usdc.png';
+import logoBnb from '@/assets/crypto/bnb.png';
+import logoDoge from '@/assets/crypto/doge.png';
+import logoPol from '@/assets/crypto/pol.png';
+import logoLtc from '@/assets/crypto/ltc.png';
+import logoSol from '@/assets/crypto/sol.png';
+import logoTrx from '@/assets/crypto/trx.png';
+import logoShib from '@/assets/crypto/shib.png';
+import logoGram from '@/assets/crypto/gram.png';
+import logoXmr from '@/assets/crypto/xmr.png';
+import logoDai from '@/assets/crypto/dai.png';
+import logoBch from '@/assets/crypto/bch.png';
+import logoNot from '@/assets/crypto/not.png';
+import logoDogs from '@/assets/crypto/dogs.png';
+import logoXrp from '@/assets/crypto/xrp.png';
 
 // ── Country / operator data ──────────────────────────────────────────────────
 
@@ -61,6 +79,19 @@ const FEE_RATE = 0.01;
 /** Returns a CDN logo URL for a coin symbol */
 function coinLogoUrl(symbol: string): string {
   return `https://cdn.jsdelivr.net/gh/atomiclabs/cryptocurrency-icons@1.0.0/128/color/${symbol.toLowerCase()}.png`;
+}
+
+/** Exact OxaPay logos supplied by the user, bundled locally for reliability. */
+const OXAPAY_LOGOS: Record<string, string> = {
+  BTC: logoBtc, ETH: logoEth, USDT: logoUsdt, USDC: logoUsdc,
+  BNB: logoBnb, DOGE: logoDoge, POL: logoPol, MATIC: logoPol,
+  LTC: logoLtc, SOL: logoSol, TRX: logoTrx, SHIB: logoShib,
+  GRAM: logoGram, TON: logoGram, XMR: logoXmr, DAI: logoDai,
+  BCH: logoBch, NOT: logoNot, DOGS: logoDogs, XRP: logoXrp,
+};
+
+function localCoinLogoUrl(symbol: string): string | undefined {
+  return OXAPAY_LOGOS[symbol.trim().toUpperCase()];
 }
 
 /** Maps a network code to the underlying blockchain coin symbol (for its logo) */
@@ -113,10 +144,13 @@ const NETWORK_BRAND: Record<string, string> = {
 
 function networkLogoUrl(networkCode: string): string {
   const key = networkCode.trim().toUpperCase();
+  const nativeCoin = NETWORK_COIN[key] ?? key;
+  const localLogo = localCoinLogoUrl(nativeCoin);
+  if (localLogo) return localLogo;
   const brand = NETWORK_BRAND[key];
   return brand
     ? `https://cdn.simpleicons.org/${brand}`
-    : coinLogoUrl(NETWORK_COIN[key] ?? networkCode);
+    : coinLogoUrl(nativeCoin);
 }
 
 /** Coin accent colors */
@@ -146,7 +180,7 @@ function CoinLogo({ coin, size = 28 }: { coin: string; size?: number }) {
   }
   return (
     <img
-      src={coinLogoUrl(coin)}
+      src={localCoinLogoUrl(coin) ?? coinLogoUrl(coin)}
       alt={coin}
       width={size}
       height={size}
