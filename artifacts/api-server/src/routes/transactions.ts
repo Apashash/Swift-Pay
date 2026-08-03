@@ -308,7 +308,7 @@ router.post("/transactions", async (req, res, next) => {
 
       const payment = await createWhiteLabel({
         pay_currency: tx.cryptoCurrency,               // e.g. "USDT"
-        amount: (amountCrypto as number) + (fee as number),
+        amount: parseFloat(((amountCrypto as number) + (fee as number)).toFixed(8)),
         network: oxaNetwork,                           // e.g. "Tron Network" (optionnel)
         callback_url: callbackUrl,
         email: payerEmail,
