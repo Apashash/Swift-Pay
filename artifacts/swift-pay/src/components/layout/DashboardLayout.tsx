@@ -128,8 +128,8 @@ export function DashboardLayout({ children }: Props) {
       {/* Logo */}
       <div className="flex items-center gap-2 px-6 h-16 border-b border-border/50 flex-shrink-0">
         <Link href="/" className="flex items-center gap-1.5">
-          <img src={swiftPayLogo} alt="SwiftPay" className="w-8 h-8 object-contain drop-shadow-[0_0_6px_rgba(0,230,118,0.4)]" />
-          <span className="font-bold text-foreground">Swift<span className="text-primary">Pay</span></span>
+          <img src={swiftPayLogo} alt="marcswitch" className="w-8 h-8 object-contain drop-shadow-[0_0_6px_rgba(0,230,118,0.4)]" />
+          <span className="font-bold text-foreground">marcswitch</span>
         </Link>
       </div>
 

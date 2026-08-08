@@ -1009,7 +1009,7 @@ function TransactionsView({ transactions: sourceTransactions }: { transactions: 
 
 function ConfigurationView({ type }: { type: string }) {
   const config: Record<string, { title: string; description: string; icon: React.ElementType }> = {
-    frais: { title: 'Frais', description: 'Définissez les règles de frais appliquées aux opérations SwiftPay.', icon: CircleDollarSign },
+    frais: { title: 'Frais', description: 'Définissez les règles de frais appliquées aux opérations marcswitch.', icon: CircleDollarSign },
     conversions: { title: 'Conversions', description: 'Supervisez les taux de conversion et leur source de marché.', icon: RefreshCw },
     'pays-operateurs': { title: 'Pays & opérateurs', description: 'Gérez les corridors et les réseaux mobile money disponibles.', icon: Globe2 },
     afribapay: { title: 'AfribaPay', description: 'Connectez et surveillez la configuration du partenaire de paiement.', icon: ShieldAlert },

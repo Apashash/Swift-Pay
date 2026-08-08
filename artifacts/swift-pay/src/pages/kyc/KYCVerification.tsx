@@ -291,16 +291,16 @@ export default function KYCVerification() {
         >
           <div className="flex items-center gap-2 px-6 py-4 border-b border-border bg-secondary/20">
             <span className="w-5 h-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-bold shrink-0">3</span>
-            <h3 className="text-sm font-semibold text-foreground">Utilisation prévue de SwiftPay</h3>
+            <h3 className="text-sm font-semibold text-foreground">Utilisation prévue de marcswitch</h3>
           </div>
           <div className="p-6 space-y-2">
             <Label className="text-xs text-muted-foreground">
-              Décrivez brièvement ce que vous comptez faire avec SwiftPay (transferts familiaux, commerce, freelance…)
+              Décrivez brièvement ce que vous comptez faire avec marcswitch (transferts familiaux, commerce, freelance…)
             </Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ex : J'utilise SwiftPay pour envoyer de l'argent à ma famille au Cameroun depuis la France. Je fais des transferts réguliers de 100 000 à 500 000 FCFA par mois..."
+              placeholder="Ex : J'utilise marcswitch pour envoyer de l'argent à ma famille au Cameroun depuis la France. Je fais des transferts réguliers de 100 000 à 500 000 FCFA par mois..."
               className="min-h-[120px] resize-none text-sm"
             />
             <p className={`text-xs text-right transition-colors ${description.trim().length < 20 ? 'text-muted-foreground' : 'text-primary'}`}>

@@ -14,9 +14,9 @@ export function Footer() {
 
           <div className="col-span-2 md:col-span-1 space-y-4 flex flex-col items-center md:items-start text-center md:text-left">
             <Link href="/" className="flex items-center gap-1.5">
-              <img src={swiftPayLogo} alt="SwiftPay Logo" className="w-8 h-8 object-contain" />
+              <img src={swiftPayLogo} alt="marcswitch Logo" className="w-8 h-8 object-contain" />
               <span className="text-xl font-bold tracking-tight text-foreground">
-                Swift<span className="text-primary">Pay</span>
+                marcswitch
               </span>
             </Link>
             <p className="text-muted-foreground text-sm max-w-[250px]">

@@ -74,7 +74,7 @@ export default function EmailNotifications() {
       key: 'marketing',
       icon: Bell,
       label: 'Actualités & offres',
-      desc: 'Nouveautés SwiftPay, promotions et mises à jour.',
+      desc: 'Nouveautés marcswitch, promotions et mises à jour.',
     },
   ];
 

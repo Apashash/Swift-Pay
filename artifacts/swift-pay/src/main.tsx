@@ -7,7 +7,7 @@ import './index.css';
 
 // ── Global error catch (catches JS errors outside React) ─────────────────────
 window.addEventListener('unhandledrejection', (e) => {
-  console.error('[SwiftPay] Unhandled rejection:', e.reason);
+  console.error('[marcswitch] Unhandled rejection:', e.reason);
 });
 
 // ── Error Boundary ────────────────────────────────────────────────────────────
@@ -25,7 +25,7 @@ class ErrorBoundary extends Component<
   }
 
   override componentDidCatch(error: Error, info: { componentStack: string }) {
-    console.error('[SwiftPay] Render error:', error, info.componentStack);
+    console.error('[marcswitch] Render error:', error, info.componentStack);
   }
 
   override render() {
@@ -56,7 +56,7 @@ class ErrorBoundary extends Component<
             }}
           >
             <h2 style={{ color: '#00e676', margin: '0 0 1rem' }}>
-              SwiftPay — Erreur
+              marcswitch — Erreur
             </h2>
             <p style={{ color: '#aaa', fontSize: 14, margin: '0 0 1rem' }}>
               Une erreur s'est produite lors du chargement. Copiez le message
