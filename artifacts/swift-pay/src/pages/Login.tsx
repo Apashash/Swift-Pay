@@ -54,14 +54,14 @@ export default function Login() {
       <div className="hidden lg:flex lg:w-1/2 bg-card border-r border-border flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,rgba(0,230,118,0.12),transparent_60%)]" />
         <Link href="/" className="flex items-center gap-2 relative z-10">
-          <img src={swiftPayLogo} alt="marcswitch" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(0,230,118,0.5)]" />
-          <span className="text-xl font-bold">marcswitch</span>
+          <img src={swiftPayLogo} alt="MarcSwitch" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(0,230,118,0.5)]" />
+          <span className="text-xl font-bold">Marc<span className="text-primary">Switch</span></span>
         </Link>
 
         <div className="relative z-10 space-y-8">
           <div>
             <h2 className="text-4xl font-bold leading-tight text-foreground">
-              Bienvenue<br />sur <span className="text-primary">marcswitch</span>
+              Bienvenue<br />sur <span className="text-primary">MarcSwitch</span>
             </h2>
             <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
               Le pont le plus rapide entre le monde crypto et le mobile money en Afrique de l'Ouest.
@@ -82,7 +82,7 @@ export default function Login() {
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground relative z-10">© 2025 marcswitch. Tous droits réservés.</p>
+        <p className="text-xs text-muted-foreground relative z-10">© 2025 MarcSwitch. Tous droits réservés.</p>
       </div>
 
       {/* Right panel - form */}
@@ -95,8 +95,8 @@ export default function Login() {
         >
           {/* Mobile logo */}
           <div className="flex lg:hidden items-center gap-2 mb-8">
-            <img src={swiftPayLogo} alt="marcswitch" className="w-8 h-8 object-contain" />
-            <span className="text-lg font-bold">marcswitch</span>
+            <img src={swiftPayLogo} alt="MarcSwitch" className="w-8 h-8 object-contain" />
+            <span className="text-lg font-bold">Marc<span className="text-primary">Switch</span></span>
           </div>
 
           <div className="mb-8">

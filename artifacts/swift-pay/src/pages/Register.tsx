@@ -122,20 +122,20 @@ export default function Register() {
       <div className="hidden lg:flex lg:w-[42%] bg-card border-r border-border flex-col justify-between p-12 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,rgba(0,230,118,0.12),transparent_60%)]" />
         <Link href="/" className="flex items-center gap-2 relative z-10">
-          <img src={swiftPayLogo} alt="marcswitch" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(0,230,118,0.5)]" />
-          <span className="text-xl font-bold">marcswitch</span>
+          <img src={swiftPayLogo} alt="MarcSwitch" className="w-10 h-10 object-contain drop-shadow-[0_0_8px_rgba(0,230,118,0.5)]" />
+          <span className="text-xl font-bold">Marc<span className="text-primary">Switch</span></span>
         </Link>
 
         <div className="relative z-10 space-y-6">
           <h2 className="text-3xl font-bold leading-tight">
-            Rejoignez <span className="text-primary">marcswitch</span><br />et envoyez de l'argent simplement
+            Rejoignez <span className="text-primary">MarcSwitch</span><br />et envoyez de l'argent simplement
           </h2>
           <div className="space-y-3">
             {[
               { emoji: '💸', title: 'Montants illimités', desc: 'Envoyez autant que vous voulez' },
               { emoji: '📱', title: 'Bénéficiaires enregistrés', desc: 'Retrouvez vos contacts rapidement' },
               { emoji: '📊', title: 'Historique complet', desc: 'Suivez toutes vos transactions' },
-              { emoji: '🔑', title: 'Accès API', desc: 'Intégrez marcswitch à votre business' },
+              { emoji: '🔑', title: 'Accès API', desc: 'Intégrez MarcSwitch à votre business' },
             ].map((item) => (
               <div key={item.title} className="flex items-start gap-3 bg-secondary/40 rounded-xl px-4 py-3">
                 <span className="text-lg mt-0.5">{item.emoji}</span>
@@ -148,7 +148,7 @@ export default function Register() {
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground relative z-10">© 2025 marcswitch. Tous droits réservés.</p>
+        <p className="text-xs text-muted-foreground relative z-10">© 2025 MarcSwitch. Tous droits réservés.</p>
       </div>
 
       {/* Right form panel */}
@@ -160,8 +160,8 @@ export default function Register() {
           className="w-full max-w-md py-4"
         >
           <div className="flex lg:hidden items-center gap-2 mb-8">
-            <img src={swiftPayLogo} alt="marcswitch" className="w-8 h-8 object-contain" />
-            <span className="text-lg font-bold">marcswitch</span>
+            <img src={swiftPayLogo} alt="MarcSwitch" className="w-8 h-8 object-contain" />
+            <span className="text-lg font-bold">Marc<span className="text-primary">Switch</span></span>
           </div>
 
           <div className="mb-8">
@@ -355,7 +355,7 @@ export default function Register() {
                 <a href="#" onClick={(e) => e.stopPropagation()} className="text-primary font-semibold hover:underline">
                   Politique de confidentialité
                 </a>{' '}
-                de marcswitch.
+                de MarcSwitch.
               </p>
             </div>
 

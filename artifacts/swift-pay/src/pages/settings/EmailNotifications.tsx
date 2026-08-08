@@ -74,7 +74,7 @@ export default function EmailNotifications() {
       key: 'marketing',
       icon: Bell,
       label: 'Actualités & offres',
-      desc: 'Nouveautés marcswitch, promotions et mises à jour.',
+      desc: 'Nouveautés MarcSwitch, promotions et mises à jour.',
     },
   ];
 

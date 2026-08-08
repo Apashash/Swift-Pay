@@ -68,8 +68,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     <div className="flex h-full flex-col bg-[#11191a] text-white">
       <div className="flex h-[76px] items-center gap-3 border-b border-white/10 px-5">
         <Link href="/admin" className="flex items-center gap-2.5">
-          <img src={swiftPayLogo} alt="marcswitch" className="h-9 w-9 object-contain" />
-          <span className="text-lg font-semibold tracking-tight">marcswitch</span>
+          <img src={swiftPayLogo} alt="MarcSwitch" className="h-9 w-9 object-contain" />
+          <span className="text-lg font-semibold tracking-tight">Marc<span className="text-[#b8f26d]">Switch</span></span>
         </Link>
         <button
           type="button"
@@ -165,7 +165,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#819087]">marcswitch / Administration</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#819087]">MarcSwitch / Administration</p>
               <h1 className="text-base font-semibold md:text-lg">{location === '/admin' ? 'Vue globale' : 'Centre opérationnel'}</h1>
             </div>
           </div>

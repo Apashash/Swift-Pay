@@ -43,11 +43,11 @@ export function Navbar() {
           <Link href="/" className="flex items-center gap-1.5 group">
             <img
               src={swiftPayLogo}
-              alt="marcswitch Logo"
+              alt="MarcSwitch Logo"
               className="w-10 h-10 object-contain transition-all drop-shadow-[0_0_8px_rgba(0,230,118,0.4)] group-hover:drop-shadow-[0_0_14px_rgba(0,230,118,0.6)]"
             />
             <span className="text-xl font-bold tracking-tight text-foreground">
-              marcswitch
+              Marc<span className="text-primary">Switch</span>
             </span>
           </Link>
 
@@ -175,8 +175,8 @@ export function Navbar() {
             >
               <div className="flex items-center justify-between px-6 h-20 border-b border-border/50">
                 <div className="flex items-center gap-1">
-                  <img src={swiftPayLogo} alt="marcswitch" className="w-8 h-8 object-contain" />
-                  <span className="font-bold text-foreground">marcswitch</span>
+                  <img src={swiftPayLogo} alt="MarcSwitch" className="w-8 h-8 object-contain" />
+                  <span className="font-bold text-foreground">Marc<span className="text-primary">Switch</span></span>
                 </div>
                 <div className="flex items-center gap-2">
                   <button

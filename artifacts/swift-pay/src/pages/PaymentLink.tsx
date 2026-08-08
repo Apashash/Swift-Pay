@@ -129,8 +129,8 @@ function LinkCard({ link, onDelete, onEdit }: { link: PaymentLinkItem; onDelete:
   const handleShare = async () => {
     if (navigator.share) {
       await navigator.share({
-        title: `Paiement marcswitch — ${link.title}`,
-        text: link.amount ? `Payer ${fmtAmount(link.amount)} FCFA via marcswitch` : `Paiement marcswitch — ${link.title}`,
+        title: `Paiement MarcSwitch — ${link.title}`,
+        text: link.amount ? `Payer ${fmtAmount(link.amount)} FCFA via MarcSwitch` : `Paiement MarcSwitch — ${link.title}`,
         url: link.url,
       });
     } else {
@@ -618,7 +618,7 @@ export default function PaymentLink() {
               <Link2 className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">marcswitch</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">MarcSwitch</p>
               <h1 className="text-2xl font-bold text-foreground">Liens de paiement</h1>
             </div>
           </div>
