@@ -45,39 +45,33 @@ API health check: `GET /api/healthz` → `{"status":"ok"}`
 |--------|-------------|
 | `SUPABASE_DATABASE_URL` | PostgreSQL connection string (URI format) from Supabase → Settings → Database → Connection string. Use port **6543** (PgBouncer pooler) with SSL. |
 | `SESSION_SECRET` | Arbitrary random string used to sign session tokens |
-| `ASHTECHPAY_API_KEY` | AshtechPay API key (`Bearer …`) — Dashboard → API Keys |
+| `OXAPAY_MERCHANT_API_KEY` | OxaPay merchant API key — Dashboard → API Keys |
 
-> Without `SUPABASE_DATABASE_URL` the API server exits immediately. Without `ASHTECHPAY_API_KEY` the crypto asset list is empty and transactions use placeholder addresses.
+> Without `SUPABASE_DATABASE_URL` the API server exits immediately. Without `OXAPAY_MERCHANT_API_KEY` crypto payments won't work.
 
-## AshtechPay integration
+## OxaPay integration
 
-Docs: https://ashtechpay.top/docs/api  
-Base URL: `https://ashtechpay.top/v1/`  
-Auth: `Authorization: Bearer <ASHTECHPAY_API_KEY>`
+White-label payment flow:
+1. `GET /api/crypto/assets` → fetches available coins + networks from `GET /common/currencies` (no auth required).
+2. User selects coin and network.
+3. `POST /api/transactions` → creates a DB record + calls OxaPay `POST /payment/white-label` with the selected asset; `order_id` = transaction UUID.
+4. OxaPay notifies `POST /webhooks/oxapay` when payment status changes.
+5. Status `"paid"` → transaction set to `completed`; other statuses → `failed`.
 
-Payment flow:
-1. `GET /api/crypto/assets` → frontend fetches available coins + networks dynamically (cached 10 min, proxied through the API server).
-2. User selects coin (USDT, BTC, ETH, …) and network (TRC20, BEP20, ERC20, …).
-3. `POST /api/transactions` → creates a DB record + calls AshtechPay `POST /v1/crypto/collect` with `asset_code` and sets `reference = transaction.id`.
-4. Response includes `address` (deposit address) and optional `memo` (required for some networks like XRP, XLM, TON).
-5. AshtechPay notifies `POST /webhooks/ashtechpay` when payment is detected.
-6. `payment.completed` → transaction status set to `completed`, user notified.
-7. `payment.failed` → transaction status set to `failed`.
-
-Webhook endpoint to configure in the AshtechPay dashboard as `notify_url`:
+Webhook endpoint to configure in the OxaPay dashboard:
 ```
-https://<your-domain>/webhooks/ashtechpay
+https://<your-domain>/webhooks/oxapay
 ```
 
 ## Replit setup status
 
-- [x] `pnpm install` — dependencies installed
-- [x] `SUPABASE_DATABASE_URL` — secret configured
+- [x] `pnpm install` — dependencies installed (tsx overridden to 4.21.0 via `pnpm.overrides` in package.json to pass the Replit package firewall)
+- [ ] `SUPABASE_DATABASE_URL` — **required** — PostgreSQL connection string from Supabase → Settings → Database → URI (port 6543, PgBouncer)
 - [x] `SESSION_SECRET` — secret configured
 - [x] SwiftPay web workflow running on port 22199
-- [x] API Server workflow running on port 8080
-- [x] `ASHTECHPAY_API_KEY` — secret configured
-- [x] Database schema pushed
+- [ ] API Server workflow — **waiting on `SUPABASE_DATABASE_URL`** to start
+- [ ] `OXAPAY_MERCHANT_API_KEY` — optional, but needed for crypto payments
+- [ ] Database schema pushed (`pnpm --filter @workspace/db run push`) — do after `SUPABASE_DATABASE_URL` is set
 
 ## Database schema
 
